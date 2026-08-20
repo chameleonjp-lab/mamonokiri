@@ -11,8 +11,9 @@ import { HemisphericLight } from "@babylonjs/core/Lights/hemisphericLight";
 import { ParticleSystem } from "@babylonjs/core/Particles/particleSystem";
 import { Texture } from "@babylonjs/core/Materials/Textures/texture";
 import "@babylonjs/core/Materials/standardMaterial";
+import { applyDamage, attackPlanFor, correctDodgeForLane, crossedComboMilestones, defeatProgress, shiftActiveTimer, tutorialVariantIndex } from "./rules";
 
-type State = { hp: number; enemyHp: number; enemyMaxHp: number; wave: number; boss: boolean; bossDefeatPulse: number; enemyName: string; enemyEpithet: string; enemyFamily: string; enemyAttackStyle: EnemyAttackSide; enemyPhase: string; stance: string; message: string; defeated: boolean; combo: number; score: number; comboTime: number; climax: number };
+type State = { hp: number; enemyHp: number; enemyMaxHp: number; wave: number; remainingEnemies: number; boss: boolean; bossDefeatPulse: number; enemyName: string; enemyEpithet: string; enemyFamily: string; enemyAttackStyle: EnemyAttackSide; enemyPhase: string; stance: string; message: string; defeated: boolean; combo: number; maxCombo: number; score: number; comboTime: number; climax: number; counterReady: boolean; counterPulse: number; paused: boolean; transitioning: boolean; tutorialStep: number };
 export type GameHandle = { scene: Scene; dispose: () => void };
 
 const VERMILION = new Color3(0.72, 0.17, 0.10);
@@ -104,38 +105,540 @@ export async function createGameScene(engine: Engine, canvas: HTMLCanvasElement)
   const ground = box(scene, "mountain_floor", new Vector3(22, 0.3, 30), new Vector3(0, -0.15, 5), materials.stone);
   for (let i = 0; i < 8; i++) box(scene, `stone_step_${i}`, new Vector3(6.4 - i * 0.15, 0.28, 1.2), new Vector3(0, i * 0.12, i * 1.15 - 0.6), materials.stone);
   for (const x of [-3.3, 3.3]) { box(scene, "torii_pillar", new Vector3(0.38, 4.2, 0.38), new Vector3(x, 2.1, 9), materials.wood); box(scene, "torii_crossbeam", new Vector3(7.5, 0.32, 0.42), new Vector3(0, 4, 9), materials.wood); box(scene, "torii_upperbeam", new Vector3(8.2, 0.25, 0.5), new Vector3(0, 4.45, 9), materials.vermilion); }
-  const player = makePlayer(scene, materials); const attackAreaMaterial = mat(scene, "attack_area_red", new Color3(0.95, 0.04, 0.03), 0.9); attackAreaMaterial.alpha = 0.24; const attackArea = box(scene, "enemy_attack_area", new Vector3(1.65, 0.025, 2.3), new Vector3(0, 0.025, 2.35), attackAreaMaterial); attackArea.isVisible = false; const zoneMaterials = [-1, 0, 1].map((lane) => mat(scene, `foot_zone_${lane}`, new Color3(1, 0.03, 0.02), 0.9)); const footZones = [-1, 0, 1].map((lane, index) => { const zone = box(scene, `player_foot_attack_zone_${lane}`, new Vector3(0.78, 0.03, 1.45), new Vector3(lane * 0.92, 0.045, 0.02), zoneMaterials[index]); zone.isVisible = false; return zone; }); const updateFootZones = (visible: boolean, targetLane: number) => { footZones.forEach((zone, index) => { zone.isVisible = visible; zone.position.x = player.root.position.x + (index - 1) * 0.92; zone.material = zoneMaterials[index]; const pulse = 0.84 + 0.16 * (0.5 + 0.5 * Math.sin(performance.now() * 0.035)); zoneMaterials[index].alpha = visible ? (index - 1 === targetLane ? 0.78 * pulse : 0.055) : 0.11; }); }; let slashProjectile: Mesh | null = null; let slashImpactAt = 0; let slashDirection = 1; let slashAngle = 0; let slashBaseAngle = 0; let slashPower = 1; let slashScale = 1; let previousBladeAngle = -0.65; let slashTargetX = 0; let slashTargetZ = 5.2; let currentVariant = ENEMY_VARIANTS[Math.floor(Math.random() * ENEMY_VARIANTS.length)]; const enemy = makeEnemy(scene, materials, currentVariant); const guardRingMaterial = mat(scene, "enemy_guard_ring", new Color3(0.28, 0.72, 1), 0.9); const guardRing = MeshBuilder.CreateTorus("enemy_guard_ring", { diameter: 1.5, thickness: 0.06, tessellation: 24 }, scene); guardRing.position.y = 0.82; guardRing.rotation.x = Math.PI / 2; guardRing.material = guardRingMaterial; guardRing.parent = enemy.root; guardRing.isVisible = false; const warningLine = box(scene, "attack_warning_line", new Vector3(1.25, 0.026, 0.07), new Vector3(0, 0.04, 2.4), materials.vermilion); warningLine.isVisible = false; const laneMaterials = { left: mat(scene, "lane_left", new Color3(0.28, 0.72, 0.92), 0.55), center: mat(scene, "lane_center", new Color3(0.95, 0.55, 0.18), 0.65), right: mat(scene, "lane_right", new Color3(0.76, 0.28, 0.78), 0.55) }; const cameraHome = camera.position.clone(); let shakeUntil = 0; let hitStopUntil = 0; let dangerLane = 0; const triggerImpact = (direction: number, strength = 0.08) => { if (effectLevel === "minimal") return; const now = performance.now(); const duration = effectLevel === "reduced" ? 110 : 220; shakeUntil = now + duration; hitStopUntil = now + (effectLevel === "reduced" ? 35 : 75); window.dispatchEvent(new CustomEvent("yamabushi-impact", { detail: { direction, strength } })); }; const showBossReward = () => { if (effectLevel === "minimal") return; const rewardMaterial = mat(scene, `boss_reward_${performance.now()}`, new Color3(1, 0.78, 0.36), 0.92); const beams = [0, 1, 2, 3].map((index) => { const beam = box(scene, `boss_reward_beam_${index}`, new Vector3(1.6, 0.045, 0.045), new Vector3(enemy.root.position.x, 1.35, enemy.root.position.z - 0.9), index % 2 ? rewardMaterial : materials.gaiter); beam.rotation.z = index * Math.PI / 4; beam.scaling.x = 0.35; return beam; }); window.setTimeout(() => { beams.forEach((beam) => beam.dispose()); rewardMaterial.dispose(); }, 1250); }; const showCounterHit = (direction: number) => { if (effectLevel === "minimal") return; const counterMaterial = mat(scene, `counter_fx_${performance.now()}`, new Color3(0.42, 0.86, 1), 0.95); const wave = box(scene, "counter_wave", new Vector3(1.7, 0.06, 0.06), new Vector3(enemy.root.position.x, 1.38, enemy.root.position.z - 0.9), counterMaterial); const spark = box(scene, "counter_spark", new Vector3(0.8, 0.04, 0.04), new Vector3(enemy.root.position.x, 1.18, enemy.root.position.z - 0.92), materials.steel); wave.rotation.z = direction * 0.34; spark.rotation.z = -direction * 0.82; wave.scaling.x = 0.6; spark.scaling.x = 0.7; window.dispatchEvent(new CustomEvent("yamabushi-counter", { detail: { direction } })); window.setTimeout(() => { wave.dispose(); spark.dispose(); counterMaterial.dispose(); }, effectLevel === "reduced" ? 140 : 260); }; const showGuardBreak = (direction: number) => { if (effectLevel === "minimal") return; const breakMaterial = mat(scene, `guard_break_${performance.now()}`, new Color3(1, 0.64, 0.18), 0.98); const breakA = box(scene, "guard_break_a", new Vector3(1.9, 0.06, 0.06), new Vector3(enemy.root.position.x, 1.36, enemy.root.position.z - 0.82), breakMaterial); const breakB = box(scene, "guard_break_b", new Vector3(1.45, 0.045, 0.045), new Vector3(enemy.root.position.x, 1.12, enemy.root.position.z - 0.8), materials.gaiter); breakA.rotation.z = direction * 0.42; breakB.rotation.z = -direction * 0.68; window.setTimeout(() => { breakA.dispose(); breakB.dispose(); breakMaterial.dispose(); }, 300); };
+  const player = makePlayer(scene, materials); const attackAreaMaterial = mat(scene, "attack_area_red", new Color3(0.95, 0.04, 0.03), 0.9); attackAreaMaterial.alpha = 0.24; const attackArea = box(scene, "enemy_attack_area", new Vector3(1.65, 0.025, 2.3), new Vector3(0, 0.025, 2.35), attackAreaMaterial); attackArea.isVisible = false; const zoneMaterials = [-1, 0, 1].map((lane) => mat(scene, `foot_zone_${lane}`, new Color3(1, 0.03, 0.02), 0.9)); const footZones = [-1, 0, 1].map((lane, index) => { const zone = box(scene, `player_foot_attack_zone_${lane}`, new Vector3(0.78, 0.03, 1.45), new Vector3(lane * 0.92, 0.045, 0.02), zoneMaterials[index]); zone.isVisible = false; return zone; }); const updateFootZones = (visible: boolean, targetLane: number) => { footZones.forEach((zone, index) => { zone.isVisible = visible; zone.position.x = player.root.position.x + (index - 1) * 0.92; zone.material = zoneMaterials[index]; const pulse = 0.84 + 0.16 * (0.5 + 0.5 * Math.sin(performance.now() * 0.035)); zoneMaterials[index].alpha = visible ? (index - 1 === targetLane ? 0.78 * pulse : 0.055) : 0.11; }); }; let slashProjectile: Mesh | null = null; let slashImpactAt = 0; let slashDirection = 1; let slashAngle = 0; let slashBaseAngle = 0; let slashPower = 1; let slashScale = 1; let previousBladeAngle = -0.65; let slashTargetX = 0; let slashTargetZ = 5.2; let currentVariant = ENEMY_VARIANTS[0]; const enemy = makeEnemy(scene, materials, currentVariant); const guardRingMaterial = mat(scene, "enemy_guard_ring", new Color3(0.28, 0.72, 1), 0.9); const guardRing = MeshBuilder.CreateTorus("enemy_guard_ring", { diameter: 1.5, thickness: 0.06, tessellation: 24 }, scene); guardRing.position.y = 0.82; guardRing.rotation.x = Math.PI / 2; guardRing.material = guardRingMaterial; guardRing.parent = enemy.root; guardRing.isVisible = false; const warningLine = box(scene, "attack_warning_line", new Vector3(1.25, 0.026, 0.07), new Vector3(0, 0.04, 2.4), materials.vermilion); warningLine.isVisible = false; const laneMaterials = { left: mat(scene, "lane_left", new Color3(0.28, 0.72, 0.92), 0.55), center: mat(scene, "lane_center", new Color3(0.95, 0.55, 0.18), 0.65), right: mat(scene, "lane_right", new Color3(0.76, 0.28, 0.78), 0.55) }; const cameraHome = camera.position.clone(); let shakeUntil = 0; let hitStopUntil = 0; let dangerLane = 0; const triggerImpact = (direction: number, strength = 0.08) => { if (effectLevel === "minimal") return; const now = performance.now(); const duration = effectLevel === "reduced" ? 110 : 220; shakeUntil = now + duration; hitStopUntil = now + (effectLevel === "reduced" ? 35 : 75); window.dispatchEvent(new CustomEvent("yamabushi-impact", { detail: { direction, strength } })); }; const showBossReward = () => { if (effectLevel === "minimal") return; const rewardMaterial = mat(scene, `boss_reward_${performance.now()}`, new Color3(1, 0.78, 0.36), 0.92); const beams = [0, 1, 2, 3].map((index) => { const beam = box(scene, `boss_reward_beam_${index}`, new Vector3(1.6, 0.045, 0.045), new Vector3(enemy.root.position.x, 1.35, enemy.root.position.z - 0.9), index % 2 ? rewardMaterial : materials.gaiter); beam.rotation.z = index * Math.PI / 4; beam.scaling.x = 0.35; return beam; }); window.setTimeout(() => { beams.forEach((beam) => beam.dispose()); rewardMaterial.dispose(); }, 1250); }; const showCounterHit = (direction: number) => { if (effectLevel === "minimal") return; const counterMaterial = mat(scene, `counter_fx_${performance.now()}`, new Color3(0.42, 0.86, 1), 0.95); const wave = box(scene, "counter_wave", new Vector3(1.7, 0.06, 0.06), new Vector3(enemy.root.position.x, 1.38, enemy.root.position.z - 0.9), counterMaterial); const spark = box(scene, "counter_spark", new Vector3(0.8, 0.04, 0.04), new Vector3(enemy.root.position.x, 1.18, enemy.root.position.z - 0.92), materials.steel); wave.rotation.z = direction * 0.34; spark.rotation.z = -direction * 0.82; wave.scaling.x = 0.6; spark.scaling.x = 0.7; window.dispatchEvent(new CustomEvent("yamabushi-counter", { detail: { direction } })); window.setTimeout(() => { wave.dispose(); spark.dispose(); counterMaterial.dispose(); }, effectLevel === "reduced" ? 140 : 260); }; const showGuardBreak = (direction: number) => { if (effectLevel === "minimal") return; const breakMaterial = mat(scene, `guard_break_${performance.now()}`, new Color3(1, 0.64, 0.18), 0.98); const breakA = box(scene, "guard_break_a", new Vector3(1.9, 0.06, 0.06), new Vector3(enemy.root.position.x, 1.36, enemy.root.position.z - 0.82), breakMaterial); const breakB = box(scene, "guard_break_b", new Vector3(1.45, 0.045, 0.045), new Vector3(enemy.root.position.x, 1.12, enemy.root.position.z - 0.8), materials.gaiter); breakA.rotation.z = direction * 0.42; breakB.rotation.z = -direction * 0.68; window.setTimeout(() => { breakA.dispose(); breakB.dispose(); breakMaterial.dispose(); }, 300); };
   const showGuardSpark = (direction = 1) => { recoilUntil = performance.now() + 190; recoilDirection = direction < 0 ? -1 : 1; playParrySound(1, direction); if (effectLevel === "minimal") return; const guardMaterial = mat(scene, `guard_fx_${performance.now()}`, new Color3(0.55, 0.82, 1), 0.95); const sparkA = box(scene, "guard_spark_a", new Vector3(0.7, 0.04, 0.04), new Vector3(player.root.position.x, 1.38, player.root.position.z - 0.65), guardMaterial); const sparkB = box(scene, "guard_spark_b", new Vector3(0.48, 0.03, 0.03), new Vector3(player.root.position.x, 1.12, player.root.position.z - 0.68), materials.steel); sparkA.rotation.z = -0.55; sparkB.rotation.z = 0.78; window.setTimeout(() => { sparkA.dispose(); sparkB.dispose(); guardMaterial.dispose(); }, 220); }; const showEnemyHit = (playerX: number, playerZ: number, direction: number, impactAngle = direction * 0.42, impactScale = 1) => { triggerImpact(direction, 0.045); if (effectLevel === "minimal") return; const fxMaterial = mat(scene, `hit_fx_${performance.now()}`, new Color3(0.95, 0.3, 0.12), 0.8); const flash = box(scene, "enemy_hit_flash", new Vector3(1.25, 0.08, 0.05), new Vector3(enemy.root.position.x, 1.3, enemy.root.position.z - 0.75), fxMaterial); flash.scaling.setAll(Math.max(1.2, enemy.root.scaling.x * 1.8 * impactScale)); flash.rotation.z = impactAngle; const sparkA = box(scene, "enemy_hit_spark_a", new Vector3(0.55, 0.035, 0.035), new Vector3(enemy.root.position.x, 1.45, enemy.root.position.z - 0.82), materials.gaiter); const sparkB = box(scene, "enemy_hit_spark_b", new Vector3(0.4, 0.03, 0.03), new Vector3(enemy.root.position.x, 1.12, enemy.root.position.z - 0.8), materials.steel); sparkA.scaling.setAll(Math.max(1, impactScale)); sparkB.scaling.setAll(Math.max(1, impactScale * 0.9)); sparkA.rotation.z = -direction * 0.7; sparkB.rotation.z = direction * 0.9; enemy.root.scaling = new Vector3((boss ? 1.38 : 1) * 1.12, (boss ? 1.38 : 1) * 1.12, (boss ? 1.38 : 1) * 1.12); window.setTimeout(() => { flash.dispose(); sparkA.dispose(); sparkB.dispose(); fxMaterial.dispose(); if (enemyHp > 0) enemy.root.scaling.setAll(boss ? 1.38 : 1); }, 180); };
-  const chapterTitles = ["霧ノ峠", "岩戸の回廊", "天狗の稜線", "無明の奥宮", "修験成就"]; let hp = 100, enemyHp = 100, enemyMaxHp = 100, wave = 1, boss = false, bossAttack = false, bossDefeatPulse = 0, enemyTargetX = 0, enemyMoveAt = 0, spearAttackSide = 0, feintLane = 0, enemyAttackCount = 0, attackUntil = 0, guardUntil = 0, lastEnemyStrike = 0, counterUntil = 0, counterPulse = 0, message = "Jで飛刃。Kで受ける。赤い床から離れよ。"; let paused = false; let effectLevel = (localStorage.getItem("yamabushi-effects") as "full" | "reduced" | "minimal" | null) ?? "full"; let defeated = false; let combo = 0; let score = 0; let comboExpiresAt = 0; let climax = 0; let dodgeDirection = 1; let dodgeStartAt = 0; let dodgeUntil = 0; let dodgeFromX = 0; let dodgeFromZ = 0; let enemyAttackAt = 0; let enemyAttackHit = false; let enemyGuardUntil = 0; let nextGuardAt = performance.now() + 2600; const COMBO_WINDOW = 4200; const DODGE_DURATION = 360; const ENEMY_ATTACK_DURATION = 1150; let sheathUntil = 0; let recoilUntil = 0; let recoilDirection = 1; let lastFootstepAt = 0; let lastEnemyFootstepAt = 0; let previousEnemyX = 0; let nextAmbientAt = performance.now() + 1600; let audioContext: AudioContext | null = null; const getAudioContext = () => { const AudioCtor = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext; if (!AudioCtor) return null; audioContext ??= new AudioCtor(); if (audioContext.state === "suspended") void audioContext.resume(); return audioContext; }; const playTone = (frequency: number, endFrequency: number, duration: number, volume: number, type: OscillatorType = "sine", pan = 0) => { const ctx = getAudioContext(); if (!ctx) return; const start = ctx.currentTime; const oscillator = ctx.createOscillator(); const gain = ctx.createGain(); const panner = ctx.createStereoPanner(); panner.pan.setValueAtTime(Math.max(-1, Math.min(1, pan)), start); oscillator.type = type; oscillator.frequency.setValueAtTime(frequency, start); oscillator.frequency.exponentialRampToValueAtTime(Math.max(35, endFrequency), start + duration); gain.gain.setValueAtTime(0.0001, start); gain.gain.exponentialRampToValueAtTime(Math.min(0.14, volume), start + 0.008); gain.gain.exponentialRampToValueAtTime(0.0001, start + duration); oscillator.connect(gain); gain.connect(panner); panner.connect(ctx.destination); oscillator.start(start); oscillator.stop(start + duration + 0.03); }; const playSlashSound = (power: number) => playTone(240 + power * 170, 92, 0.19 + power * 0.07, 0.035 + power * 0.035, "sawtooth"); const playParrySound = (power = 1, direction = 1) => { const pan = direction < 0 ? -0.68 : 0.68; playTone(620 + power * 110, 1450 + power * 180, 0.11, 0.09 + power * 0.025, "triangle", pan); window.setTimeout(() => playTone(980 + power * 130, 440, 0.08, 0.045 + power * 0.02, "square", pan * 0.7), 28); }; const playFootstep = (power = 0.6) => playTone(82 + power * 18, 45, 0.11, 0.025 + power * 0.02, "sine"); const enemyFootstepProfile = () => { switch (currentVariant.family) { case "獣型": return { frequency: 48, end: 28, duration: 0.24, volume: 0.07, type: "sine" as OscillatorType }; case "モンスター型": return { frequency: 58, end: 31, duration: 0.2, volume: 0.06, type: "triangle" as OscillatorType }; case "人型": return { frequency: 78, end: 42, duration: 0.13, volume: 0.038, type: "sine" as OscillatorType }; case "鳥型": return { frequency: 122, end: 64, duration: 0.09, volume: 0.025, type: "triangle" as OscillatorType }; case "モニュメント型": return { frequency: 39, end: 24, duration: 0.3, volume: 0.085, type: "sine" as OscillatorType }; default: return { frequency: 60, end: 34, duration: 0.16, volume: 0.045, type: "sine" as OscillatorType }; } }; const playEnemyStepForVariant = (intensity = 1) => { const profile = enemyFootstepProfile(); playTone(profile.frequency + intensity * 5, profile.end, profile.duration, profile.volume * intensity, profile.type); }; let ambientVolume = Number(localStorage.getItem("yamabushi-ambient-volume") ?? "0.7"); const playAmbientPulse = () => { if (ambientVolume <= 0.01) return; playTone(128, 74, 0.8, 0.012 * ambientVolume, "sine", -0.25); window.setTimeout(() => { if (ambientVolume > 0.01) playTone(176, 92, 0.62, 0.009 * ambientVolume, "triangle", 0.32); }, 180); };
-  const launchPlayerSlash = (now: number, direction: number) => { if (slashProjectile) return; const slashMaterial = mat(scene, `flying_slash_${now}`, new Color3(0.95, 0.88, 0.7), 1); const arcPath = Array.from({ length: 13 }, (_, index) => { const t = index / 12; const x = (t - 0.5) * 1.7; const y = 0.34 + Math.sin(t * Math.PI) * 0.62; return new Vector3(x, y, 0); }); slashProjectile = MeshBuilder.CreateTube("flying_slash_arc", { path: arcPath, radius: 0.055, tessellation: 8 }, scene); slashProjectile.position = new Vector3(player.root.position.x, 0.7, player.root.position.z - 0.45); slashProjectile.material = slashMaterial; slashDirection = direction; slashBaseAngle = player.blade.rotation.z * 0.42 + direction * 0.18; slashAngle = slashBaseAngle; slashScale = 0.84 + slashPower * 0.34; slashProjectile.rotation.z = slashAngle; slashProjectile.scaling.set(slashScale * 1.18, slashScale, slashScale * 0.72); slashImpactAt = now + 380; slashTargetX = enemy.root.position.x; slashTargetZ = enemy.root.position.z; message = "飛刃、霧を裂く。"; announce(state()); }; const enemyMoveLimit = () => Math.min(1.25, Math.max(0.7, (engine.getRenderWidth() / Math.max(1, engine.getRenderHeight())) * 0.5)); const setEnemyVariant = (variant: EnemyVariant) => { enemy.body = enemy.bodies[variant.shape]; enemy.bodies.forEach((body, index) => { body.isVisible = index === variant.shape; }); }; const setEnemyGlow = (isBoss: boolean) => { const glow = isBoss ? materials.bossGlow : materials.enemyGlow; enemy.bodies.forEach((body) => { body.material = glow; }); enemy.eyes.forEach((eye) => { eye.material = glow; }); }; const setSpearState = (ready: boolean, extension = 0, activeSide = 0) => { const shaftMaterial = ready ? materials.spearReady : materials.iron; enemy.spears.forEach((spear, index) => { const side = index === 0 ? -1 : 1; const active = activeSide === 0 || side === activeSide; const amount = active ? extension : 0; spear.material = ready && active ? shaftMaterial : materials.iron; spear.scaling.z = 1 + amount * 1.8; spear.position.z = -0.62 - amount * 0.55; spear.position.x = side * 0.72; }); enemy.spearTips.forEach((tip, index) => { const side = index === 0 ? -1 : 1; const active = activeSide === 0 || side === activeSide; const amount = active ? extension : 0; tip.material = ready && active ? shaftMaterial : materials.iron; tip.position.z = -1.28 - amount * 1.1; tip.position.x = side * 0.72; }); }; const state = () => { const stateNow = performance.now(); const attackElapsed = enemyAttackAt ? stateNow - enemyAttackAt : 99999; const enemyPhase = enemyGuardUntil > stateNow ? "防御" : !enemyAttackAt ? "巡回" : attackElapsed < 420 ? "予備" : attackElapsed < 680 ? "攻撃" : attackElapsed <= ENEMY_ATTACK_DURATION ? "復帰" : "巡回"; return { hp, enemyHp, enemyMaxHp, wave, remainingEnemies: Math.max(0, 50 - wave + 1), boss, bossDefeatPulse, enemyName: currentVariant.name, enemyEpithet: currentVariant.epithet, enemyFamily: currentVariant.family, enemyAttackStyle: currentVariant.attackSide, enemyPhase, counterReady: counterUntil > stateNow, counterPulse, stance: guardUntil > stateNow ? "防御" : attackUntil > stateNow ? "抜刀" : "静止", message, defeated, combo, score, comboTime: combo ? Math.max(0, comboExpiresAt - stateNow) / COMBO_WINDOW : 0, climax }; };
-  setEnemyVariant(currentVariant); setEnemyGlow(false); announce(state()); const spawnNextEnemy = () => { wave += 1; boss = wave % 5 === 0; currentVariant = boss ? BOSS_VARIANTS[Math.floor(Math.random() * BOSS_VARIANTS.length)] : ENEMY_VARIANTS[Math.floor(Math.random() * ENEMY_VARIANTS.length)]; setEnemyVariant(currentVariant); enemyMaxHp = boss ? 320 : 100; enemyHp = enemyMaxHp; defeated = false; bossAttack = false; enemyAttackAt = 0; warningLine.isVisible = false; attackArea.isVisible = false; updateFootZones(false, 0); guardRing.isVisible = false; enemyGuardUntil = 0; nextGuardAt = performance.now() + 2200; enemy.root.scaling.setAll(boss ? 1.38 : 1); setEnemyGlow(boss); enemy.root.position.z = 5.2; enemy.root.position.x = 0; enemyTargetX = 0; enemyMoveAt = performance.now() + 800; enemy.root.rotation.y = 0; enemy.blade.rotation.z = -0.7; setSpearState(false); if (wave % 10 === 0) { const chapter = Math.min(5, Math.ceil(wave / 10)); hp = Math.min(100, hp + 12); score += chapter * 500; message = `${chapterTitles[chapter - 1]}・第${chapter}章を越えた。章報酬：生命 +12 / 点数 +${chapter * 500}`; } else message = boss ? `${currentVariant.name}「${currentVariant.epithet}」、出現。回避不能の刃に備えよ。` : `${wave}体目・${currentVariant.name}「${currentVariant.epithet}」が現れた。`; announce(state()); }; const pauseEvent = (event: Event) => { paused = Boolean((event as CustomEvent<{ paused?: boolean }>).detail?.paused); }; const effectsEvent = (event: Event) => { const next = (event as CustomEvent<{ level?: string }>).detail?.level; if (next === "full" || next === "reduced" || next === "minimal") effectLevel = next; }; const audioEvent = (event: Event) => { const next = Number((event as CustomEvent<{ ambientVolume?: number }>).detail?.ambientVolume); if (Number.isFinite(next)) ambientVolume = Math.max(0, Math.min(1, next)); }; const sideLimit = () => Math.min(1.55, Math.max(0.82, (engine.getRenderWidth() / Math.max(1, engine.getRenderHeight())) * 0.66)); const performDodge = (direction: number) => { const now = performance.now(); if (paused || defeated || now < dodgeUntil) return; dodgeDirection = direction < 0 ? -1 : 1; dodgeStartAt = now; dodgeUntil = now + DODGE_DURATION; dodgeFromX = player.root.position.x; dodgeFromZ = player.root.position.z; playFootstep(0.72); lastFootstepAt = now; message = dodgeDirection < 0 ? "左霞・身を沈める。" : "右閃・踏み流す。"; announce(state()); }; const dodgeEvent = (event: Event) => { const direction = Number((event as CustomEvent<{ direction?: number }>).detail?.direction ?? 1); performDodge(direction); };
-  const resolveEnemyDefeat = (now: number) => { if (enemyHp > 0) return; if (wave < 50) { defeated = false; window.setTimeout(spawnNextEnemy, boss ? 1400 : 700); } else defeated = true; if (boss) { hp = Math.min(100, hp + 30); bossDefeatPulse += 1; showBossReward(); message = "峠の主を断つ。生命、三十戻る。"; } if (combo === 10) climax += 1; announce(state()); };
-  const resolvePlayerSlash = (now: number, direction: number, impactAngle = direction * 0.42, impactScale = 1) => { if (enemyHp <= 0) return; sheathUntil = now + 620; if (Math.abs(enemy.root.position.x - slashTargetX) > 0.72) { message = "空を斬った。残心を保て。"; counterUntil = 0; announce(state()); return; } if (enemyGuardUntil > now) { message = "敵影、刃を受け流した。隙を待て。"; counterUntil = now + 650; announce(state()); return; } enemyHp = Math.max(0, enemyHp - (boss ? 16 : 22)); showEnemyHit(player.root.position.x, player.root.position.z, direction, impactAngle, impactScale); message = enemyHp ? `飛刃命中・${boss ? "守りを崩せ。" : "次の一閃へ。"}` : "敵影、断つ。"; combo += 1; comboExpiresAt = now + COMBO_WINDOW; score += 100 * combo; if (!enemyHp) resolveEnemyDefeat(now); announce(state()); };
-  const keydown = (event: KeyboardEvent) => {
-    if (event.repeat || paused) return;
-    const now = performance.now();
-    if (event.key.toLowerCase() === "j") {
-      if (attackUntil > now || slashProjectile) return;
-      attackUntil = now + 360; sheathUntil = now + 650; player.blade.rotation.z = -1.35; slashPower = Math.min(1.8, Math.max(0.65, Math.abs(player.blade.rotation.z - previousBladeAngle) / 0.7)); player.rightArm.rotation.z = -0.72; player.leftArm.rotation.z = 0.48; player.torso.rotation.z = -0.08;
-      if (enemyGuardUntil > now && enemyHp > 0) { enemyGuardUntil = 0; counterUntil = now + 900; enemyHp = Math.max(0, enemyHp - (boss ? 10 : 14)); const d = player.root.position.x <= enemy.root.position.x ? -1 : 1; showGuardBreak(d); showEnemyHit(player.root.position.x, player.root.position.z, d); message = enemyHp ? "防御を崩した。追撃の一閃を。" : "守りごと断つ。"; combo += 1; comboExpiresAt = now + COMBO_WINDOW; score += 130 * combo; if (!enemyHp) resolveEnemyDefeat(now); announce(state()); return; }
-      if (counterUntil > now && enemyHp > 0) { counterUntil = 0; enemyHp = Math.max(0, enemyHp - 28); combo += 1; comboExpiresAt = now + COMBO_WINDOW; score += 100 * combo; counterPulse += 1; const d = player.root.position.x <= enemy.root.position.x ? -1 : 1; showCounterHit(d); showEnemyHit(player.root.position.x, player.root.position.z, d); message = `反撃・${combo}連撃。`; if (!enemyHp) resolveEnemyDefeat(now); announce(state()); return; }
-      if (Vector3.Distance(player.root.position, enemy.root.position) < 6 && enemyHp > 0) { playFootstep(Math.min(1.2, slashPower * 0.75)); playSlashSound(slashPower); launchPlayerSlash(now, player.root.position.x <= enemy.root.position.x ? -1 : 1); }
-    }
-    if (event.key.toLowerCase() === "k") { guardUntil = now + 520; player.root.scaling.y = 0.96; player.root.rotation.y = 0.04; player.rightArm.rotation.z = -0.58; player.rightArm.rotation.y = -0.34; player.leftArm.rotation.z = 0.46; player.leftArm.rotation.y = 0.22; player.blade.rotation.z = -0.18; player.torso.rotation.z = 0.035; player.leftLeg.rotation.z = -0.045; player.rightLeg.rotation.z = 0.045; message = "刃を中心へ。腰を落として受ける。"; announce(state()); }
-    if (event.key === "Shift") performDodge(1);
-    if (event.key.toLowerCase() === "r" && defeated) { enemyHp = 100; bossDefeatPulse = 0; enemyMaxHp = 100; wave = 1; boss = false; currentVariant = ENEMY_VARIANTS[Math.floor(Math.random() * ENEMY_VARIANTS.length)]; setEnemyVariant(currentVariant); setEnemyGlow(false); hp = 100; enemyTargetX = 0; enemyMoveAt = performance.now() + 800; defeated = false; warningLine.isVisible = false; attackArea.isVisible = false; enemyAttackAt = 0; enemy.root.scaling.setAll(1); enemy.root.position.z = 5.2; message = "再び、構えよ。"; announce(state()); }
+  const chapterTitles = ["霧ノ峠", "岩戸の回廊", "天狗の稜線", "無明の奥宮", "修験成就"];
+  let hp = 100;
+  let enemyHp = 100;
+  let enemyMaxHp = 100;
+  let wave = 1;
+  let boss = false;
+  let bossAttack = false;
+  let bossDefeatPulse = 0;
+  let enemyTargetX = 0;
+  let enemyMoveAt = 0;
+  let spearAttackSide = 0;
+  let feintLane = 0;
+  let enemyAttackCount = 0;
+  let attackUntil = 0;
+  let guardUntil = 0;
+  let guardStartedAt = 0;
+  let lastEnemyStrike = 0;
+  let counterUntil = 0;
+  let counterPulse = 0;
+  let message = "第1試練。左槍の予告を見て、右へ避けよ。";
+  let paused = false;
+  let pauseStartedAt = 0;
+  let effectLevel = (localStorage.getItem("yamabushi-effects") as "full" | "reduced" | "minimal" | null) ?? "full";
+  let defeated = false;
+  let transitioning = false;
+  let transitionRemaining = 0;
+  let combo = 0;
+  let maxCombo = 0;
+  let comboMilestone = 0;
+  let score = 0;
+  let comboExpiresAt = 0;
+  let climax = 0;
+  let tutorialStep = tutorialVariantIndex(wave) ?? 0;
+  let warningDuration = 620;
+  let enemyAttackDuration = warningDuration + 260 + 470;
+  let dodgeDirection = 1;
+  let dodgeStartAt = 0;
+  let dodgeUntil = 0;
+  let dodgeFromX = 0;
+  let dodgeFromZ = 0;
+  let enemyAttackAt = 0;
+  let enemyAttackHit = false;
+  let enemyGuardUntil = 0;
+  let nextGuardAt = performance.now() + 2600;
+  const COMBO_WINDOW = 4200;
+  const DODGE_DURATION = 360;
+  const DODGE_SAFE_START = 120;
+  const DODGE_SAFE_END = 300;
+  let sheathUntil = 0;
+  let recoilUntil = 0;
+  let recoilDirection = 1;
+  let lastFootstepAt = 0;
+  let lastEnemyFootstepAt = 0;
+  let previousEnemyX = 0;
+  let nextAmbientAt = performance.now() + 1600;
+let audioContext: AudioContext | null = null; const getAudioContext = () => { const AudioCtor = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext; if (!AudioCtor) return null; audioContext ??= new AudioCtor(); if (audioContext.state === "suspended") void audioContext.resume(); return audioContext; }; const playTone = (frequency: number, endFrequency: number, duration: number, volume: number, type: OscillatorType = "sine", pan = 0) => { const ctx = getAudioContext(); if (!ctx) return; const start = ctx.currentTime; const oscillator = ctx.createOscillator(); const gain = ctx.createGain(); const panner = ctx.createStereoPanner(); panner.pan.setValueAtTime(Math.max(-1, Math.min(1, pan)), start); oscillator.type = type; oscillator.frequency.setValueAtTime(frequency, start); oscillator.frequency.exponentialRampToValueAtTime(Math.max(35, endFrequency), start + duration); gain.gain.setValueAtTime(0.0001, start); gain.gain.exponentialRampToValueAtTime(Math.min(0.14, volume), start + 0.008); gain.gain.exponentialRampToValueAtTime(0.0001, start + duration); oscillator.connect(gain); gain.connect(panner); panner.connect(ctx.destination); oscillator.start(start); oscillator.stop(start + duration + 0.03); }; const playSlashSound = (power: number) => playTone(240 + power * 170, 92, 0.19 + power * 0.07, 0.035 + power * 0.035, "sawtooth"); const playParrySound = (power = 1, direction = 1) => { const pan = direction < 0 ? -0.68 : 0.68; playTone(620 + power * 110, 1450 + power * 180, 0.11, 0.09 + power * 0.025, "triangle", pan); window.setTimeout(() => playTone(980 + power * 130, 440, 0.08, 0.045 + power * 0.02, "square", pan * 0.7), 28); }; const playFootstep = (power = 0.6) => playTone(82 + power * 18, 45, 0.11, 0.025 + power * 0.02, "sine"); const enemyFootstepProfile = () => { switch (currentVariant.family) { case "獣型": return { frequency: 48, end: 28, duration: 0.24, volume: 0.07, type: "sine" as OscillatorType }; case "モンスター型": return { frequency: 58, end: 31, duration: 0.2, volume: 0.06, type: "triangle" as OscillatorType }; case "人型": return { frequency: 78, end: 42, duration: 0.13, volume: 0.038, type: "sine" as OscillatorType }; case "鳥型": return { frequency: 122, end: 64, duration: 0.09, volume: 0.025, type: "triangle" as OscillatorType }; case "モニュメント型": return { frequency: 39, end: 24, duration: 0.3, volume: 0.085, type: "sine" as OscillatorType }; default: return { frequency: 60, end: 34, duration: 0.16, volume: 0.045, type: "sine" as OscillatorType }; } }; const playEnemyStepForVariant = (intensity = 1) => { const profile = enemyFootstepProfile(); playTone(profile.frequency + intensity * 5, profile.end, profile.duration, profile.volume * intensity, profile.type); }; let ambientVolume = Number(localStorage.getItem("yamabushi-ambient-volume") ?? "0.7"); const playAmbientPulse = () => { if (ambientVolume <= 0.01) return; playTone(128, 74, 0.8, 0.012 * ambientVolume, "sine", -0.25); window.setTimeout(() => { if (ambientVolume > 0.01) playTone(176, 92, 0.62, 0.009 * ambientVolume, "triangle", 0.32); }, 180); };
+  const launchPlayerSlash = (now: number, direction: number) => { if (slashProjectile) return; const slashMaterial = mat(scene, `flying_slash_${now}`, new Color3(0.95, 0.88, 0.7), 1); const arcPath = Array.from({ length: 13 }, (_, index) => { const t = index / 12; const x = (t - 0.5) * 1.7; const y = 0.34 + Math.sin(t * Math.PI) * 0.62; return new Vector3(x, y, 0); }); slashProjectile = MeshBuilder.CreateTube("flying_slash_arc", { path: arcPath, radius: 0.055, tessellation: 8 }, scene); slashProjectile.position = new Vector3(player.root.position.x, 0.7, player.root.position.z - 0.45); slashProjectile.material = slashMaterial; slashDirection = direction; slashBaseAngle = player.blade.rotation.z * 0.42 + direction * 0.18; slashAngle = slashBaseAngle; slashScale = 0.84 + slashPower * 0.34; slashProjectile.rotation.z = slashAngle; slashProjectile.scaling.set(slashScale * 1.18, slashScale, slashScale * 0.72); slashImpactAt = now + 380; slashTargetX = enemy.root.position.x; slashTargetZ = enemy.root.position.z; message = "飛刃、霧を裂く。"; announce(state()); }; const enemyMoveLimit = () => Math.min(1.25, Math.max(0.7, (engine.getRenderWidth() / Math.max(1, engine.getRenderHeight())) * 0.5)); const setEnemyVariant = (variant: EnemyVariant) => { enemy.body = enemy.bodies[variant.shape]; enemy.bodies.forEach((body, index) => { body.isVisible = index === variant.shape; }); }; const setEnemyGlow = (isBoss: boolean) => { const glow = isBoss ? materials.bossGlow : materials.enemyGlow; enemy.bodies.forEach((body) => { body.material = glow; }); enemy.eyes.forEach((eye) => { eye.material = glow; }); }; const setSpearState = (ready: boolean, extension = 0, activeSide = 0) => { const shaftMaterial = ready ? materials.spearReady : materials.iron; enemy.spears.forEach((spear, index) => { const side = index === 0 ? -1 : 1; const active = activeSide === 0 || side === activeSide; const amount = active ? extension : 0; spear.material = ready && active ? shaftMaterial : materials.iron; spear.scaling.z = 1 + amount * 1.8; spear.position.z = -0.62 - amount * 0.55; spear.position.x = side * 0.72; }); enemy.spearTips.forEach((tip, index) => { const side = index === 0 ? -1 : 1; const active = activeSide === 0 || side === activeSide; const amount = active ? extension : 0; tip.material = ready && active ? shaftMaterial : materials.iron; tip.position.z = -1.28 - amount * 1.1; tip.position.x = side * 0.72; }); };   const state = (): State => {
+    const stateNow = performance.now();
+    const attackElapsed = enemyAttackAt ? stateNow - enemyAttackAt : 99999;
+    const enemyPhase = enemyGuardUntil > stateNow
+      ? "防御"
+      : !enemyAttackAt
+        ? "巡回"
+        : attackElapsed < warningDuration
+          ? "予備"
+          : attackElapsed < warningDuration + 260
+            ? "攻撃"
+            : attackElapsed <= enemyAttackDuration
+              ? "復帰"
+              : "巡回";
+
+    return {
+      hp,
+      enemyHp,
+      enemyMaxHp,
+      wave,
+      remainingEnemies: Math.max(0, 50 - wave + (enemyHp > 0 ? 1 : 0)),
+      boss,
+      bossDefeatPulse,
+      enemyName: currentVariant.name,
+      enemyEpithet: currentVariant.epithet,
+      enemyFamily: currentVariant.family,
+      enemyAttackStyle: currentVariant.attackSide,
+      enemyPhase,
+      stance: guardUntil > stateNow ? "防御" : attackUntil > stateNow ? "抜刀" : "静止",
+      message,
+      defeated,
+      combo,
+      maxCombo,
+      score,
+      comboTime: combo ? Math.max(0, comboExpiresAt - stateNow) / COMBO_WINDOW : 0,
+      climax,
+      counterReady: counterUntil > stateNow,
+      counterPulse,
+      paused,
+      transitioning,
+      tutorialStep,
+    };
   };
-  window.addEventListener("keydown", keydown); window.addEventListener("yamabushi-dodge", dodgeEvent); window.addEventListener("yamabushi-pause", pauseEvent); window.addEventListener("yamabushi-effects", effectsEvent); window.addEventListener("yamabushi-audio", audioEvent);
-  const observer = scene.onBeforeRenderObservable.add(() => {
-    const now = performance.now(); const dt = engine.getDeltaTime() / 1000; if (!paused && now > nextAmbientAt && !enemyAttackAt && enemyGuardUntil <= now && !defeated) { playAmbientPulse(); nextAmbientAt = now + 5200; } const enemyStepDelta = Math.abs(enemy.root.position.x - previousEnemyX); if (!paused && enemyStepDelta > 0.002 && now - lastEnemyFootstepAt > 360 && !enemyAttackAt && enemyGuardUntil <= now) { playEnemyStepForVariant(boss ? 1.2 : 0.82); lastEnemyFootstepAt = now; } previousEnemyX = enemy.root.position.x; const bladeVelocity = (player.blade.rotation.z - previousBladeAngle) / Math.max(0.001, dt); const bladeDelta = Math.abs(player.blade.rotation.z - previousBladeAngle); const bladeAngularSpeed = Math.min(1.8, bladeDelta / Math.max(0.001, dt) / 5.5); previousBladeAngle = player.blade.rotation.z; if (attackUntil > now) slashPower = Math.max(slashPower, Math.min(1.8, 0.65 + bladeAngularSpeed)); if (paused || now < hitStopUntil) return; if (now < shakeUntil) { const pulse = (shakeUntil - now) / 220; camera.position.x = cameraHome.x + Math.sin(now * 0.11) * pulse * 0.08; camera.position.y = cameraHome.y + Math.cos(now * 0.13) * pulse * 0.04; } else { camera.position.x = cameraHome.x; camera.position.y = cameraHome.y; } if (dodgeUntil > now) { const progress = Math.min(1, (now - dodgeStartAt) / DODGE_DURATION); if (progress > 0.42 && lastFootstepAt <= dodgeStartAt) { playFootstep(0.58); lastFootstepAt = now; } const eased = progress < 0.5 ? 2 * progress * progress : 1 - Math.pow(-2 * progress + 2, 2) / 2; const arc = Math.sin(progress * Math.PI); const direction = dodgeDirection; player.root.position.x = Math.max(-sideLimit(), Math.min(sideLimit(), dodgeFromX + direction * 0.85 * eased)); player.root.position.z = dodgeFromZ - arc * 0.28; player.root.rotation.y = direction * (0.22 + arc * 0.18); player.root.rotation.z = -direction * arc * 0.12; player.root.scaling.y = 1 - arc * 0.12; player.leftLeg.rotation.z = direction * arc * 0.18; player.rightLeg.rotation.z = -direction * arc * 0.14; player.leftArm.rotation.z = 0.5 + direction * arc * 0.3; player.rightArm.rotation.z = -0.5 + direction * arc * 0.22; player.torso.rotation.z = -direction * arc * 0.1; player.blade.rotation.z = -0.65 + direction * 0.5 + arc * 0.25; } else if (dodgeStartAt > 0 && dodgeUntil <= now) { player.root.position.z = dodgeFromZ; player.root.rotation.z = 0; player.root.scaling.y = 1; player.leftLeg.rotation.z = 0; player.rightLeg.rotation.z = 0; player.leftArm.rotation.z = 0.16; player.rightArm.rotation.z = -0.16; player.torso.rotation.z = 0; player.blade.rotation.z = -0.65; dodgeStartAt = 0; }
-    if (slashProjectile && now < slashImpactAt) { const progress = Math.min(1, Math.max(0, (now - (slashImpactAt - 380)) / 380)); const travelProgress = 1 - Math.pow(1 - progress, 3); slashProjectile.position.x = player.root.position.x + (slashTargetX - player.root.position.x) * travelProgress; slashProjectile.position.z = player.root.position.z - 0.45 + (slashTargetZ - player.root.position.z + 0.45) * travelProgress; slashAngle = slashBaseAngle + slashDirection * (0.12 + Math.sin(travelProgress * Math.PI) * 0.32); slashProjectile.rotation.z = slashAngle; const travelScale = (0.72 + travelProgress * 0.28) * (0.82 + slashPower * 0.2); slashProjectile.scaling.set(travelScale * 1.18, travelScale, travelScale * 0.72); } else if (slashProjectile && now >= slashImpactAt) { const projectile = slashProjectile; slashProjectile = null; projectile.dispose(); resolvePlayerSlash(now, slashDirection, slashAngle, slashScale); }
-    if (!defeated) {
-      const attackElapsed = enemyAttackAt ? now - enemyAttackAt : 0; if (!enemyAttackAt && enemyGuardUntil <= now && now - lastEnemyStrike > currentVariant.cooldown) { lastEnemyStrike = now; playEnemyStepForVariant(boss ? 1.45 : 1); enemyAttackAt = now; enemyTargetX = player.root.position.x; enemyAttackHit = false; enemyAttackCount += 1; bossAttack = boss && enemyAttackCount % 2 === 0; const variantSide = currentVariant.attackSide; spearAttackSide = boss || variantSide === "wide" ? 0 : variantSide === "left" ? -1 : variantSide === "right" ? 1 : variantSide === "alternate" ? (enemyAttackCount % 2 === 0 ? -1 : 1) : player.root.position.x < enemy.root.position.x ? -1 : 1; dangerLane = bossAttack ? 0 : player.root.position.x < -0.3 ? -1 : player.root.position.x > 0.3 ? 1 : 0; feintLane = dangerLane === 0 ? (player.root.position.x < 0 ? 1 : -1) : -dangerLane; warningLine.material = bossAttack ? laneMaterials.center : dangerLane < 0 ? laneMaterials.left : dangerLane > 0 ? laneMaterials.right : laneMaterials.center; warningLine.isVisible = true; warningLine.position.x = dangerLane * 0.9; warningLine.position.z = 2.4; warningLine.scaling.x = 0.75; attackArea.isVisible = true; attackArea.position.x = dangerLane * 0.9; attackArea.scaling.x = bossAttack || currentVariant.family === "モニュメント型" ? 1.65 : currentVariant.family === "モンスター型" ? 1.2 : 1; attackAreaMaterial.alpha = bossAttack ? 0.34 : 0.24; const familyCue = currentVariant.family === "獣型" ? "獣影が距離を詰める。" : currentVariant.family === "モンスター型" ? "異形の範囲が膨らむ。" : currentVariant.family === "人型" ? "人の型、予告の後で変わる。" : currentVariant.family === "鳥型" ? "翼が跳ねる。急降下に備えよ。" : currentVariant.family === "モニュメント型" ? "石門が地を覆う。広く退け。" : ""; message = boss ? `${familyCue} ${currentVariant.notice}` : currentVariant.notice; announce(state()); }
-      if (!enemyAttackAt || attackElapsed > ENEMY_ATTACK_DURATION) { guardRing.isVisible = enemyGuardUntil > now; guardRing.scaling.setAll(1 + 0.08 * Math.sin(now * 0.012)); if (enemyGuardUntil <= now && now >= nextGuardAt && enemyHp > 0) { enemyGuardUntil = now + (boss ? 1050 : 780); nextGuardAt = now + (boss ? 3000 : 2200) + Math.random() * 1200; message = "敵影が刃を伏せた。防御中。"; announce(state()); } if (now > enemyMoveAt) { enemyTargetX = (Math.random() * 2 - 1) * enemyMoveLimit(); enemyMoveAt = now + 850 + Math.random() * 1050; } enemy.root.position.x += (enemyTargetX - enemy.root.position.x) * Math.min(1, dt * 2.4); enemy.root.rotation.y += dt * 0.25; setSpearState(false); if (enemyGuardUntil > now) { enemy.blade.rotation.z = -0.35; enemy.root.rotation.y = Math.sin(now * 0.02) * 0.08; } }
-      if (enemyAttackAt && attackElapsed <= ENEMY_ATTACK_DURATION) { const windup = Math.min(1, attackElapsed / 420); const strike = Math.max(0, Math.min(1, (attackElapsed - 420) / 260)); const recover = Math.max(0, Math.min(1, (attackElapsed - 680) / 470)); if (attackElapsed < 420) { if (boss && currentVariant.family === "人型" && attackElapsed >= 250) { dangerLane = feintLane; warningLine.position.x = dangerLane * 0.9; attackArea.position.x = dangerLane * 0.9; } warningLine.isVisible = true; if (attackElapsed >= 150) updateFootZones(true, dangerLane); else updateFootZones(false, 0); const blink = Math.floor(attackElapsed / 105) % 2 === 0; setSpearState(blink, 0.12 + 0.04 * (0.5 + 0.5 * Math.sin(now * 0.03)), spearAttackSide); attackArea.isVisible = blink || attackElapsed > 210; attackArea.scaling.x = bossAttack || currentVariant.family === "モニュメント型" ? 1.65 : currentVariant.family === "モンスター型" ? 1.2 : 1; attackAreaMaterial.alpha = (blink ? 0.38 : 0.12) + (attackElapsed > 210 ? 0.14 : 0); warningLine.scaling.x = 0.82 + 0.18 * (0.5 + 0.5 * Math.sin(now * 0.025)); enemy.root.rotation.y = -0.18 * windup; enemy.blade.rotation.z = -0.7 - 0.55 * windup; } else if (attackElapsed < 680) { warningLine.isVisible = false; attackArea.isVisible = true; attackAreaMaterial.alpha = 0.52; setSpearState(true, bossAttack ? 3.25 : 3.25 * Math.min(1, strike * 1.2), spearAttackSide); enemy.root.position.z = 5.2 - 0.65 * strike; enemy.root.rotation.y = -0.18 + 0.5 * strike; enemy.blade.rotation.z = -1.25 + 2.35 * strike; if (attackElapsed > 460 && message !== "岩刃、振り抜く。") { message = "岩刃、振り抜く。"; announce(state()); } } else { attackArea.isVisible = recover < 0.55; attackAreaMaterial.alpha = Math.max(0, 0.52 * (1 - recover)); setSpearState(false, Math.max(0, 1 - recover), spearAttackSide); enemy.root.position.z = 4.55 + 0.65 * recover; enemy.root.rotation.y = 0.32 * (1 - recover); enemy.blade.rotation.z = 1.1 - 1.8 * recover; } if (!enemyAttackHit && attackElapsed >= 650) { enemyAttackHit = true; const inLine = bossAttack || Math.abs(player.root.position.x - dangerLane * 0.9) < 0.58; if (inLine && guardUntil >= now) { showGuardSpark(dangerLane || 1); counterUntil = now + 900; message = "青白く、受け流した。反撃を。"; } else if (!bossAttack && (dodgeUntil >= now || !inLine)) { message = "横へ流れ、刃を外した。"; } else { triggerImpact(dangerLane || 1, 0.12); hp = Math.max(0, hp - 24); message = hp ? "岩刃を受けた。" : "倒れた。Rで再起する。"; if (!hp) defeated = true; } announce(state()); } } else if (enemyAttackAt) { enemyAttackAt = 0; warningLine.isVisible = false; attackArea.isVisible = false; updateFootZones(false, 0); guardRing.isVisible = false; attackAreaMaterial.alpha = 0.24; enemyGuardUntil = 0; nextGuardAt = now + 1800; dangerLane = 0; bossAttack = false; spearAttackSide = 0; enemyAttackCount = 0; setSpearState(false); enemy.root.position.z = 5.2; enemy.root.rotation.y = 0; enemy.blade.rotation.z = -0.7; }
+
+  player.root.position.x = -0.9;
+  dodgeFromX = player.root.position.x;
+  dodgeFromZ = player.root.position.z;
+  setEnemyVariant(currentVariant); setEnemyGlow(false); announce(state());   const spawnNextEnemy = () => {
+    wave += 1;
+    boss = wave % 5 === 0;
+    const tutorialIndex = tutorialVariantIndex(wave);
+    tutorialStep = tutorialIndex === null ? 0 : wave;
+
+    if (tutorialIndex !== null) {
+      currentVariant = ENEMY_VARIANTS[tutorialIndex];
+    } else {
+      let nextVariant = ENEMY_VARIANTS[Math.floor(Math.random() * ENEMY_VARIANTS.length)];
+      while (nextVariant.name === currentVariant.name && ENEMY_VARIANTS.length > 1) {
+        nextVariant = ENEMY_VARIANTS[Math.floor(Math.random() * ENEMY_VARIANTS.length)];
+      }
+      currentVariant = boss
+        ? BOSS_VARIANTS[Math.floor(Math.random() * BOSS_VARIANTS.length)]
+        : nextVariant;
     }
-    if (recoilUntil > now) { const recoil = (recoilUntil - now) / 190; player.blade.rotation.z += recoilDirection * 0.14 * recoil; player.rightArm.rotation.z += recoilDirection * 0.18 * recoil; player.torso.rotation.z -= recoilDirection * 0.06 * recoil; } if (guardUntil > now && attackUntil <= now && dodgeUntil <= now) { const guardBreath = Math.sin(now * 0.009) * 0.018; player.root.scaling.y += (0.96 + guardBreath - player.root.scaling.y) * Math.min(1, dt * 7); player.blade.rotation.z += (-0.18 - player.blade.rotation.z) * Math.min(1, dt * 8); player.rightArm.rotation.z += (-0.58 - player.rightArm.rotation.z) * Math.min(1, dt * 8); player.leftArm.rotation.z += (0.46 - player.leftArm.rotation.z) * Math.min(1, dt * 8); player.torso.rotation.z += (0.035 - player.torso.rotation.z) * Math.min(1, dt * 7); } if (sheathUntil > now) { const sheathProgress = 1 - Math.max(0, sheathUntil - now) / 290; player.blade.rotation.z += (-0.65 - player.blade.rotation.z) * Math.min(1, dt * (4 + sheathProgress * 5)); player.rightArm.rotation.z += (-0.16 - player.rightArm.rotation.z) * Math.min(1, dt * 3); } else if (attackUntil <= now && dodgeUntil <= now) player.blade.rotation.z = -0.65; if (combo > 0 && now > comboExpiresAt) { combo = 0; message = "連撃の気配が消えた。"; announce(state()); } if (guardUntil <= now && attackUntil <= now && hp > 0 && !defeated && combo === 0) message = "構えよ。山は逃げない。";
+
+    setEnemyVariant(currentVariant);
+    enemyMaxHp = boss ? 320 : 100;
+    enemyHp = enemyMaxHp;
+    defeated = false;
+    transitioning = false;
+    transitionRemaining = 0;
+    bossAttack = false;
+    enemyAttackAt = 0;
+    enemyAttackHit = false;
+    enemyAttackCount = 0;
+    lastEnemyStrike = 0;
+    attackUntil = 0;
+    guardUntil = 0;
+    guardStartedAt = 0;
+    counterUntil = 0;
+    dodgeUntil = 0;
+    dodgeStartAt = 0;
+    sheathUntil = 0;
+    recoilUntil = 0;
+    warningDuration = wave === 3 ? 980 : wave <= 2 ? 620 : 420;
+    enemyAttackDuration = warningDuration + 260 + 470;
+    warningLine.isVisible = false;
+    attackArea.isVisible = false;
+    updateFootZones(false, 0);
+    guardRing.isVisible = false;
+    enemyGuardUntil = 0;
+    nextGuardAt = performance.now() + 2200;
+    enemy.root.scaling.setAll(boss ? 1.38 : 1);
+    setEnemyGlow(boss);
+    enemy.root.position.z = 5.2;
+    enemy.root.position.x = 0;
+    enemyTargetX = 0;
+    enemyMoveAt = performance.now() + 800;
+    enemy.root.rotation.y = 0;
+    enemy.blade.rotation.z = -0.7;
+    setSpearState(false);
+    if (tutorialIndex === 0) player.root.position.x = -0.9;
+    else if (tutorialIndex === 1) player.root.position.x = 0.9;
+    else if (tutorialIndex === 2) player.root.position.x = 0;
+    dodgeFromX = player.root.position.x;
+    dodgeFromZ = player.root.position.z;
+    dodgeStartAt = 0;
+    if (tutorialIndex === 0) message = "第1試練。左槍の予告を見て、右へ避けよ。";
+    else if (tutorialIndex === 1) message = "第2試練。右槍の予告を見て、左へ避けよ。";
+    else if (tutorialIndex === 2) message = "第3試練。直前に防御して受け流し、斬で反撃せよ。";
+    else message = boss ? `${currentVariant.name}、来たる。構えの変化を見よ。` : currentVariant.notice;
+    announce(state());
+  };
+  const pauseEvent = (event: Event) => {
+    const nextPaused = Boolean((event as CustomEvent<{ paused?: boolean }>).detail?.paused);
+    if (nextPaused === paused) {
+      announce(state());
+      return;
+    }
+
+    if (nextPaused) {
+      paused = true;
+      pauseStartedAt = performance.now();
+      announce(state());
+      return;
+    }
+
+    const now = performance.now();
+    const delta = pauseStartedAt > 0 ? now - pauseStartedAt : 0;
+    attackUntil = shiftActiveTimer(attackUntil, delta);
+    guardUntil = shiftActiveTimer(guardUntil, delta);
+    guardStartedAt = shiftActiveTimer(guardStartedAt, delta);
+    lastEnemyStrike = shiftActiveTimer(lastEnemyStrike, delta);
+    counterUntil = shiftActiveTimer(counterUntil, delta);
+    dodgeStartAt = shiftActiveTimer(dodgeStartAt, delta);
+    dodgeUntil = shiftActiveTimer(dodgeUntil, delta);
+    enemyAttackAt = shiftActiveTimer(enemyAttackAt, delta);
+    enemyGuardUntil = shiftActiveTimer(enemyGuardUntil, delta);
+    nextGuardAt = shiftActiveTimer(nextGuardAt, delta);
+    enemyMoveAt = shiftActiveTimer(enemyMoveAt, delta);
+    comboExpiresAt = shiftActiveTimer(comboExpiresAt, delta);
+    sheathUntil = shiftActiveTimer(sheathUntil, delta);
+    recoilUntil = shiftActiveTimer(recoilUntil, delta);
+    slashImpactAt = shiftActiveTimer(slashImpactAt, delta);
+    shakeUntil = shiftActiveTimer(shakeUntil, delta);
+    hitStopUntil = shiftActiveTimer(hitStopUntil, delta);
+    nextAmbientAt = shiftActiveTimer(nextAmbientAt, delta);
+    paused = false;
+    pauseStartedAt = 0;
+    announce(state());
+  };
+  const retireEvent = () => {
+    if (defeated) return;
+    transitioning = false;
+    transitionRemaining = 0;
+    defeated = true;
+    paused = false;
+    pauseStartedAt = 0;
+    attackUntil = 0;
+    guardUntil = 0;
+    dodgeUntil = 0;
+    counterUntil = 0;
+    enemyAttackAt = 0;
+    enemyGuardUntil = 0;
+    warningLine.isVisible = false;
+    attackArea.isVisible = false;
+    updateFootZones(false, 0);
+    setSpearState(false);
+    message = "修行を離れた。再起を選べる。";
+    announce(state());
+  };
+const effectsEvent = (event: Event) => { const next = (event as CustomEvent<{ level?: string }>).detail?.level; if (next === "full" || next === "reduced" || next === "minimal") effectLevel = next; }; const audioEvent = (event: Event) => { const next = Number((event as CustomEvent<{ ambientVolume?: number }>).detail?.ambientVolume); if (Number.isFinite(next)) ambientVolume = Math.max(0, Math.min(1, next)); }; const sideLimit = () => Math.min(1.55, Math.max(0.82, (engine.getRenderWidth() / Math.max(1, engine.getRenderHeight())) * 0.66)); const performDodge = (direction: number) => { const now = performance.now(); if (paused || defeated || transitioning || now < dodgeUntil) return; dodgeDirection = direction < 0 ? -1 : 1; dodgeStartAt = now; dodgeUntil = now + DODGE_DURATION; dodgeFromX = player.root.position.x; dodgeFromZ = player.root.position.z; playFootstep(0.72); lastFootstepAt = now; message = dodgeDirection < 0 ? "左霞・身を沈める。" : "右閃・踏み流す。"; announce(state()); }; const dodgeEvent = (event: Event) => { const direction = Number((event as CustomEvent<{ direction?: number }>).detail?.direction ?? 1); performDodge(direction); };
+    const resolveEnemyDefeat = () => {
+    if (enemyHp > 0 || transitioning) return;
+
+    const defeatedWave = wave;
+    const progress = defeatProgress(defeatedWave);
+    const chapterReward = progress.chapterReward;
+    const rewardMessages: string[] = [];
+
+    if (boss) {
+      hp = Math.min(100, hp + 30);
+      bossDefeatPulse += 1;
+      rewardMessages.push("生命 +30");
+      showBossReward();
+    }
+
+    if (chapterReward) {
+      hp = Math.min(100, hp + chapterReward.hp);
+      score += chapterReward.score;
+      rewardMessages.push(`第${chapterReward.chapter}章報酬・生命 +${chapterReward.hp}・得点 +${chapterReward.score}`);
+    }
+
+    enemyAttackAt = 0;
+    enemyAttackHit = false;
+    enemyGuardUntil = 0;
+    guardRing.isVisible = false;
+    warningLine.isVisible = false;
+    attackArea.isVisible = false;
+    updateFootZones(false, 0);
+    setSpearState(false);
+
+    if (progress.advances) {
+      transitioning = true;
+      transitionRemaining = boss ? 1400 : 700;
+      message = rewardMessages.length > 0
+        ? `${currentVariant.name}を断った。${rewardMessages.join("。")}。`
+        : "敵影、断つ。次の気配を読む。";
+    } else {
+      defeated = true;
+      message = rewardMessages.length > 0
+        ? `五十体、すべて断つ。${rewardMessages.join("。")}。`
+        : "敵影、断つ。";
+    }
+    announce(state());
+  };
+  const registerComboHit = (amount: number, now: number, points: number) => {
+    const previousCombo = combo;
+    combo += amount;
+    maxCombo = Math.max(maxCombo, combo);
+    const milestones = crossedComboMilestones(previousCombo, combo);
+    if (milestones > 0) climax += milestones;
+    comboExpiresAt = now + COMBO_WINDOW;
+    score += points * combo;
+  };
+
+  const resolvePlayerSlash = (now: number, direction: number, impactAngle = direction * 0.42, impactScale = 1) => {
+    if (enemyHp <= 0 || transitioning) return;
+    sheathUntil = now + 620;
+
+    if (Math.abs(enemy.root.position.x - slashTargetX) > 0.72) {
+      message = "空を斬った。残心を保て。";
+      counterUntil = 0;
+      announce(state());
+      return;
+    }
+
+    if (enemyGuardUntil > now) {
+      counterUntil = 0;
+      recoilUntil = now + 190;
+      recoilDirection = direction < 0 ? -1 : 1;
+      message = "敵影の青輪に弾かれた。反撃受付は発生しない。";
+      announce(state());
+      return;
+    }
+
+    enemyHp = applyDamage(enemyHp, boss ? 16 : 22).hp;
+    showEnemyHit(player.root.position.x, player.root.position.z, direction, impactAngle, impactScale);
+    message = enemyHp ? (boss ? "飛刃命中・守りを崩せ。" : "飛刃命中・次の一閃へ。") : "敵影、断つ。";
+    registerComboHit(1, now, 100);
+    if (!enemyHp) resolveEnemyDefeat();
+    announce(state());
+  };
+  const resetRun = () => {
+    getAudioContext();
+    if (slashProjectile) {
+      slashProjectile.dispose();
+      slashProjectile = null;
+    }
+
+    hp = 100;
+    enemyHp = 100;
+    enemyMaxHp = 100;
+    wave = 1;
+    boss = false;
+    bossAttack = false;
+    bossDefeatPulse = 0;
+    enemyTargetX = 0;
+    enemyMoveAt = performance.now() + 800;
+    spearAttackSide = 0;
+    feintLane = 0;
+    enemyAttackCount = 0;
+    attackUntil = 0;
+    guardUntil = 0;
+    guardStartedAt = 0;
+    lastEnemyStrike = 0;
+    counterUntil = 0;
+    counterPulse = 0;
+    defeated = false;
+    transitioning = false;
+    transitionRemaining = 0;
+    combo = 0;
+    maxCombo = 0;
+    comboMilestone = 0;
+    score = 0;
+    comboExpiresAt = 0;
+    climax = 0;
+    tutorialStep = 1;
+    warningDuration = 620;
+    enemyAttackDuration = warningDuration + 260 + 470;
+    dodgeDirection = 1;
+    dodgeStartAt = 0;
+    dodgeUntil = 0;
+    dodgeFromX = 0;
+    dodgeFromZ = 0;
+    enemyAttackAt = 0;
+    enemyAttackHit = false;
+    enemyGuardUntil = 0;
+    nextGuardAt = performance.now() + 2600;
+    sheathUntil = 0;
+    recoilUntil = 0;
+    slashImpactAt = 0;
+    slashDirection = 1;
+    slashAngle = 0;
+    slashBaseAngle = 0;
+    slashPower = 1;
+    slashScale = 1;
+    previousBladeAngle = -0.65;
+    slashTargetX = 0;
+    slashTargetZ = 5.2;
+    shakeUntil = 0;
+    hitStopUntil = 0;
+    lastFootstepAt = 0;
+    lastEnemyFootstepAt = 0;
+    previousEnemyX = 0;
+    nextAmbientAt = performance.now() + 1600;
+    paused = false;
+    pauseStartedAt = 0;
+    currentVariant = ENEMY_VARIANTS[0];
+    setEnemyVariant(currentVariant);
+    setEnemyGlow(false);
+    enemy.root.scaling.setAll(1);
+    enemy.root.position.x = 0;
+    enemy.root.position.z = 5.2;
+    enemy.root.rotation.y = 0;
+    enemy.blade.rotation.z = -0.7;
+    setSpearState(false);
+    warningLine.isVisible = false;
+    attackArea.isVisible = false;
+    updateFootZones(false, 0);
+    guardRing.isVisible = false;
+    player.root.position.x = -0.9;
+    player.root.position.z = 0;
+    player.root.rotation.set(0, 0, 0);
+    player.root.scaling.setAll(1);
+    player.blade.rotation.z = -0.65;
+    player.rightArm.rotation.z = -0.16;
+    player.leftArm.rotation.z = 0.16;
+    player.torso.rotation.z = 0;
+    dodgeFromX = player.root.position.x;
+    message = "第1試練。左槍の予告を見て、右へ避けよ。";
+    announce(state());
+  };
+
+  const keydown = (event: KeyboardEvent) => {
+    const key = event.key.toLowerCase();
+    if (event.repeat) return;
+    if (key === "r") {
+      resetRun();
+      return;
+    }
+    if (paused || transitioning || defeated) return;
+    const now = performance.now();
+
+    if (key === "j") {
+      if (attackUntil > now || slashProjectile || enemyHp <= 0) return;
+
+      attackUntil = now + 360;
+      sheathUntil = now + 650;
+      player.blade.rotation.z = -1.35;
+      slashPower = Math.min(1.8, Math.max(0.65, Math.abs(player.blade.rotation.z - previousBladeAngle) / 0.7));
+      player.rightArm.rotation.z = -0.72;
+      player.leftArm.rotation.z = 0.48;
+      player.torso.rotation.z = -0.08;
+
+      if (enemyGuardUntil > now) {
+        enemyGuardUntil = 0;
+        counterUntil = 0;
+        enemyHp = applyDamage(enemyHp, boss ? 10 : 14).hp;
+        const d = player.root.position.x <= enemy.root.position.x ? -1 : 1;
+        showGuardBreak(d);
+        showEnemyHit(player.root.position.x, player.root.position.z, d);
+        message = enemyHp ? "防御を崩した。反撃ではなく追撃の一閃を。" : "守りごと断つ。";
+        registerComboHit(1, now, 130);
+        if (!enemyHp) resolveEnemyDefeat();
+        announce(state());
+        return;
+      }
+
+      if (counterUntil > now && enemyHp > 0) {
+        counterUntil = 0;
+        enemyHp = applyDamage(enemyHp, 28).hp;
+        const d = player.root.position.x <= enemy.root.position.x ? -1 : 1;
+        showCounterHit(d);
+        showEnemyHit(player.root.position.x, player.root.position.z, d, d * 0.42, 1.2);
+        message = "受け流しからの反撃・" + (combo + 1) + "連撃。";
+        counterPulse += 1;
+        registerComboHit(1, now, 150);
+        if (!enemyHp) resolveEnemyDefeat();
+        announce(state());
+        return;
+      }
+
+      if (Vector3.Distance(player.root.position, enemy.root.position) < 6 && enemyHp > 0) {
+        playFootstep(Math.min(1.2, slashPower * 0.75));
+        playSlashSound(slashPower);
+        launchPlayerSlash(now, player.root.position.x <= enemy.root.position.x ? -1 : 1);
+      }
+    }
+
+    if (key === "k") {
+      if (guardUntil > now) return;
+      guardUntil = now + 520;
+      guardStartedAt = now;
+      player.root.scaling.y = 0.96;
+      player.root.rotation.y = 0.04;
+      player.rightArm.rotation.z = -0.58;
+      player.rightArm.rotation.y = -0.34;
+      player.leftArm.rotation.z = 0.46;
+      player.leftArm.rotation.y = 0.22;
+      player.blade.rotation.z = -0.18;
+      player.torso.rotation.z = 0.035;
+      player.leftLeg.rotation.z = -0.045;
+      player.rightLeg.rotation.z = 0.045;
+      message = "刃を中心へ。直前なら受け流しになる。";
+      announce(state());
+    }
+
+    if (event.key === "Shift") performDodge(1);
+  };
+  window.addEventListener("keydown", keydown);
+  window.addEventListener("yamabushi-dodge", dodgeEvent);
+  window.addEventListener("yamabushi-pause", pauseEvent);
+  window.addEventListener("yamabushi-effects", effectsEvent);
+  window.addEventListener("yamabushi-audio", audioEvent);
+  window.addEventListener("yamabushi-retire", retireEvent);
+  window.addEventListener("yamabushi-restart", resetRun);
+  window.addEventListener("yamabushi-start", resetRun);
+  const observer = scene.onBeforeRenderObservable.add(() => {
+    const now = performance.now(); const dt = engine.getDeltaTime() / 1000; if (!paused && !transitioning && now > nextAmbientAt && !enemyAttackAt && enemyGuardUntil <= now && !defeated) { playAmbientPulse(); nextAmbientAt = now + 5200; } const enemyStepDelta = Math.abs(enemy.root.position.x - previousEnemyX); if (!paused && enemyStepDelta > 0.002 && now - lastEnemyFootstepAt > 360 && !enemyAttackAt && enemyGuardUntil <= now) { playEnemyStepForVariant(boss ? 1.2 : 0.82); lastEnemyFootstepAt = now; } previousEnemyX = enemy.root.position.x; const bladeVelocity = (player.blade.rotation.z - previousBladeAngle) / Math.max(0.001, dt); const bladeDelta = Math.abs(player.blade.rotation.z - previousBladeAngle); const bladeAngularSpeed = Math.min(1.8, bladeDelta / Math.max(0.001, dt) / 5.5); previousBladeAngle = player.blade.rotation.z; if (attackUntil > now) slashPower = Math.max(slashPower, Math.min(1.8, 0.65 + bladeAngularSpeed)); if (paused || now < hitStopUntil) return;
+    if (transitioning) {
+      if (combo > 0) comboExpiresAt += dt * 1000;
+      transitionRemaining -= dt * 1000;
+      if (transitionRemaining <= 0) spawnNextEnemy();
+      return;
+    } if (now < shakeUntil) { const pulse = (shakeUntil - now) / 220; camera.position.x = cameraHome.x + Math.sin(now * 0.11) * pulse * 0.08; camera.position.y = cameraHome.y + Math.cos(now * 0.13) * pulse * 0.04; } else { camera.position.x = cameraHome.x; camera.position.y = cameraHome.y; } if (dodgeUntil > now) { const progress = Math.min(1, (now - dodgeStartAt) / DODGE_DURATION); if (progress > 0.42 && lastFootstepAt <= dodgeStartAt) { playFootstep(0.58); lastFootstepAt = now; } const eased = progress < 0.5 ? 2 * progress * progress : 1 - Math.pow(-2 * progress + 2, 2) / 2; const arc = Math.sin(progress * Math.PI); const direction = dodgeDirection; player.root.position.x = Math.max(-sideLimit(), Math.min(sideLimit(), dodgeFromX + direction * 0.85 * eased)); player.root.position.z = dodgeFromZ - arc * 0.28; player.root.rotation.y = direction * (0.22 + arc * 0.18); player.root.rotation.z = -direction * arc * 0.12; player.root.scaling.y = 1 - arc * 0.12; player.leftLeg.rotation.z = direction * arc * 0.18; player.rightLeg.rotation.z = -direction * arc * 0.14; player.leftArm.rotation.z = 0.5 + direction * arc * 0.3; player.rightArm.rotation.z = -0.5 + direction * arc * 0.22; player.torso.rotation.z = -direction * arc * 0.1; player.blade.rotation.z = -0.65 + direction * 0.5 + arc * 0.25; } else if (dodgeStartAt > 0 && dodgeUntil <= now) { player.root.position.z = dodgeFromZ; player.root.rotation.z = 0; player.root.scaling.y = 1; player.leftLeg.rotation.z = 0; player.rightLeg.rotation.z = 0; player.leftArm.rotation.z = 0.16; player.rightArm.rotation.z = -0.16; player.torso.rotation.z = 0; player.blade.rotation.z = -0.65; dodgeStartAt = 0; }
+    if (slashProjectile && now < slashImpactAt) { const progress = Math.min(1, Math.max(0, (now - (slashImpactAt - 380)) / 380)); const travelProgress = 1 - Math.pow(1 - progress, 3); slashProjectile.position.x = player.root.position.x + (slashTargetX - player.root.position.x) * travelProgress; slashProjectile.position.z = player.root.position.z - 0.45 + (slashTargetZ - player.root.position.z + 0.45) * travelProgress; slashAngle = slashBaseAngle + slashDirection * (0.12 + Math.sin(travelProgress * Math.PI) * 0.32); slashProjectile.rotation.z = slashAngle; const travelScale = (0.72 + travelProgress * 0.28) * (0.82 + slashPower * 0.2); slashProjectile.scaling.set(travelScale * 1.18, travelScale, travelScale * 0.72); } else if (slashProjectile && now >= slashImpactAt) { const projectile = slashProjectile; slashProjectile = null; projectile.dispose(); resolvePlayerSlash(now, slashDirection, slashAngle, slashScale); }
+    if (!defeated && !transitioning && enemyHp > 0) {
+      const attackElapsed = enemyAttackAt ? now - enemyAttackAt : 0; if (!enemyAttackAt && enemyGuardUntil <= now && now - lastEnemyStrike > currentVariant.cooldown) { lastEnemyStrike = now; playEnemyStepForVariant(boss ? 1.45 : 1); enemyAttackAt = now; enemyTargetX = player.root.position.x; enemyAttackHit = false; enemyAttackCount += 1;
+        const attackPlan = attackPlanFor(currentVariant.attackSide, enemyAttackCount, player.root.position.x, tutorialStep);
+        bossAttack = attackPlan.isWide;
+        spearAttackSide = attackPlan.spearSide;
+        dangerLane = attackPlan.dangerLane;
+        feintLane = dangerLane === 0 ? (player.root.position.x < 0 ? 1 : -1) : -dangerLane; warningLine.material = bossAttack ? laneMaterials.center : dangerLane < 0 ? laneMaterials.left : dangerLane > 0 ? laneMaterials.right : laneMaterials.center; warningLine.isVisible = true; warningLine.position.x = dangerLane * 0.9; warningLine.position.z = 2.4; warningLine.scaling.x = 0.75; attackArea.isVisible = true; attackArea.position.x = dangerLane * 0.9; attackArea.scaling.x = bossAttack || currentVariant.family === "モニュメント型" ? 1.65 : currentVariant.family === "モンスター型" ? 1.2 : 1; attackAreaMaterial.alpha = bossAttack ? 0.34 : 0.24; const familyCue = currentVariant.family === "獣型" ? "獣影が距離を詰める。" : currentVariant.family === "モンスター型" ? "異形の範囲が膨らむ。" : currentVariant.family === "人型" ? "人の型、予告の後で変わる。" : currentVariant.family === "鳥型" ? "翼が跳ねる。急降下に備えよ。" : currentVariant.family === "モニュメント型" ? "石門が地を覆う。広く退け。" : ""; message = boss ? `${familyCue} ${currentVariant.notice}` : currentVariant.notice; announce(state()); }
+      if (!enemyAttackAt || attackElapsed > enemyAttackDuration) { guardRing.isVisible = enemyGuardUntil > now; guardRing.scaling.setAll(1 + 0.08 * Math.sin(now * 0.012)); if (enemyGuardUntil <= now && now >= nextGuardAt && enemyHp > 0) { enemyGuardUntil = now + (boss ? 1050 : 780); nextGuardAt = now + (boss ? 3000 : 2200) + Math.random() * 1200; counterUntil = 0; message = "敵影が刃を伏せた。防御中。"; announce(state()); } if (now > enemyMoveAt) { enemyTargetX = (Math.random() * 2 - 1) * enemyMoveLimit(); enemyMoveAt = now + 850 + Math.random() * 1050; } enemy.root.position.x += (enemyTargetX - enemy.root.position.x) * Math.min(1, dt * 2.4); enemy.root.rotation.y += dt * 0.25; setSpearState(false); if (enemyGuardUntil > now) { enemy.blade.rotation.z = -0.35; enemy.root.rotation.y = Math.sin(now * 0.02) * 0.08; } }
+      if (enemyAttackAt && attackElapsed <= enemyAttackDuration) { const windup = Math.min(1, attackElapsed / warningDuration); const strike = Math.max(0, Math.min(1, (attackElapsed - warningDuration) / 260)); const recover = Math.max(0, Math.min(1, (attackElapsed - warningDuration - 260) / 470)); if (attackElapsed < warningDuration) { if (boss && currentVariant.family === "人型" && attackElapsed >= 250) { dangerLane = feintLane; spearAttackSide = dangerLane; warningLine.position.x = dangerLane * 0.9; attackArea.position.x = dangerLane * 0.9; } warningLine.isVisible = true; if (attackElapsed >= 150) updateFootZones(true, dangerLane); else updateFootZones(false, 0); const blink = Math.floor(attackElapsed / 105) % 2 === 0; setSpearState(blink, 0.12 + 0.04 * (0.5 + 0.5 * Math.sin(now * 0.03)), spearAttackSide); attackArea.isVisible = blink || attackElapsed > 210; attackArea.scaling.x = bossAttack || currentVariant.family === "モニュメント型" ? 1.65 : currentVariant.family === "モンスター型" ? 1.2 : 1; attackAreaMaterial.alpha = (blink ? 0.38 : 0.12) + (attackElapsed > 210 ? 0.14 : 0); warningLine.scaling.x = 0.82 + 0.18 * (0.5 + 0.5 * Math.sin(now * 0.025)); enemy.root.rotation.y = -0.18 * windup; enemy.blade.rotation.z = -0.7 - 0.55 * windup; } else if (attackElapsed < warningDuration + 260) { warningLine.isVisible = false; attackArea.isVisible = true; attackAreaMaterial.alpha = 0.52; setSpearState(true, bossAttack ? 3.25 : 3.25 * Math.min(1, strike * 1.2), spearAttackSide); enemy.root.position.z = 5.2 - 0.65 * strike; enemy.root.rotation.y = -0.18 + 0.5 * strike; enemy.blade.rotation.z = -1.25 + 2.35 * strike; if (attackElapsed > 460 && message !== "岩刃、振り抜く。") { message = "岩刃、振り抜く。"; announce(state()); } } else { attackArea.isVisible = recover < 0.55; attackAreaMaterial.alpha = Math.max(0, 0.52 * (1 - recover)); setSpearState(false, Math.max(0, 1 - recover), spearAttackSide); enemy.root.position.z = 4.55 + 0.65 * recover; enemy.root.rotation.y = 0.32 * (1 - recover); enemy.blade.rotation.z = 1.1 - 1.8 * recover; } if (!enemyAttackHit && attackElapsed >= warningDuration + 230) {
+          enemyAttackHit = true;
+          const hitWidth = currentVariant.family === "モンスター型" ? 0.72 : 0.58;
+          const inLine = bossAttack || Math.abs(player.root.position.x - dangerLane * 0.9) < hitWidth;
+          const parryWindow = guardUntil >= now && guardStartedAt > 0 && now - guardStartedAt <= 150;
+          const dodgeElapsed = now - dodgeStartAt;
+          const dodgeInSafety = dodgeUntil >= now && dodgeElapsed >= DODGE_SAFE_START && dodgeElapsed <= DODGE_SAFE_END;
+          const dodgeSafe = dodgeInSafety && (!inLine || correctDodgeForLane(dodgeDirection as -1 | 1, dangerLane as -1 | 0 | 1, bossAttack));
+
+          if (inLine && parryWindow) {
+            showGuardSpark(dangerLane || 1);
+            counterUntil = now + 900;
+            message = "青白く、受け流した。反撃を。";
+          } else if (inLine && guardUntil >= now) {
+            counterUntil = 0;
+            message = "防御で受け止めた。次の一手を読む。";
+          } else if (!inLine || dodgeSafe) {
+            message = correctDodgeForLane(dodgeDirection as -1 | 1, dangerLane as -1 | 0 | 1, bossAttack)
+              ? "正しい方向へ流れ、刃を外した。"
+              : "横へ流れ、刃を外した。";
+          } else {
+            triggerImpact(dangerLane || 1, 0.12);
+            hp = applyDamage(hp, 24).hp;
+            message = hp ? "岩刃を受けた。" : "倒れた。再起を選べる。";
+            if (!hp) defeated = true;
+          }
+          announce(state());
+        } } else if (enemyAttackAt) { enemyAttackAt = 0; warningLine.isVisible = false; attackArea.isVisible = false; updateFootZones(false, 0); guardRing.isVisible = false; attackAreaMaterial.alpha = 0.24; enemyGuardUntil = 0; nextGuardAt = now + 1800; dangerLane = 0; bossAttack = false; spearAttackSide = 0; setSpearState(false); enemy.root.position.z = 5.2; enemy.root.rotation.y = 0; enemy.blade.rotation.z = -0.7; }
+    }
+    if (recoilUntil > now) { const recoil = (recoilUntil - now) / 190; player.blade.rotation.z += recoilDirection * 0.14 * recoil; player.rightArm.rotation.z += recoilDirection * 0.18 * recoil; player.torso.rotation.z -= recoilDirection * 0.06 * recoil; } if (guardUntil > now && attackUntil <= now && dodgeUntil <= now) { const guardBreath = Math.sin(now * 0.009) * 0.018; player.root.scaling.y += (0.96 + guardBreath - player.root.scaling.y) * Math.min(1, dt * 7); player.blade.rotation.z += (-0.18 - player.blade.rotation.z) * Math.min(1, dt * 8); player.rightArm.rotation.z += (-0.58 - player.rightArm.rotation.z) * Math.min(1, dt * 8); player.leftArm.rotation.z += (0.46 - player.leftArm.rotation.z) * Math.min(1, dt * 8); player.torso.rotation.z += (0.035 - player.torso.rotation.z) * Math.min(1, dt * 7); } if (sheathUntil > now) { const sheathProgress = 1 - Math.max(0, sheathUntil - now) / 290; player.blade.rotation.z += (-0.65 - player.blade.rotation.z) * Math.min(1, dt * (4 + sheathProgress * 5)); player.rightArm.rotation.z += (-0.16 - player.rightArm.rotation.z) * Math.min(1, dt * 3); } else if (attackUntil <= now && dodgeUntil <= now) player.blade.rotation.z = -0.65; if (combo > 0 && now > comboExpiresAt) { combo = 0; comboMilestone = 0; message = "連撃の気配が消えた。"; announce(state()); } if (guardUntil <= now && attackUntil <= now && hp > 0 && !defeated && combo === 0) message = "構えよ。山は逃げない。";
     const breath = Math.sin(now * 0.0022) * 0.018; const postAttackBreath = sheathUntil > now ? Math.sin(now * 0.008) * 0.024 : 0; const clothLag = Math.max(-0.32, Math.min(0.32, -bladeVelocity * 0.018)); const inertia = Math.min(1, dt * (5 + bladeAngularSpeed * 2)); player.hair.rotation.z += (clothLag * 0.7 - player.hair.rotation.z) * inertia; player.neckCloth.rotation.z += (clothLag * 0.95 - player.neckCloth.rotation.z) * inertia; player.sash.rotation.z += (clothLag * 0.42 - player.sash.rotation.z) * Math.min(1, dt * 4); player.prayer.rotation.y += (clothLag * 0.8 - player.prayer.rotation.y) * Math.min(1, dt * 3); player.torso.position.y = 1.15 + breath + postAttackBreath; player.head.position.y = 1.9 + breath * 0.65; player.root.rotation.y = Math.sin(now * 0.0012) * 0.05; if (attackUntil <= now && guardUntil <= now && dodgeUntil <= now) { player.rightArm.rotation.z += ( -0.16 - player.rightArm.rotation.z) * Math.min(1, dt * 8); player.leftArm.rotation.z += ( 0.16 - player.leftArm.rotation.z) * Math.min(1, dt * 8); player.torso.rotation.z += (0 - player.torso.rotation.z) * Math.min(1, dt * 8); }
   });
-  return { scene, dispose: () => { scene.onBeforeRenderObservable.remove(observer); window.removeEventListener("keydown", keydown); window.removeEventListener("yamabushi-dodge", dodgeEvent); window.removeEventListener("yamabushi-pause", pauseEvent); window.removeEventListener("yamabushi-effects", effectsEvent); window.removeEventListener("yamabushi-audio", audioEvent); scene.dispose(); } };
+  return { scene, dispose: () => { scene.onBeforeRenderObservable.remove(observer); window.removeEventListener("keydown", keydown); window.removeEventListener("yamabushi-dodge", dodgeEvent); window.removeEventListener("yamabushi-pause", pauseEvent); window.removeEventListener("yamabushi-effects", effectsEvent); window.removeEventListener("yamabushi-audio", audioEvent); window.removeEventListener("yamabushi-retire", retireEvent); window.removeEventListener("yamabushi-restart", resetRun); window.removeEventListener("yamabushi-start", resetRun); scene.dispose(); } };
 }

@@ -18,9 +18,16 @@ export default function GameCanvas() {
       engine.runRenderLoop(() => next.scene.render());
     });
     const onResize = () => engine.resize();
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        window.dispatchEvent(new CustomEvent("yamabushi-pause", { detail: { paused: true, reason: "visibility" } }));
+      }
+    };
     window.addEventListener("resize", onResize);
+    document.addEventListener("visibilitychange", onVisibilityChange);
     return () => {
       window.removeEventListener("resize", onResize);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
       handle?.dispose();
       engine.dispose();
       startedRef.current = false;
