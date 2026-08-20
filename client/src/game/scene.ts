@@ -12,29 +12,45 @@ import { ParticleSystem } from "@babylonjs/core/Particles/particleSystem";
 import { Texture } from "@babylonjs/core/Materials/Textures/texture";
 import "@babylonjs/core/Materials/standardMaterial";
 import {
+  addChapterRewardEffect,
   applyDamage,
   attackTimingFor,
   bossPhaseForHealth,
   bossPoolForWave,
   canStartPlayerAction,
+  chapterForWave,
+  chapterRewardOptionsForDefeat,
   chooseNonRepeatingIndex,
   correctDodgeForLane,
   crossedComboMilestones,
+  DIFFICULTY_CONFIG,
   defeatProgress,
   enemyAttackPlanFor,
   enemyPostureDamageFor,
   followUpLanesFor,
+  modeLimitFor,
+  nextSeed,
   normalEnemyPoolForWave,
+  normalizeSeed,
   postureAfterGuard,
   recoverPosture,
+  scoreForCombo,
   shiftActiveTimer,
   tutorialVariantIndex,
+  type ChapterRewardKind,
+  type Difficulty,
+  type RunMode,
   type EnemyRole,
   type Lane,
   type PlayerAttackKind,
 } from "./rules";
 
 type State = {
+  mode: RunMode;
+  modeLimit: number;
+  difficulty: Difficulty;
+  seed: number;
+  chapter: number;
   hp: number;
   playerPosture: number;
   playerPostureMax: number;
@@ -60,6 +76,23 @@ type State = {
   maxCombo: number;
   score: number;
   comboTime: number;
+  defeatedCount: number;
+  bossDefeats: number;
+  parrySuccesses: number;
+  correctDodges: number;
+  hitsTaken: number;
+  whiffs: number;
+  playTimeMs: number;
+  bestScore: number;
+  isNewRecord: boolean;
+  rewardPending: boolean;
+  rewardChapter: number;
+  rewardOptions: ReadonlyArray<{
+    kind: ChapterRewardKind;
+    label: string;
+    description: string;
+  }>;
+  rewardEffects: ReadonlyArray<ChapterRewardKind>;
   climax: number;
   counterReady: boolean;
   counterPulse: number;
@@ -992,6 +1025,46 @@ export async function createGameScene(
     "無明の奥宮",
     "修験成就",
   ];
+  const makeRunSeed = () =>
+    normalizeSeed((Date.now() ^ Math.floor(Math.random() * 0xffffffff)) >>> 0);
+  let mode: RunMode = "fifty";
+  let modeLimit = modeLimitFor(mode);
+  let difficulty: Difficulty = "standard";
+  let runSeed = makeRunSeed();
+  let encounterRandomSeed = runSeed;
+  let combatRandomSeed = normalizeSeed(runSeed ^ 0x9e3779b9);
+  const nextEncounterRandom = () => {
+    const next = nextSeed(encounterRandomSeed);
+    encounterRandomSeed = next.seed;
+    return next.value;
+  };
+  const nextCombatRandom = () => {
+    const next = nextSeed(combatRandomSeed);
+    combatRandomSeed = next.seed;
+    return next.value;
+  };
+  let defeatedCount = 0;
+  let bossDefeats = 0;
+  let parrySuccesses = 0;
+  let correctDodges = 0;
+  let hitsTaken = 0;
+  let whiffs = 0;
+  let activePlayTimeMs = 0;
+  let enemyHitTaken = false;
+  let bestScore = 0;
+  let isNewRecord = false;
+  let recordSaved = false;
+  let rewardPending = false;
+  let rewardChapter = 0;
+  let rewardOptions: ReadonlyArray<{
+    kind: ChapterRewardKind;
+    label: string;
+    description: string;
+  }> = [];
+  let rewardEffects: ChapterRewardKind[] = [];
+  let rewardEffectStartWave = 0;
+  let rewardEffectEndWave = 0;
+  let pendingDefeatWave = 0;
   let hp = 100;
   const playerPostureMax = 100;
   let playerPosture = playerPostureMax;
@@ -1037,6 +1110,53 @@ export async function createGameScene(
   let score = 0;
   let comboExpiresAt = 0;
   let climax = 0;
+  const bestRecordKey = () => `yamabushi-best-${mode}-${difficulty}`;
+  const loadBestScore = () => {
+    try {
+      const saved = JSON.parse(
+        localStorage.getItem(bestRecordKey()) ?? "null",
+      ) as { score?: number } | null;
+      return Number.isFinite(saved?.score) ? Math.max(0, saved?.score ?? 0) : 0;
+    } catch {
+      return 0;
+    }
+  };
+  const rewardEffectActive = (kind: ChapterRewardKind) =>
+    rewardEffects.includes(kind) &&
+    wave >= rewardEffectStartWave &&
+    wave <= rewardEffectEndWave;
+  const scoreMultiplier = () =>
+    rewardEffectActive("score-multiplier") ? 1.15 : 1;
+  const parryWindow = () =>
+    DIFFICULTY_CONFIG[difficulty].parryWindow +
+    (rewardEffectActive("parry-window") ? 45 : 0);
+  const enemyCooldown = () =>
+    currentVariant.cooldown * DIFFICULTY_CONFIG[difficulty].cooldownMultiplier;
+  const saveBestRecord = () => {
+    if (recordSaved) return;
+    const previousBest = loadBestScore();
+    bestScore = previousBest;
+    isNewRecord = score > previousBest;
+    if (isNewRecord) {
+      bestScore = score;
+      try {
+        localStorage.setItem(
+          bestRecordKey(),
+          JSON.stringify({
+            score,
+            maxCombo,
+            defeatedCount,
+            bossDefeats,
+            seed: runSeed,
+            playTimeMs: Math.round(activePlayTimeMs),
+          }),
+        );
+      } catch {
+        // Private browsing or a full storage quota must not stop the result screen.
+      }
+    }
+    recordSaved = true;
+  };
   let tutorialStep = tutorialVariantIndex(wave) ?? 0;
   let warningDuration = 620;
   let enemyAttackDuration = warningDuration + 260 + 470;
@@ -1328,6 +1448,11 @@ export async function createGameScene(
     }
 
     return {
+      mode,
+      modeLimit,
+      difficulty,
+      seed: runSeed,
+      chapter: chapterForWave(wave),
       hp,
       playerPosture,
       playerPostureMax,
@@ -1336,7 +1461,7 @@ export async function createGameScene(
       enemyPosture,
       enemyPostureMax,
       wave,
-      remainingEnemies: Math.max(0, 50 - wave + (enemyHp > 0 ? 1 : 0)),
+      remainingEnemies: Math.max(0, modeLimit - wave + (enemyHp > 0 ? 1 : 0)),
       boss,
       bossPhase,
       bossDefeatPulse,
@@ -1370,6 +1495,19 @@ export async function createGameScene(
       comboTime: combo
         ? Math.max(0, comboExpiresAt - stateNow) / COMBO_WINDOW
         : 0,
+      defeatedCount,
+      bossDefeats,
+      parrySuccesses,
+      correctDodges,
+      hitsTaken,
+      whiffs,
+      playTimeMs: Math.round(activePlayTimeMs),
+      bestScore,
+      isNewRecord,
+      rewardPending,
+      rewardChapter,
+      rewardOptions,
+      rewardEffects,
       climax,
       counterReady: counterUntil > stateNow,
       counterPulse,
@@ -1379,6 +1517,9 @@ export async function createGameScene(
     };
   };
 
+  bestScore = loadBestScore();
+  paused = true;
+  pauseStartedAt = performance.now();
   player.root.position.x = -0.9;
   dodgeFromX = player.root.position.x;
   dodgeFromZ = player.root.position.z;
@@ -1399,12 +1540,14 @@ export async function createGameScene(
         lastBossVariantIndex = chooseNonRepeatingIndex(
           bossPoolForWave(wave),
           lastBossVariantIndex,
+          nextEncounterRandom(),
         );
         currentVariant = BOSS_VARIANTS[lastBossVariantIndex];
       } else {
         lastNormalVariantIndex = chooseNonRepeatingIndex(
           normalEnemyPoolForWave(wave),
           lastNormalVariantIndex,
+          nextEncounterRandom(),
         );
         currentVariant = ENEMY_VARIANTS[lastNormalVariantIndex];
       }
@@ -1413,6 +1556,7 @@ export async function createGameScene(
     setEnemyVariant(currentVariant);
     enemyMaxHp = boss ? 320 : 100;
     enemyHp = enemyMaxHp;
+    enemyHitTaken = false;
     enemyPostureMax = boss ? 180 : 80;
     enemyPosture = enemyPostureMax;
     enemyStaggerUntil = 0;
@@ -1440,7 +1584,7 @@ export async function createGameScene(
     recoilUntil = 0;
     queuedAttackLanes = [];
     forcedAttackReadyAt = 0;
-    warningDuration =
+    const baseWarningDuration =
       wave === 3
         ? 980
         : wave <= 2
@@ -1450,6 +1594,9 @@ export async function createGameScene(
             : boss
               ? 620
               : 480;
+    warningDuration = Math.round(
+      baseWarningDuration * DIFFICULTY_CONFIG[difficulty].warningMultiplier,
+    );
     enemyAttackDuration = warningDuration + 260 + 470;
     warningLine.isVisible = false;
     attackArea.isVisible = false;
@@ -1546,6 +1693,36 @@ export async function createGameScene(
     pauseStartedAt = 0;
     announce(state());
   };
+  const rewardEvent = (event: Event) => {
+    if (!rewardPending || pendingDefeatWave <= 0) return;
+    const kind = (event as CustomEvent<{ kind?: ChapterRewardKind }>).detail
+      ?.kind;
+    if (!kind || !rewardOptions.some((option) => option.kind === kind)) return;
+
+    rewardEffects = addChapterRewardEffect([], kind, 2);
+    rewardEffectStartWave = pendingDefeatWave + 1;
+    rewardEffectEndWave = Math.min(modeLimit, pendingDefeatWave + 10);
+    if (kind === "heal") hp = Math.min(100, hp + 30);
+    rewardPending = false;
+    rewardOptions = [];
+    rewardChapter = 0;
+    pauseEvent(
+      new CustomEvent("yamabushi-pause", { detail: { paused: false } }),
+    );
+    transitioning = true;
+    transitionRemaining = boss ? 1400 : 700;
+    message =
+      "第" +
+      chapterForWave(pendingDefeatWave + 1) +
+      "章へ。" +
+      (kind === "heal"
+        ? "生命を整えた。"
+        : kind === "parry-window"
+          ? "見切りの間を得た。"
+          : "得点の勢いを得た。");
+    pendingDefeatWave = 0;
+    announce(state());
+  };
   const retireEvent = () => {
     if (defeated) return;
     transitioning = false;
@@ -1572,6 +1749,10 @@ export async function createGameScene(
     attackArea.isVisible = false;
     updateFootZones(false, 0);
     setSpearState(false);
+    rewardPending = false;
+    rewardOptions = [];
+    rewardChapter = 0;
+    saveBestRecord();
     message = "修行を離れた。再起を選べる。";
     announce(state());
   };
@@ -1627,12 +1808,18 @@ export async function createGameScene(
     performDodge(direction);
   };
   const resolveEnemyDefeat = () => {
-    if (enemyHp > 0 || transitioning) return;
+    if (enemyHp > 0 || transitioning || rewardPending || defeated) return;
 
     const defeatedWave = wave;
-    const progress = defeatProgress(defeatedWave);
-    const chapterReward = progress.chapterReward;
+    const progress = defeatProgress(defeatedWave, modeLimit);
     const rewardMessages: string[] = [];
+
+    defeatedCount += 1;
+    if (boss) bossDefeats += 1;
+    if (!enemyHitTaken) {
+      score += Math.round((boss ? 600 : 220) * scoreMultiplier());
+      rewardMessages.push("無傷撃破加算");
+    }
 
     if (boss) {
       hp = Math.min(100, hp + 30);
@@ -1640,14 +1827,6 @@ export async function createGameScene(
       bossDefeatPulse += 1;
       rewardMessages.push("生命 +30・構え +30");
       showBossReward();
-    }
-
-    if (chapterReward) {
-      hp = Math.min(100, hp + chapterReward.hp);
-      score += chapterReward.score;
-      rewardMessages.push(
-        `第${chapterReward.chapter}章報酬・生命 +${chapterReward.hp}・得点 +${chapterReward.score}`,
-      );
     }
 
     enemyAttackAt = 0;
@@ -1659,18 +1838,38 @@ export async function createGameScene(
     updateFootZones(false, 0);
     setSpearState(false);
 
+    if (progress.chapterReward && progress.advances) {
+      pendingDefeatWave = defeatedWave;
+      rewardChapter = progress.chapterReward.chapter;
+      rewardOptions = chapterRewardOptionsForDefeat(defeatedWave, modeLimit);
+      rewardPending = rewardOptions.length > 0;
+      paused = rewardPending;
+      pauseStartedAt = rewardPending ? performance.now() : 0;
+      message = "第" + rewardChapter + "章を越えた。次の章の修験を一つ選べ。";
+      announce(state());
+      return;
+    }
+
     if (progress.advances) {
       transitioning = true;
       transitionRemaining = boss ? 1400 : 700;
       message =
         rewardMessages.length > 0
-          ? `${currentVariant.name}を断った。${rewardMessages.join("。")}。`
+          ? currentVariant.name +
+            "を断った。" +
+            rewardMessages.join("。") +
+            "。"
           : "敵影、断つ。次の気配を読む。";
     } else {
+      if (whiffs === 0) {
+        score += Math.round(350 * scoreMultiplier());
+        rewardMessages.push("空振りなし加算");
+      }
       defeated = true;
+      saveBestRecord();
       message =
         rewardMessages.length > 0
-          ? `五十体、すべて断つ。${rewardMessages.join("。")}。`
+          ? modeLimit + "体、すべて断つ。" + rewardMessages.join("。") + "。"
           : "敵影、断つ。";
     }
     announce(state());
@@ -1682,7 +1881,7 @@ export async function createGameScene(
     const milestones = crossedComboMilestones(previousCombo, combo);
     if (milestones > 0) climax += milestones;
     comboExpiresAt = now + COMBO_WINDOW;
-    score += points * combo;
+    score += scoreForCombo(points, combo, scoreMultiplier());
   };
 
   const clearEnemyAttackVisuals = () => {
@@ -1792,6 +1991,7 @@ export async function createGameScene(
     sheathUntil = now + 620;
 
     if (Math.abs(enemy.root.position.x - slashTargetX) > 0.72) {
+      whiffs += 1;
       message = "空を斬った。残心を保て。";
       counterUntil = 0;
       announce(state());
@@ -1806,7 +2006,7 @@ export async function createGameScene(
       recoilDirection = direction < 0 ? -1 : 1;
       enemyGuardUntil = 0;
       guardRing.isVisible = false;
-      lastEnemyStrike = now - currentVariant.cooldown + 220;
+      lastEnemyStrike = now - enemyCooldown() + 220;
       message = "通常斬撃を青輪に弾かれた。敵の反撃が来る。";
       announce(state());
       return;
@@ -1836,7 +2036,37 @@ export async function createGameScene(
     if (!enemyHp) resolveEnemyDefeat();
     announce(state());
   };
-  const resetRun = () => {
+  const resetRun = (event: Event) => {
+    const detail = (
+      event as CustomEvent<{
+        mode?: RunMode;
+        difficulty?: Difficulty;
+        seed?: number;
+      }>
+    ).detail;
+    if (
+      detail?.mode === "ten" ||
+      detail?.mode === "twenty-five" ||
+      detail?.mode === "fifty"
+    ) {
+      mode = detail.mode;
+      modeLimit = modeLimitFor(mode);
+    }
+    if (
+      detail?.difficulty === "apprentice" ||
+      detail?.difficulty === "standard" ||
+      detail?.difficulty === "dark"
+    )
+      difficulty = detail.difficulty;
+    runSeed =
+      Number.isFinite(detail?.seed) && detail?.seed !== undefined
+        ? normalizeSeed(detail.seed)
+        : makeRunSeed();
+    encounterRandomSeed = runSeed;
+    combatRandomSeed = normalizeSeed(runSeed ^ 0x9e3779b9);
+    bestScore = loadBestScore();
+    isNewRecord = false;
+    recordSaved = false;
     getAudioContext();
     if (slashProjectile) {
       slashProjectile.dispose();
@@ -1849,6 +2079,14 @@ export async function createGameScene(
     enemyMaxHp = 100;
     enemyPostureMax = 80;
     enemyPosture = enemyPostureMax;
+    defeatedCount = 0;
+    bossDefeats = 0;
+    parrySuccesses = 0;
+    correctDodges = 0;
+    hitsTaken = 0;
+    whiffs = 0;
+    activePlayTimeMs = 0;
+    enemyHitTaken = false;
     enemyStaggerUntil = 0;
     playerGuardBrokenUntil = 0;
     wave = 1;
@@ -1881,8 +2119,17 @@ export async function createGameScene(
     score = 0;
     comboExpiresAt = 0;
     climax = 0;
+    rewardPending = false;
+    rewardChapter = 0;
+    rewardOptions = [];
+    rewardEffects = [];
+    rewardEffectStartWave = 0;
+    rewardEffectEndWave = 0;
+    pendingDefeatWave = 0;
     tutorialStep = 1;
-    warningDuration = 620;
+    warningDuration = Math.round(
+      620 * DIFFICULTY_CONFIG[difficulty].warningMultiplier,
+    );
     enemyAttackDuration = warningDuration + 260 + 470;
     dodgeDirection = 1;
     dodgeStartAt = 0;
@@ -1947,7 +2194,7 @@ export async function createGameScene(
     const key = event.key.toLowerCase();
     if (event.repeat) return;
     if (key === "r") {
-      resetRun();
+      resetRun(new CustomEvent("yamabushi-restart"));
       return;
     }
     if (paused || transitioning || defeated) return;
@@ -2082,6 +2329,7 @@ export async function createGameScene(
   window.addEventListener("keydown", keydown);
   window.addEventListener("yamabushi-dodge", dodgeEvent);
   window.addEventListener("yamabushi-pause", pauseEvent);
+  window.addEventListener("yamabushi-reward", rewardEvent);
   window.addEventListener("yamabushi-effects", effectsEvent);
   window.addEventListener("yamabushi-audio", audioEvent);
   window.addEventListener("yamabushi-retire", retireEvent);
@@ -2089,7 +2337,8 @@ export async function createGameScene(
   window.addEventListener("yamabushi-start", resetRun);
   const observer = scene.onBeforeRenderObservable.add(() => {
     const now = performance.now();
-    const dt = engine.getDeltaTime() / 1000;
+    const dt = Math.min(0.05, engine.getDeltaTime() / 1000);
+    if (!paused && !defeated) activePlayTimeMs += dt * 1000;
     if (
       !paused &&
       !transitioning &&
@@ -2243,7 +2492,7 @@ export async function createGameScene(
         enemyStaggerUntil <= now &&
         (hasQueuedAttack
           ? now >= forcedAttackReadyAt
-          : now - lastEnemyStrike > currentVariant.cooldown)
+          : now - lastEnemyStrike > enemyCooldown())
       ) {
         lastEnemyStrike = now;
         playEnemyStepForVariant(boss ? 1.45 : 1);
@@ -2345,7 +2594,7 @@ export async function createGameScene(
           enemyHp > 0
         ) {
           enemyGuardUntil = now + (boss ? 1050 : 780);
-          nextGuardAt = now + (boss ? 3000 : 2200) + Math.random() * 1200;
+          nextGuardAt = now + (boss ? 3000 : 2200) + nextCombatRandom() * 1200;
           counterUntil = 0;
           message = "敵影が刃を伏せた。防御中。";
           announce(state());
@@ -2355,8 +2604,8 @@ export async function createGameScene(
           currentVariant.family !== "モニュメント型" &&
           now > enemyMoveAt
         ) {
-          enemyTargetX = (Math.random() * 2 - 1) * enemyMoveLimit();
-          enemyMoveAt = now + 850 + Math.random() * 1050;
+          enemyTargetX = (nextCombatRandom() * 2 - 1) * enemyMoveLimit();
+          enemyMoveAt = now + 850 + nextCombatRandom() * 1050;
         }
         if (enemyStaggerUntil <= now) {
           if (currentVariant.family === "モニュメント型") enemyTargetX = 0;
@@ -2498,10 +2747,10 @@ export async function createGameScene(
           const inLine =
             bossAttack ||
             Math.abs(player.root.position.x - dangerLane * 0.9) < hitWidth;
-          const parryWindow =
+          const isParryWindow =
             guardUntil >= now &&
             guardStartedAt > 0 &&
-            now - guardStartedAt <= 150;
+            now - guardStartedAt <= parryWindow();
           const dodgeElapsed = now - dodgeStartAt;
           const dodgeInSafety =
             dodgeUntil >= now &&
@@ -2516,12 +2765,13 @@ export async function createGameScene(
                 bossAttack,
               ));
 
-          if (inLine && parryWindow) {
+          if (inLine && isParryWindow) {
             showGuardSpark(dangerLane || 1);
             counterUntil = now + 900;
+            parrySuccesses += 1;
             playerPosture = recoverPosture(playerPosture, 20, playerPostureMax);
             const staggered = damageEnemyPosture("counter", now);
-            score += 260;
+            score += Math.round(260 * scoreMultiplier());
             message = staggered
               ? "受け流しで敵の構えを砕いた。反撃を。"
               : "青白く、受け流した。反撃を。";
@@ -2548,6 +2798,7 @@ export async function createGameScene(
                 : "防御を崩され、倒れた。";
               if (!hp) {
                 defeated = true;
+                saveBestRecord();
                 queuedAttackLanes = [];
                 clearEnemyAttackVisuals();
                 if (slashProjectile) {
@@ -2567,7 +2818,8 @@ export async function createGameScene(
                 bossAttack,
               );
             if (correctDodge) {
-              score += 120;
+              correctDodges += 1;
+              score += Math.round(120 * scoreMultiplier());
               playerPosture = recoverPosture(
                 playerPosture,
                 10,
@@ -2578,6 +2830,8 @@ export async function createGameScene(
               ? "正しい方向へ流れた。得点と構えを得た。"
               : "危険線の外で刃を外した。";
           } else {
+            hitsTaken += 1;
+            enemyHitTaken = true;
             triggerImpact(dangerLane || 1, 0.12);
             const hitDamage =
               currentVariant.role === "heavy"
@@ -2594,6 +2848,7 @@ export async function createGameScene(
             message = hp ? "岩刃を受けた。" : "倒れた。再起を選べる。";
             if (!hp) {
               defeated = true;
+              saveBestRecord();
               queuedAttackLanes = [];
               clearEnemyAttackVisuals();
               if (slashProjectile) {
@@ -2707,6 +2962,7 @@ export async function createGameScene(
       window.removeEventListener("keydown", keydown);
       window.removeEventListener("yamabushi-dodge", dodgeEvent);
       window.removeEventListener("yamabushi-pause", pauseEvent);
+      window.removeEventListener("yamabushi-reward", rewardEvent);
       window.removeEventListener("yamabushi-effects", effectsEvent);
       window.removeEventListener("yamabushi-audio", audioEvent);
       window.removeEventListener("yamabushi-retire", retireEvent);

@@ -71,3 +71,46 @@ html,body,#root,.game-shell{overscroll-behavior:none;-webkit-user-select:none;us
 /* 優先度S：iPhoneだけで一時停止・再挑戦・タイトル復帰まで完結させる。 */
 .pause-button{position:fixed;z-index:7;top:max(18px,env(safe-area-inset-top));right:max(18px,env(safe-area-inset-right));padding:7px 10px;border:1px solid rgba(232,227,215,.38);background:rgba(11,14,17,.72);color:#eee9df;font:600 10px 'Noto Sans JP',sans-serif;letter-spacing:.08em;backdrop-filter:blur(7px);touch-action:manipulation}.pause-button:active{background:#b74732;color:#fff}.pause-button:disabled{opacity:.45;pointer-events:none}.result-actions{display:flex;justify-content:center;gap:8px;margin-top:20px}.result-actions button,.pause-actions button,.title-screen button{min-height:42px;padding:10px 14px;border:1px solid rgba(232,227,215,.38);font:600 11px 'Noto Sans JP',sans-serif;letter-spacing:.06em;touch-action:manipulation}.result-primary{background:#e8e3d7;color:#11171a}.result-secondary{background:transparent;color:#eee9df;border-color:#b74732!important}.result-actions button:active,.pause-actions button:active,.title-screen button:active{transform:translateY(1px);background:#b74732;color:#fff}.pause-overlay{position:fixed;inset:0;z-index:21;display:grid;place-items:center;padding:24px;background:rgba(5,8,11,.72);backdrop-filter:blur(10px)}.pause-panel{width:min(440px,calc(100vw - 36px));padding:30px 26px 24px;border:1px solid rgba(232,227,215,.38);border-top:3px solid #b74732;background:linear-gradient(145deg,rgba(22,25,28,.98),rgba(10,13,16,.98));box-shadow:0 24px 70px rgba(0,0,0,.45);text-align:center}.pause-panel h2{margin:10px 0 12px;color:#eee9df;font:600 30px 'Noto Serif JP',serif;letter-spacing:.12em}.pause-panel>p:not(.eyebrow){margin:0 auto 20px;color:#aaa9a2;font-size:12px;line-height:1.8}.pause-actions{display:flex;justify-content:center;gap:8px}.pause-settings{display:flex;justify-content:center;gap:8px;margin-top:16px}.pause-settings button{padding:6px 8px;border:1px solid rgba(232,227,215,.22);background:transparent;color:#aaa9a2;font:500 10px 'Noto Sans JP',sans-serif}.title-screen{position:fixed;inset:0;z-index:22;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px;text-align:center;background:radial-gradient(ellipse at center,rgba(29,34,38,.92),rgba(6,9,11,.98) 72%);color:#eee9df}.title-screen h2{margin:4px 0 12px;font:600 clamp(42px,10vw,78px) 'Noto Serif JP',serif;letter-spacing:.16em}.title-screen h2 span{color:#b74732;font-size:.55em;margin:0 5px}.title-screen>p:not(.eyebrow){margin:0 0 24px;color:#c9c0ae;font-size:13px;letter-spacing:.08em}.title-screen button{min-width:150px}.result-card p{line-height:1.8}.result-card p:last-of-type{margin-bottom:0;color:#c9c0ae;font-size:12px;letter-spacing:.06em}@media(max-width:560px){.pause-button{top:calc(54px + env(safe-area-inset-top));right:max(12px,env(safe-area-inset-right));padding:5px 7px;font-size:8px}.result-card{width:min(92vw,360px);padding:22px 18px}.result-card h2{font-size:29px}.result-actions{gap:6px}.result-actions button,.pause-actions button{padding:9px 8px;font-size:10px}.pause-panel{padding:26px 18px 20px}.pause-actions{flex-wrap:wrap}.pause-actions button{flex:1;min-width:84px}.pause-settings{flex-wrap:wrap}.title-screen{padding:22px}.title-screen h2{font-size:47px}}
 .result-card{z-index:20}
+
+/* Priority B：モード選択、章報酬、結果記録を一つの判断画面へまとめる。 */
+.run-meta{display:block;margin-top:3px;color:#999d99;font-size:8px;letter-spacing:.08em}
+.reward-card{position:fixed;z-index:23;left:50%;top:50%;width:min(560px,calc(100vw - 36px));transform:translate(-50%,-50%);padding:28px 24px 24px;border:1px solid rgba(232,227,215,.38);border-top:3px solid #d6a455;background:linear-gradient(145deg,rgba(25,27,28,.98),rgba(10,13,16,.98));box-shadow:0 24px 70px rgba(0,0,0,.52);text-align:center;color:#eee9df}
+.reward-card h2{margin:8px 0 10px;font:600 clamp(24px,5vw,36px) 'Noto Serif JP',serif;letter-spacing:.12em}
+.reward-card>p:not(.eyebrow){margin:0;color:#c9c0ae;font-size:12px;line-height:1.8}
+.reward-owned{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:16px 0 12px;color:#d6a455;font-size:10px;letter-spacing:.08em}
+.reward-owned span{color:#aaa9a2}
+.reward-options{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.reward-option{min-height:102px;padding:12px 9px;border:1px solid rgba(214,164,85,.44);background:rgba(18,21,23,.8);color:#eee9df;text-align:left;cursor:pointer;touch-action:manipulation}
+.reward-option:hover,.reward-option:focus-visible{border-color:#f0cc87;background:rgba(93,64,28,.35);outline:none}
+.reward-option strong{display:block;color:#f0cc87;font:600 13px 'Noto Serif JP',serif;line-height:1.45}
+.reward-option span{display:block;margin-top:7px;color:#b8b6ae;font-size:10px;line-height:1.6}
+.result-card{max-height:calc(100vh - 48px);overflow:auto}
+.result-actions{flex-wrap:wrap}
+.result-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px 14px;margin:14px auto 8px;color:#aaa9a2;font-size:10px;letter-spacing:.04em}
+.result-seed{margin:9px 0 0;color:#8f918d!important;font-size:9px!important}
+.result-seed code{color:#d6a455;font:600 10px ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.08em}
+.new-record{display:block;margin:10px 0 0;color:#f0cc87;font-size:11px;letter-spacing:.12em}
+.title-choice-group{width:min(560px,92vw);margin:14px 0 0;text-align:left}
+.title-choice-group>span{display:block;margin-bottom:6px;color:#aaa9a2;font-size:10px;letter-spacing:.14em}
+.title-choice-row{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.title-choice-row button{min-width:0!important;min-height:70px!important;padding:8px!important;border:1px solid rgba(232,227,215,.24)!important;background:rgba(15,18,21,.66)!important;color:#d5d0c5!important;text-align:left}
+.title-choice-row button.is-selected{border-color:#b74732!important;background:rgba(112,42,31,.42)!important;box-shadow:0 0 0 1px rgba(183,71,50,.28)}
+.title-choice-row button strong{display:block;font-size:11px;letter-spacing:.05em}
+.title-choice-row button small{display:block;margin-top:4px;color:#aaa9a2;font-size:9px;line-height:1.45}
+.title-choice-row button.is-selected small{color:#e0c1a9}
+.difficulty-row{grid-template-columns:repeat(3,1fr)}
+.title-screen>.result-primary{margin-top:20px}
+@media(max-width:560px){
+  .reward-card{width:min(94vw,380px);padding:22px 15px 17px}
+  .reward-options{grid-template-columns:1fr;gap:6px}
+  .reward-option{min-height:0;padding:10px 12px}
+  .reward-option span{margin-top:3px}
+  .result-stats{font-size:9px;gap:4px 8px}
+  .result-actions button{flex:1 1 44%;min-width:0}
+  .title-choice-group{margin-top:10px}
+  .title-choice-row{gap:5px}
+  .title-choice-row button{min-height:64px!important;padding:7px 6px!important}
+  .title-choice-row button strong{font-size:10px}
+  .title-choice-row button small{font-size:8px}
+  .title-screen>.result-primary{margin-top:15px}
+}

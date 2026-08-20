@@ -1,8 +1,20 @@
 // 墨霞の修験道：中央は剣戟の余白、情報は四隅へ。UIも能舞台のように静かに置く。
 import { useEffect, useRef, useState } from "react";
 import GameCanvas from "@/components/GameCanvas";
+import {
+  DIFFICULTY_CONFIG,
+  RUN_MODE_CONFIG,
+  type ChapterRewardKind,
+  type Difficulty,
+  type RunMode,
+} from "@/game/rules";
 
 type GameState = {
+  mode: RunMode;
+  modeLimit: number;
+  difficulty: Difficulty;
+  seed: number;
+  chapter: number;
   hp: number;
   playerPosture: number;
   playerPostureMax: number;
@@ -30,6 +42,23 @@ type GameState = {
   maxCombo: number;
   score: number;
   comboTime: number;
+  defeatedCount: number;
+  bossDefeats: number;
+  parrySuccesses: number;
+  correctDodges: number;
+  hitsTaken: number;
+  whiffs: number;
+  playTimeMs: number;
+  bestScore: number;
+  isNewRecord: boolean;
+  rewardPending: boolean;
+  rewardChapter: number;
+  rewardOptions: ReadonlyArray<{
+    kind: ChapterRewardKind;
+    label: string;
+    description: string;
+  }>;
+  rewardEffects: ReadonlyArray<ChapterRewardKind>;
   climax: number;
   paused: boolean;
   transitioning: boolean;
@@ -37,6 +66,11 @@ type GameState = {
 };
 
 const initial: GameState = {
+  mode: "fifty",
+  modeLimit: 50,
+  difficulty: "standard",
+  seed: 0,
+  chapter: 1,
   hp: 100,
   playerPosture: 100,
   playerPostureMax: 100,
@@ -64,6 +98,19 @@ const initial: GameState = {
   maxCombo: 0,
   score: 0,
   comboTime: 0,
+  defeatedCount: 0,
+  bossDefeats: 0,
+  parrySuccesses: 0,
+  correctDodges: 0,
+  hitsTaken: 0,
+  whiffs: 0,
+  playTimeMs: 0,
+  bestScore: 0,
+  isNewRecord: false,
+  rewardPending: false,
+  rewardChapter: 0,
+  rewardOptions: [],
+  rewardEffects: [],
   climax: 0,
   paused: false,
   transitioning: false,
@@ -108,14 +155,30 @@ function dispatchGameEvent(name: string, detail: Record<string, unknown> = {}) {
   window.dispatchEvent(new CustomEvent(name, { detail }));
 }
 
+function formatPlayTime(milliseconds: number): string {
+  const totalSeconds = Math.max(0, Math.floor(milliseconds / 1000));
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+}
+
+function rewardEffectLabel(effect: ChapterRewardKind): string {
+  if (effect === "heal") return "生命回復";
+  if (effect === "parry-window") return "受け流し延長";
+  return "得点倍率";
+}
+
 export default function App() {
   const [state, setState] = useState(initial);
   const [showClimax, setShowClimax] = useState(false);
   const [showBossVictory, setShowBossVictory] = useState(false);
   const [showCounter, setShowCounter] = useState(false);
   const [showPause, setShowPause] = useState(false);
-  const [showTitle, setShowTitle] = useState(false);
+  const [showTitle, setShowTitle] = useState(true);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const [selectedMode, setSelectedMode] = useState<RunMode>("fifty");
+  const [selectedDifficulty, setSelectedDifficulty] =
+    useState<Difficulty>("standard");
   const [effectLevel, setEffectLevel] = useState<
     "full" | "reduced" | "minimal"
   >(
@@ -132,7 +195,9 @@ export default function App() {
   const swipeStart = useRef<{ x: number; y: number; at: number } | null>(null);
   const allowExit = useRef(false);
   const exitConfirmRef = useRef(false);
+  const titleOpenRef = useRef(true);
   exitConfirmRef.current = showExitConfirm;
+  titleOpenRef.current = showTitle;
 
   const cycleEffects = () => {
     const next =
@@ -153,17 +218,28 @@ export default function App() {
     dispatchGameEvent("yamabushi-audio", { ambientVolume: next });
   };
 
-  const startNewRun = (eventName = "yamabushi-restart") => {
+  const startNewRun = (
+    eventName = "yamabushi-restart",
+    options: { seed?: number; mode?: RunMode; difficulty?: Difficulty } = {},
+  ) => {
+    const mode = options.mode ?? selectedMode;
+    const difficulty = options.difficulty ?? selectedDifficulty;
     setShowPause(false);
     setShowTitle(false);
     setShowExitConfirm(false);
-    dispatchGameEvent(eventName);
+    titleOpenRef.current = false;
+    dispatchGameEvent(eventName, {
+      mode,
+      difficulty,
+      ...(options.seed === undefined ? {} : { seed: options.seed }),
+    });
   };
 
   const openTitle = () => {
     setShowPause(false);
     setShowExitConfirm(false);
     setShowTitle(true);
+    titleOpenRef.current = true;
     dispatchGameEvent("yamabushi-pause", { paused: true, reason: "title" });
   };
 
@@ -176,9 +252,15 @@ export default function App() {
     const onState = (event: Event) => {
       const next = (event as CustomEvent<GameState>).detail;
       setState(next);
-      if (next.paused && !next.defeated && !exitConfirmRef.current)
+      if (
+        next.paused &&
+        !next.defeated &&
+        !next.rewardPending &&
+        !exitConfirmRef.current &&
+        !titleOpenRef.current
+      )
         setShowPause(true);
-      if (!next.paused) {
+      if (!next.paused && !titleOpenRef.current) {
         setShowPause(false);
         setShowTitle(false);
       }
@@ -270,6 +352,8 @@ export default function App() {
     }
   };
 
+  const victory = state.enemyHp === 0 && state.wave >= state.modeLimit;
+
   return (
     <main
       className="game-shell"
@@ -340,7 +424,7 @@ export default function App() {
             reason: "manual",
           })
         }
-        disabled={state.defeated || showTitle}
+        disabled={state.defeated || state.rewardPending || showTitle}
       >
         一時停止
       </button>
@@ -411,9 +495,9 @@ export default function App() {
           enemy
         />
         <div className="enemy-count">
-          残敵{" "}
+          {RUN_MODE_CONFIG[state.mode].label}・第{state.chapter}章　残敵{" "}
           <strong>{String(state.remainingEnemies).padStart(2, "0")}</strong> /
-          50
+          {state.modeLimit}
         </div>
       </section>
 
@@ -444,6 +528,10 @@ export default function App() {
         </div>
         <div className="score-label">SCORE / CHAIN</div>
         <strong>{String(state.score).padStart(6, "0")}</strong>
+        <small className="run-meta">
+          {RUN_MODE_CONFIG[state.mode].label} /{" "}
+          {DIFFICULTY_CONFIG[state.difficulty].label}
+        </small>
         {state.combo > 0 && (
           <div className="combo-readout">
             <span>連撃</span>
@@ -560,6 +648,41 @@ export default function App() {
         </div>
       </section>
 
+      {state.rewardPending && !state.defeated && (
+        <div
+          className="reward-card"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="reward-title"
+        >
+          <p className="eyebrow">CHAPTER CLEARED</p>
+          <h2 id="reward-title">第{state.rewardChapter}章を越えた</h2>
+          <p>次の章だけ有効な修験を一つ選ぶ。</p>
+          <div className="reward-owned">
+            所持効果 {state.rewardEffects.length} / 2
+            {state.rewardEffects.length > 0 && (
+              <span>
+                {state.rewardEffects.map(rewardEffectLabel).join("・")}
+              </span>
+            )}
+          </div>
+          <div className="reward-options">
+            {state.rewardOptions.map((option) => (
+              <button
+                type="button"
+                key={option.kind}
+                className="reward-option"
+                onClick={() =>
+                  dispatchGameEvent("yamabushi-reward", { kind: option.kind })
+                }
+              >
+                <strong>{option.label}</strong>
+                <span>{option.description}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
       {state.defeated && (
         <div
           className="result-card"
@@ -568,21 +691,30 @@ export default function App() {
           aria-labelledby="result-title"
         >
           <p className="eyebrow">THE MOUNTAIN REMAINS</p>
-          <h2 id="result-title">
-            {state.enemyHp === 0 && state.wave >= 50
-              ? "敵影、断つ"
-              : "霧に沈む"}
-          </h2>
+          <h2 id="result-title">{victory ? "敵影、断つ" : "霧に沈む"}</h2>
           <p>
-            到達 {state.wave}体目　／　撃破{" "}
-            {state.enemyHp === 0 && state.wave >= 50
-              ? 50
-              : Math.max(0, state.wave - 1)}
-            体
+            {RUN_MODE_CONFIG[state.mode].label}・
+            {DIFFICULTY_CONFIG[state.difficulty].label}
+            <br />
+            到達 {state.wave}体目　／　撃破 {state.defeatedCount}体
           </p>
           <p>
             スコア {state.score}　／　最大連撃 {state.maxCombo}
           </p>
+          <div className="result-stats">
+            <span>ボス撃破 {state.bossDefeats}</span>
+            <span>受け流し {state.parrySuccesses}</span>
+            <span>正しい回避 {state.correctDodges}</span>
+            <span>被弾 {state.hitsTaken}</span>
+            <span>空振り {state.whiffs}</span>
+            <span>時間 {formatPlayTime(state.playTimeMs)}</span>
+          </div>
+          <p className="result-seed">
+            敵順コード <code>{state.seed.toString(16).padStart(8, "0")}</code>
+          </p>
+          {state.isNewRecord && (
+            <strong className="new-record">自己最高記録を更新</strong>
+          )}
           <div className="result-actions">
             <button
               type="button"
@@ -594,6 +726,19 @@ export default function App() {
             <button
               type="button"
               className="result-secondary"
+              onClick={() =>
+                startNewRun("yamabushi-restart", {
+                  seed: state.seed,
+                  mode: state.mode,
+                  difficulty: state.difficulty,
+                })
+              }
+            >
+              同じ敵順で再挑戦
+            </button>
+            <button
+              type="button"
+              className="result-secondary"
               onClick={openTitle}
             >
               最初の画面へ戻る
@@ -601,7 +746,7 @@ export default function App() {
           </div>
         </div>
       )}
-      {showPause && !state.defeated && !showTitle && (
+      {showPause && !state.defeated && !state.rewardPending && !showTitle && (
         <div
           className="pause-overlay"
           role="dialog"
@@ -678,6 +823,42 @@ export default function App() {
             墨霞<span>の</span>剣
           </h2>
           <p>敵の予告を読み、防御・回避・斬撃を選ぶ。</p>
+          <div className="title-choice-group">
+            <span>勝負の長さ</span>
+            <div className="title-choice-row">
+              {(Object.keys(RUN_MODE_CONFIG) as RunMode[]).map((mode) => (
+                <button
+                  type="button"
+                  key={mode}
+                  className={selectedMode === mode ? "is-selected" : ""}
+                  onClick={() => setSelectedMode(mode)}
+                >
+                  <strong>{RUN_MODE_CONFIG[mode].label}</strong>
+                  <small>{RUN_MODE_CONFIG[mode].description}</small>
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="title-choice-group">
+            <span>難易度</span>
+            <div className="title-choice-row difficulty-row">
+              {(Object.keys(DIFFICULTY_CONFIG) as Difficulty[]).map(
+                (difficulty) => (
+                  <button
+                    type="button"
+                    key={difficulty}
+                    className={
+                      selectedDifficulty === difficulty ? "is-selected" : ""
+                    }
+                    onClick={() => setSelectedDifficulty(difficulty)}
+                  >
+                    <strong>{DIFFICULTY_CONFIG[difficulty].label}</strong>
+                    <small>{DIFFICULTY_CONFIG[difficulty].description}</small>
+                  </button>
+                ),
+              )}
+            </div>
+          </div>
           <button
             type="button"
             className="result-primary"
