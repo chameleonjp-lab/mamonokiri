@@ -114,3 +114,15 @@ html,body,#root,.game-shell{overscroll-behavior:none;-webkit-user-select:none;us
   .title-choice-row button small{font-size:8px}
   .title-screen>.result-primary{margin-top:15px}
 }
+
+/* Priority C：片手操作と負荷設定。戦闘の予告表示は軽量化しても残す。 */
+.game-shell.is-left-handed .gameboy-controls{flex-direction:row-reverse}
+.game-shell.performance-balanced .grain{opacity:.08}
+.game-shell.performance-lite .grain{display:none}
+.pause-panel{max-height:calc(100dvh - 36px);overflow:auto}
+.pause-settings{flex-wrap:wrap}
+.pause-settings button{min-height:34px;cursor:pointer;touch-action:manipulation}
+@media(max-width:560px){
+  .pause-settings{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+  .pause-settings button{min-width:0;padding:8px 6px;font-size:9px}
+}

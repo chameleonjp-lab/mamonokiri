@@ -2,6 +2,17 @@
 import { useEffect, useRef, useState } from "react";
 import GameCanvas from "@/components/GameCanvas";
 import {
+  DEFAULT_AUDIO_SETTINGS,
+  PERFORMANCE_CONFIG,
+  nextVolume,
+  readHandedness,
+  readPerformanceTier,
+  readStoredVolume,
+  type AudioSettings,
+  type Handedness,
+  type PerformanceTier,
+} from "@/game/config";
+import {
   DIFFICULTY_CONFIG,
   RUN_MODE_CONFIG,
   type ChapterRewardKind,
@@ -168,6 +179,12 @@ function rewardEffectLabel(effect: ChapterRewardKind): string {
   return "得点倍率";
 }
 
+function volumeLabel(value: number): string {
+  if (value >= 0.99) return "大";
+  if (value <= 0.36) return "小";
+  return "中";
+}
+
 export default function App() {
   const [state, setState] = useState(initial);
   const [showClimax, setShowClimax] = useState(false);
@@ -187,7 +204,34 @@ export default function App() {
         "full" | "reduced" | "minimal" | null) ?? "full",
   );
   const [ambientVolume, setAmbientVolume] = useState(() =>
-    Number(localStorage.getItem("yamabushi-ambient-volume") ?? "0.7"),
+    readStoredVolume(
+      localStorage,
+      "yamabushi-ambient-volume",
+      DEFAULT_AUDIO_SETTINGS.ambientVolume,
+    ),
+  );
+  const [masterVolume, setMasterVolume] = useState(() =>
+    readStoredVolume(
+      localStorage,
+      "yamabushi-master-volume",
+      DEFAULT_AUDIO_SETTINGS.masterVolume,
+    ),
+  );
+  const [effectsVolume, setEffectsVolume] = useState(() =>
+    readStoredVolume(
+      localStorage,
+      "yamabushi-effects-volume",
+      DEFAULT_AUDIO_SETTINGS.effectsVolume,
+    ),
+  );
+  const [audioMuted, setAudioMuted] = useState(
+    () => localStorage.getItem("yamabushi-audio-muted") === "true",
+  );
+  const [handedness, setHandedness] = useState<Handedness>(() =>
+    readHandedness(localStorage.getItem("yamabushi-handedness")),
+  );
+  const [performanceTier, setPerformanceTier] = useState<PerformanceTier>(() =>
+    readPerformanceTier(localStorage.getItem("yamabushi-performance")),
   );
   const previousClimax = useRef(0);
   const previousCounter = useRef(0);
@@ -211,11 +255,63 @@ export default function App() {
     dispatchGameEvent("yamabushi-effects", { level: next });
   };
 
+  const updateAudioSettings = (changes: Partial<AudioSettings>) => {
+    const next: AudioSettings = {
+      masterVolume,
+      effectsVolume,
+      ambientVolume,
+      muted: audioMuted,
+      ...changes,
+    };
+    setMasterVolume(next.masterVolume);
+    setEffectsVolume(next.effectsVolume);
+    setAmbientVolume(next.ambientVolume);
+    setAudioMuted(next.muted);
+    localStorage.setItem("yamabushi-master-volume", String(next.masterVolume));
+    localStorage.setItem(
+      "yamabushi-effects-volume",
+      String(next.effectsVolume),
+    );
+    localStorage.setItem(
+      "yamabushi-ambient-volume",
+      String(next.ambientVolume),
+    );
+    localStorage.setItem("yamabushi-audio-muted", String(next.muted));
+    dispatchGameEvent("yamabushi-audio", next);
+  };
+
+  const cycleMasterVolume = () => {
+    updateAudioSettings({ masterVolume: nextVolume(masterVolume) });
+  };
+
+  const cycleEffectsVolume = () => {
+    updateAudioSettings({ effectsVolume: nextVolume(effectsVolume) });
+  };
+
   const cycleAmbient = () => {
-    const next = ambientVolume >= 0.99 ? 0.35 : ambientVolume <= 0.36 ? 0.7 : 1;
-    setAmbientVolume(next);
-    localStorage.setItem("yamabushi-ambient-volume", String(next));
-    dispatchGameEvent("yamabushi-audio", { ambientVolume: next });
+    updateAudioSettings({ ambientVolume: nextVolume(ambientVolume) });
+  };
+
+  const toggleAudioMute = () => {
+    updateAudioSettings({ muted: !audioMuted });
+  };
+
+  const toggleHandedness = () => {
+    const next = handedness === "right" ? "left" : "right";
+    setHandedness(next);
+    localStorage.setItem("yamabushi-handedness", next);
+  };
+
+  const cyclePerformance = () => {
+    const next: PerformanceTier =
+      performanceTier === "high"
+        ? "balanced"
+        : performanceTier === "balanced"
+          ? "lite"
+          : "high";
+    setPerformanceTier(next);
+    localStorage.setItem("yamabushi-performance", next);
+    dispatchGameEvent("yamabushi-performance", { tier: next });
   };
 
   const startNewRun = (
@@ -356,7 +452,7 @@ export default function App() {
 
   return (
     <main
-      className="game-shell"
+      className={`game-shell ${handedness === "left" ? "is-left-handed" : ""} performance-${performanceTier}`}
       onPointerDown={handlePointerDown}
       onPointerUp={handlePointerUp}
     >
@@ -365,7 +461,11 @@ export default function App() {
         className={`threat-vignette ${state.enemyPhase === "予備" ? "is-warning" : ""}`}
         aria-hidden="true"
       />
-      <div className="grain" aria-hidden="true" />
+      <div
+        className="grain"
+        aria-hidden="true"
+        style={{ opacity: PERFORMANCE_CONFIG[performanceTier].grainOpacity }}
+      />
 
       {showClimax && (
         <div className="climax-fx" aria-live="assertive">
@@ -522,8 +622,7 @@ export default function App() {
             onClick={cycleAmbient}
             aria-label="環境音量を切り替える"
           >
-            環境音{" "}
-            {ambientVolume >= 0.99 ? "大" : ambientVolume <= 0.36 ? "小" : "中"}
+            環境音 {volumeLabel(ambientVolume)}
           </button>
         </div>
         <div className="score-label">SCORE / CHAIN</div>
@@ -800,12 +899,26 @@ export default function App() {
                     : "最小"}
               </button>
               <button type="button" onClick={cycleAmbient}>
-                環境音：
-                {ambientVolume >= 0.99
-                  ? "大"
-                  : ambientVolume <= 0.36
-                    ? "小"
-                    : "中"}
+                環境音：{volumeLabel(ambientVolume)}
+              </button>
+              <button type="button" onClick={cycleMasterVolume}>
+                主音量：{volumeLabel(masterVolume)}
+              </button>
+              <button type="button" onClick={cycleEffectsVolume}>
+                効果音：{volumeLabel(effectsVolume)}
+              </button>
+              <button
+                type="button"
+                onClick={toggleAudioMute}
+                aria-pressed={audioMuted}
+              >
+                全消音：{audioMuted ? "入" : "切"}
+              </button>
+              <button type="button" onClick={toggleHandedness}>
+                操作配置：{handedness === "left" ? "左利き" : "右利き"}
+              </button>
+              <button type="button" onClick={cyclePerformance}>
+                描画：{PERFORMANCE_CONFIG[performanceTier].label}
               </button>
             </div>
           </div>

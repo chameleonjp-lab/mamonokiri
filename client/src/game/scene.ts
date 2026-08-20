@@ -8,9 +8,16 @@ import { Mesh } from "@babylonjs/core/Meshes/mesh";
 import { MeshBuilder } from "@babylonjs/core/Meshes/meshBuilder";
 import { StandardMaterial } from "@babylonjs/core/Materials/standardMaterial";
 import { HemisphericLight } from "@babylonjs/core/Lights/hemisphericLight";
-import { ParticleSystem } from "@babylonjs/core/Particles/particleSystem";
 import { Texture } from "@babylonjs/core/Materials/Textures/texture";
 import "@babylonjs/core/Materials/standardMaterial";
+import {
+  DEFAULT_AUDIO_SETTINGS,
+  PERFORMANCE_CONFIG,
+  clampVolume,
+  readPerformanceTier,
+  readStoredVolume,
+  type PerformanceTier,
+} from "./config";
 import {
   addChapterRewardEffect,
   applyDamage,
@@ -660,12 +667,22 @@ function announce(state: State) {
 export async function createGameScene(
   engine: Engine,
   canvas: HTMLCanvasElement,
+  initialPerformanceTier: PerformanceTier = readPerformanceTier(
+    localStorage.getItem("yamabushi-performance"),
+  ),
 ): Promise<GameHandle> {
   const scene = new Scene(engine);
   scene.clearColor = new Color4(0.06, 0.075, 0.09, 1);
   scene.fogMode = Scene.FOGMODE_EXP2;
   scene.fogDensity = 0.045;
   scene.fogColor = MIST;
+  let performanceTier = initialPerformanceTier;
+  const applyPerformanceTier = (tier: PerformanceTier) => {
+    performanceTier = tier;
+    scene.fogEnabled = PERFORMANCE_CONFIG[tier].fogEnabled;
+    scene.fogDensity = 0.045;
+  };
+  applyPerformanceTier(performanceTier);
   const camera = new FreeCamera("camera", new Vector3(7.6, 5.2, -8.5), scene);
   camera.setTarget(new Vector3(0, 1.05, 2.2));
   camera.attachControl(canvas, true);
@@ -1195,6 +1212,23 @@ export async function createGameScene(
     if (audioContext.state === "suspended") void audioContext.resume();
     return audioContext;
   };
+  let masterVolume = readStoredVolume(
+    localStorage,
+    "yamabushi-master-volume",
+    DEFAULT_AUDIO_SETTINGS.masterVolume,
+  );
+  let effectsVolume = readStoredVolume(
+    localStorage,
+    "yamabushi-effects-volume",
+    DEFAULT_AUDIO_SETTINGS.effectsVolume,
+  );
+  let ambientVolume = readStoredVolume(
+    localStorage,
+    "yamabushi-ambient-volume",
+    DEFAULT_AUDIO_SETTINGS.ambientVolume,
+  );
+  let audioMuted = localStorage.getItem("yamabushi-audio-muted") === "true";
+  type AudioCategory = "effects" | "ambient";
   const playTone = (
     frequency: number,
     endFrequency: number,
@@ -1202,9 +1236,15 @@ export async function createGameScene(
     volume: number,
     type: OscillatorType = "sine",
     pan = 0,
+    category: AudioCategory = "effects",
   ) => {
+    if (audioMuted) return;
     const ctx = getAudioContext();
     if (!ctx) return;
+    const categoryVolume =
+      category === "ambient" ? ambientVolume : effectsVolume;
+    const scaledVolume = volume * masterVolume * categoryVolume;
+    if (scaledVolume <= 0.0001) return;
     const start = ctx.currentTime;
     const oscillator = ctx.createOscillator();
     const gain = ctx.createGain();
@@ -1218,7 +1258,7 @@ export async function createGameScene(
     );
     gain.gain.setValueAtTime(0.0001, start);
     gain.gain.exponentialRampToValueAtTime(
-      Math.min(0.14, volume),
+      Math.min(0.14, scaledVolume),
       start + 0.008,
     );
     gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
@@ -1323,15 +1363,12 @@ export async function createGameScene(
       profile.type,
     );
   };
-  let ambientVolume = Number(
-    localStorage.getItem("yamabushi-ambient-volume") ?? "0.7",
-  );
   const playAmbientPulse = () => {
     if (ambientVolume <= 0.01) return;
-    playTone(128, 74, 0.8, 0.012 * ambientVolume, "sine", -0.25);
+    playTone(128, 74, 0.8, 0.012, "sine", -0.25, "ambient");
     window.setTimeout(() => {
       if (ambientVolume > 0.01)
-        playTone(176, 92, 0.62, 0.009 * ambientVolume, "triangle", 0.32);
+        playTone(176, 92, 0.62, 0.009, "triangle", 0.32, "ambient");
     }, 180);
   };
   const launchPlayerSlash = (now: number, direction: number) => {
@@ -1762,10 +1799,27 @@ export async function createGameScene(
       effectLevel = next;
   };
   const audioEvent = (event: Event) => {
-    const next = Number(
-      (event as CustomEvent<{ ambientVolume?: number }>).detail?.ambientVolume,
-    );
-    if (Number.isFinite(next)) ambientVolume = Math.max(0, Math.min(1, next));
+    const detail = (
+      event as CustomEvent<{
+        masterVolume?: number;
+        effectsVolume?: number;
+        ambientVolume?: number;
+        muted?: boolean;
+      }>
+    ).detail;
+    if (detail && typeof detail.masterVolume === "number")
+      masterVolume = clampVolume(detail.masterVolume, masterVolume);
+    if (detail && typeof detail.effectsVolume === "number")
+      effectsVolume = clampVolume(detail.effectsVolume, effectsVolume);
+    if (detail && typeof detail.ambientVolume === "number")
+      ambientVolume = clampVolume(detail.ambientVolume, ambientVolume);
+    if (detail && typeof detail.muted === "boolean") audioMuted = detail.muted;
+  };
+  const performanceEvent = (event: Event) => {
+    const next = (event as CustomEvent<{ tier?: PerformanceTier }>).detail
+      ?.tier;
+    if (next === "high" || next === "balanced" || next === "lite")
+      applyPerformanceTier(next);
   };
   const sideLimit = () =>
     Math.min(
@@ -2332,6 +2386,7 @@ export async function createGameScene(
   window.addEventListener("yamabushi-reward", rewardEvent);
   window.addEventListener("yamabushi-effects", effectsEvent);
   window.addEventListener("yamabushi-audio", audioEvent);
+  window.addEventListener("yamabushi-performance", performanceEvent);
   window.addEventListener("yamabushi-retire", retireEvent);
   window.addEventListener("yamabushi-restart", resetRun);
   window.addEventListener("yamabushi-start", resetRun);
@@ -2965,6 +3020,7 @@ export async function createGameScene(
       window.removeEventListener("yamabushi-reward", rewardEvent);
       window.removeEventListener("yamabushi-effects", effectsEvent);
       window.removeEventListener("yamabushi-audio", audioEvent);
+      window.removeEventListener("yamabushi-performance", performanceEvent);
       window.removeEventListener("yamabushi-retire", retireEvent);
       window.removeEventListener("yamabushi-restart", resetRun);
       window.removeEventListener("yamabushi-start", resetRun);
