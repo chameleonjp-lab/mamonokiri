@@ -11,11 +11,11 @@ import { HemisphericLight } from "@babylonjs/core/Lights/hemisphericLight";
 import { Texture } from "@babylonjs/core/Materials/Textures/texture";
 import "@babylonjs/core/Materials/standardMaterial";
 import {
-  DEFAULT_AUDIO_SETTINGS,
   PERFORMANCE_CONFIG,
   clampVolume,
+  readAudioSettings,
   readPerformanceTier,
-  readStoredVolume,
+  SETTINGS_STORAGE_KEYS,
   type PerformanceTier,
 } from "./config";
 import {
@@ -668,7 +668,7 @@ export async function createGameScene(
   engine: Engine,
   canvas: HTMLCanvasElement,
   initialPerformanceTier: PerformanceTier = readPerformanceTier(
-    localStorage.getItem("yamabushi-performance"),
+    localStorage.getItem(SETTINGS_STORAGE_KEYS.performance),
   ),
 ): Promise<GameHandle> {
   const scene = new Scene(engine);
@@ -1116,7 +1116,7 @@ export async function createGameScene(
   let paused = false;
   let pauseStartedAt = 0;
   let effectLevel =
-    (localStorage.getItem("yamabushi-effects") as
+    (localStorage.getItem(SETTINGS_STORAGE_KEYS.effectsLevel) as
       "full" | "reduced" | "minimal" | null) ?? "full";
   let defeated = false;
   let transitioning = false;
@@ -1212,22 +1212,11 @@ export async function createGameScene(
     if (audioContext.state === "suspended") void audioContext.resume();
     return audioContext;
   };
-  let masterVolume = readStoredVolume(
-    localStorage,
-    "yamabushi-master-volume",
-    DEFAULT_AUDIO_SETTINGS.masterVolume,
-  );
-  let effectsVolume = readStoredVolume(
-    localStorage,
-    "yamabushi-effects-volume",
-    DEFAULT_AUDIO_SETTINGS.effectsVolume,
-  );
-  let ambientVolume = readStoredVolume(
-    localStorage,
-    "yamabushi-ambient-volume",
-    DEFAULT_AUDIO_SETTINGS.ambientVolume,
-  );
-  let audioMuted = localStorage.getItem("yamabushi-audio-muted") === "true";
+  const storedAudioSettings = readAudioSettings(localStorage);
+  let masterVolume = storedAudioSettings.masterVolume;
+  let effectsVolume = storedAudioSettings.effectsVolume;
+  let ambientVolume = storedAudioSettings.ambientVolume;
+  let audioMuted = storedAudioSettings.muted;
   type AudioCategory = "effects" | "ambient";
   const playTone = (
     frequency: number,

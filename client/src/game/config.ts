@@ -8,6 +8,16 @@ export type AudioSettings = {
   muted: boolean;
 };
 
+export const SETTINGS_STORAGE_KEYS = {
+  effectsLevel: "yamabushi-effects",
+  masterVolume: "yamabushi-master-volume",
+  effectsVolume: "yamabushi-effects-volume",
+  ambientVolume: "yamabushi-ambient-volume",
+  audioMuted: "yamabushi-audio-muted",
+  handedness: "yamabushi-handedness",
+  performance: "yamabushi-performance",
+} as const;
+
 export const AUDIO_VOLUME_STEPS = [0.35, 0.7, 1] as const;
 
 export const DEFAULT_AUDIO_SETTINGS: AudioSettings = {
@@ -63,6 +73,40 @@ export function readStoredVolume(
 ): number {
   const stored = storage.getItem(key);
   return stored === null ? fallback : clampVolume(Number(stored), fallback);
+}
+
+export function readAudioSettings(storage: Storage): AudioSettings {
+  return {
+    masterVolume: readStoredVolume(
+      storage,
+      SETTINGS_STORAGE_KEYS.masterVolume,
+      DEFAULT_AUDIO_SETTINGS.masterVolume,
+    ),
+    effectsVolume: readStoredVolume(
+      storage,
+      SETTINGS_STORAGE_KEYS.effectsVolume,
+      DEFAULT_AUDIO_SETTINGS.effectsVolume,
+    ),
+    ambientVolume: readStoredVolume(
+      storage,
+      SETTINGS_STORAGE_KEYS.ambientVolume,
+      DEFAULT_AUDIO_SETTINGS.ambientVolume,
+    ),
+    muted: storage.getItem(SETTINGS_STORAGE_KEYS.audioMuted) === "true",
+  };
+}
+
+export function hardwareScalingLevelFor(
+  tier: PerformanceTier,
+  devicePixelRatio: number,
+): number {
+  const safeDevicePixelRatio = Number.isFinite(devicePixelRatio)
+    ? Math.max(1, Math.min(2, devicePixelRatio))
+    : 1;
+  return Math.max(
+    1,
+    safeDevicePixelRatio / PERFORMANCE_CONFIG[tier].resolutionScale,
+  );
 }
 
 export function nextVolume(value: number): number {
