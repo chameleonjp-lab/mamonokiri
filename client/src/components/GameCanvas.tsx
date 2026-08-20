@@ -3,16 +3,15 @@ import { useEffect, useRef } from "react";
 import { Engine } from "@babylonjs/core/Engines/engine";
 import { createGameScene, type GameHandle } from "@/game/scene";
 import {
-  PERFORMANCE_CONFIG,
+  hardwareScalingLevelFor,
   readPerformanceTier,
+  SETTINGS_STORAGE_KEYS,
   type PerformanceTier,
 } from "@/game/config";
 
 function applyRenderQuality(engine: Engine, tier: PerformanceTier) {
-  const devicePixelRatio = Math.min(2, window.devicePixelRatio || 1);
-  const resolutionScale = PERFORMANCE_CONFIG[tier].resolutionScale;
   engine.setHardwareScalingLevel(
-    Math.max(1, devicePixelRatio / resolutionScale),
+    hardwareScalingLevelFor(tier, window.devicePixelRatio || 1),
   );
 }
 
@@ -25,7 +24,7 @@ export default function GameCanvas() {
     if (!canvas || startedRef.current) return;
     startedRef.current = true;
     let performanceTier = readPerformanceTier(
-      localStorage.getItem("yamabushi-performance"),
+      localStorage.getItem(SETTINGS_STORAGE_KEYS.performance),
     );
     const engine = new Engine(canvas, true, {
       preserveDrawingBuffer: false,
@@ -44,7 +43,7 @@ export default function GameCanvas() {
         ?.tier;
       if (next !== "high" && next !== "balanced" && next !== "lite") return;
       performanceTier = next;
-      localStorage.setItem("yamabushi-performance", next);
+      localStorage.setItem(SETTINGS_STORAGE_KEYS.performance, next);
       applyRenderQuality(engine, performanceTier);
       engine.resize();
     };

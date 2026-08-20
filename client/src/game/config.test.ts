@@ -3,9 +3,12 @@ import {
   DEFAULT_AUDIO_SETTINGS,
   PERFORMANCE_CONFIG,
   clampVolume,
+  hardwareScalingLevelFor,
   nextVolume,
+  readAudioSettings,
   readHandedness,
   readPerformanceTier,
+  SETTINGS_STORAGE_KEYS,
 } from "./config";
 
 describe("priority C device settings", () => {
@@ -28,6 +31,33 @@ describe("priority C device settings", () => {
     expect(readPerformanceTier("high")).toBe("high");
     expect(readPerformanceTier("lite")).toBe("lite");
     expect(readPerformanceTier("unknown")).toBe("balanced");
+  });
+
+  it("reads all audio settings through the shared storage contract", () => {
+    const values: Record<string, string> = {
+      [SETTINGS_STORAGE_KEYS.masterVolume]: "0.35",
+      [SETTINGS_STORAGE_KEYS.effectsVolume]: "invalid",
+      [SETTINGS_STORAGE_KEYS.audioMuted]: "true",
+    };
+    const storage = {
+      getItem: (key: string) => values[key] ?? null,
+    } as Storage;
+
+    expect(readAudioSettings(storage)).toEqual({
+      masterVolume: 0.35,
+      effectsVolume: DEFAULT_AUDIO_SETTINGS.effectsVolume,
+      ambientVolume: DEFAULT_AUDIO_SETTINGS.ambientVolume,
+      muted: true,
+    });
+  });
+
+  it("calculates a bounded hardware scaling level for each render tier", () => {
+    expect(hardwareScalingLevelFor("high", 3)).toBe(2);
+    expect(hardwareScalingLevelFor("balanced", 2)).toBeCloseTo(2 / 0.78);
+    expect(hardwareScalingLevelFor("lite", 0.5)).toBeCloseTo(1 / 0.58);
+    expect(hardwareScalingLevelFor("balanced", Number.NaN)).toBeCloseTo(
+      1 / 0.78,
+    );
   });
 
   it("retains judgement-critical display features in every tier", () => {

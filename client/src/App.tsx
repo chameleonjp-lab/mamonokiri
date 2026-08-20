@@ -2,12 +2,12 @@
 import { useEffect, useRef, useState } from "react";
 import GameCanvas from "@/components/GameCanvas";
 import {
-  DEFAULT_AUDIO_SETTINGS,
   PERFORMANCE_CONFIG,
   nextVolume,
+  readAudioSettings,
   readHandedness,
   readPerformanceTier,
-  readStoredVolume,
+  SETTINGS_STORAGE_KEYS,
   type AudioSettings,
   type Handedness,
   type PerformanceTier,
@@ -200,38 +200,28 @@ export default function App() {
     "full" | "reduced" | "minimal"
   >(
     () =>
-      (localStorage.getItem("yamabushi-effects") as
+      (localStorage.getItem(SETTINGS_STORAGE_KEYS.effectsLevel) as
         "full" | "reduced" | "minimal" | null) ?? "full",
   );
-  const [ambientVolume, setAmbientVolume] = useState(() =>
-    readStoredVolume(
-      localStorage,
-      "yamabushi-ambient-volume",
-      DEFAULT_AUDIO_SETTINGS.ambientVolume,
-    ),
+  const [ambientVolume, setAmbientVolume] = useState(
+    () => readAudioSettings(localStorage).ambientVolume,
   );
-  const [masterVolume, setMasterVolume] = useState(() =>
-    readStoredVolume(
-      localStorage,
-      "yamabushi-master-volume",
-      DEFAULT_AUDIO_SETTINGS.masterVolume,
-    ),
+  const [masterVolume, setMasterVolume] = useState(
+    () => readAudioSettings(localStorage).masterVolume,
   );
-  const [effectsVolume, setEffectsVolume] = useState(() =>
-    readStoredVolume(
-      localStorage,
-      "yamabushi-effects-volume",
-      DEFAULT_AUDIO_SETTINGS.effectsVolume,
-    ),
+  const [effectsVolume, setEffectsVolume] = useState(
+    () => readAudioSettings(localStorage).effectsVolume,
   );
   const [audioMuted, setAudioMuted] = useState(
-    () => localStorage.getItem("yamabushi-audio-muted") === "true",
+    () => readAudioSettings(localStorage).muted,
   );
   const [handedness, setHandedness] = useState<Handedness>(() =>
-    readHandedness(localStorage.getItem("yamabushi-handedness")),
+    readHandedness(localStorage.getItem(SETTINGS_STORAGE_KEYS.handedness)),
   );
   const [performanceTier, setPerformanceTier] = useState<PerformanceTier>(() =>
-    readPerformanceTier(localStorage.getItem("yamabushi-performance")),
+    readPerformanceTier(
+      localStorage.getItem(SETTINGS_STORAGE_KEYS.performance),
+    ),
   );
   const previousClimax = useRef(0);
   const previousCounter = useRef(0);
@@ -251,7 +241,7 @@ export default function App() {
           ? "minimal"
           : "full";
     setEffectLevel(next);
-    localStorage.setItem("yamabushi-effects", next);
+    localStorage.setItem(SETTINGS_STORAGE_KEYS.effectsLevel, next);
     dispatchGameEvent("yamabushi-effects", { level: next });
   };
 
@@ -267,16 +257,19 @@ export default function App() {
     setEffectsVolume(next.effectsVolume);
     setAmbientVolume(next.ambientVolume);
     setAudioMuted(next.muted);
-    localStorage.setItem("yamabushi-master-volume", String(next.masterVolume));
     localStorage.setItem(
-      "yamabushi-effects-volume",
+      SETTINGS_STORAGE_KEYS.masterVolume,
+      String(next.masterVolume),
+    );
+    localStorage.setItem(
+      SETTINGS_STORAGE_KEYS.effectsVolume,
       String(next.effectsVolume),
     );
     localStorage.setItem(
-      "yamabushi-ambient-volume",
+      SETTINGS_STORAGE_KEYS.ambientVolume,
       String(next.ambientVolume),
     );
-    localStorage.setItem("yamabushi-audio-muted", String(next.muted));
+    localStorage.setItem(SETTINGS_STORAGE_KEYS.audioMuted, String(next.muted));
     dispatchGameEvent("yamabushi-audio", next);
   };
 
@@ -299,7 +292,7 @@ export default function App() {
   const toggleHandedness = () => {
     const next = handedness === "right" ? "left" : "right";
     setHandedness(next);
-    localStorage.setItem("yamabushi-handedness", next);
+    localStorage.setItem(SETTINGS_STORAGE_KEYS.handedness, next);
   };
 
   const cyclePerformance = () => {
@@ -310,7 +303,7 @@ export default function App() {
           ? "lite"
           : "high";
     setPerformanceTier(next);
-    localStorage.setItem("yamabushi-performance", next);
+    localStorage.setItem(SETTINGS_STORAGE_KEYS.performance, next);
     dispatchGameEvent("yamabushi-performance", { tier: next });
   };
 
@@ -418,9 +411,16 @@ export default function App() {
   const handlePointerDown = (event: React.PointerEvent<HTMLElement>) => {
     if (
       event.pointerType === "mouse" ||
-      (event.target as HTMLElement).closest("button")
-    )
+      (event.target as HTMLElement).closest("button") ||
+      showTitle ||
+      state.paused ||
+      state.defeated ||
+      state.rewardPending ||
+      state.transitioning
+    ) {
+      swipeStart.current = null;
       return;
+    }
     swipeStart.current = {
       x: event.clientX,
       y: event.clientY,
@@ -434,7 +434,12 @@ export default function App() {
     if (
       !start ||
       event.pointerType === "mouse" ||
-      (event.target as HTMLElement).closest("button")
+      (event.target as HTMLElement).closest("button") ||
+      showTitle ||
+      state.paused ||
+      state.defeated ||
+      state.rewardPending ||
+      state.transitioning
     )
       return;
     const dx = event.clientX - start.x;
@@ -448,6 +453,10 @@ export default function App() {
     }
   };
 
+  const handlePointerCancel = () => {
+    swipeStart.current = null;
+  };
+
   const victory = state.enemyHp === 0 && state.wave >= state.modeLimit;
 
   return (
@@ -455,6 +464,7 @@ export default function App() {
       className={`game-shell ${handedness === "left" ? "is-left-handed" : ""} performance-${performanceTier}`}
       onPointerDown={handlePointerDown}
       onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerCancel}
     >
       <GameCanvas />
       <div
