@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   INITIAL_RUN,
+  addChapterRewardEffect,
   applyDamage,
   attackPlanFor,
   attackTimingFor,
@@ -9,18 +10,23 @@ import {
   canStartPlayerAction,
   chapterForWave,
   chapterRewardForDefeat,
+  chapterRewardOptionsForDefeat,
   chooseNonRepeatingIndex,
   correctDodgeForLane,
   counterMayBeGranted,
   crossedComboMilestones,
   defeatProgress,
+  DIFFICULTY_CONFIG,
   enemyAttackPlanFor,
   enemyPostureDamageFor,
   followUpLanesFor,
   freshRun,
   normalEnemyPoolForWave,
+  modeLimitFor,
+  nextSeed,
   postureAfterGuard,
   recoverPosture,
+  scoreForCombo,
   shiftActiveTimer,
   shouldAdvanceAfterDefeat,
   tutorialVariantIndex,
@@ -120,7 +126,7 @@ describe("priority S combat rules", () => {
     expect(defeatProgress(50, 50)).toMatchObject({
       advances: false,
       victory: true,
-      chapterReward: { chapter: 5 },
+      chapterReward: null,
     });
   });
 
@@ -137,6 +143,52 @@ describe("priority S combat rules", () => {
     retry.score = 9999;
     expect(freshRun()).toEqual(INITIAL_RUN);
     expect(retry).toMatchObject({ combo: 12, score: 9999 });
+  });
+});
+
+describe("priority B run configuration and scoring", () => {
+  it("keeps the three run lengths explicit", () => {
+    expect(modeLimitFor("ten")).toBe(10);
+    expect(modeLimitFor("twenty-five")).toBe(25);
+    expect(modeLimitFor("fifty")).toBe(50);
+  });
+
+  it("makes difficulty visible through different timing values", () => {
+    expect(DIFFICULTY_CONFIG.apprentice.warningMultiplier).toBeGreaterThan(1);
+    expect(DIFFICULTY_CONFIG.dark.warningMultiplier).toBeLessThan(1);
+    expect(DIFFICULTY_CONFIG.apprentice.parryWindow).toBeGreaterThan(
+      DIFFICULTY_CONFIG.dark.parryWindow,
+    );
+  });
+
+  it("offers three chapter choices only after a non-final ten defeat", () => {
+    expect(chapterRewardOptionsForDefeat(9, 50)).toHaveLength(0);
+    expect(chapterRewardOptionsForDefeat(10, 50)).toHaveLength(3);
+    expect(chapterRewardOptionsForDefeat(10, 10)).toHaveLength(0);
+  });
+
+  it("limits held temporary effects without duplicating a choice", () => {
+    expect(
+      addChapterRewardEffect(["heal", "parry-window"], "score-multiplier"),
+    ).toEqual(["parry-window", "score-multiplier"]);
+    expect(addChapterRewardEffect(["heal"], "heal")).toEqual(["heal"]);
+  });
+
+  it("caps combo multiplication so hit spam cannot grow without bound", () => {
+    expect(scoreForCombo(100, 1)).toBe(100);
+    expect(scoreForCombo(100, 8)).toBe(800);
+    expect(scoreForCombo(100, 80)).toBe(800);
+  });
+
+  it("replays the same deterministic random sequence from a seed", () => {
+    const first = nextSeed(12345);
+    const second = nextSeed(first.seed);
+    const replayFirst = nextSeed(12345);
+    const replaySecond = nextSeed(replayFirst.seed);
+    expect([first.value, second.value]).toEqual([
+      replayFirst.value,
+      replaySecond.value,
+    ]);
   });
 });
 
