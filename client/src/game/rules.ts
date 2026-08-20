@@ -1,5 +1,17 @@
 export type AttackSide = "left" | "right" | "alternate" | "wide" | "target";
 
+export type RunMode = "ten" | "twenty-five" | "fifty";
+
+export type Difficulty = "apprentice" | "standard" | "dark";
+
+export type ChapterRewardKind = "heal" | "parry-window" | "score-multiplier";
+
+export type ChapterRewardOption = {
+  kind: ChapterRewardKind;
+  label: string;
+  description: string;
+};
+
 export type Lane = -1 | 0 | 1;
 
 export type EnemyRole =
@@ -35,6 +47,133 @@ export type ChapterReward = {
   hp: number;
   score: number;
 } | null;
+
+export const RUN_MODE_CONFIG: Readonly<
+  Record<RunMode, { label: string; limit: number; description: string }>
+> = {
+  ten: {
+    label: "十番勝負",
+    limit: 10,
+    description: "短時間で一章を駆け抜ける",
+  },
+  "twenty-five": {
+    label: "二十五番勝負",
+    limit: 25,
+    description: "前半の型を読み切る",
+  },
+  fifty: {
+    label: "五十番修行",
+    limit: 50,
+    description: "五章を通して修める",
+  },
+};
+
+export const DIFFICULTY_CONFIG: Readonly<
+  Record<
+    Difficulty,
+    {
+      label: string;
+      description: string;
+      warningMultiplier: number;
+      cooldownMultiplier: number;
+      parryWindow: number;
+    }
+  >
+> = {
+  apprentice: {
+    label: "見習い",
+    description: "予告が長く、型を読みやすい",
+    warningMultiplier: 1.35,
+    cooldownMultiplier: 1.15,
+    parryWindow: 180,
+  },
+  standard: {
+    label: "修験",
+    description: "標準の予告と間合い",
+    warningMultiplier: 1,
+    cooldownMultiplier: 1,
+    parryWindow: 150,
+  },
+  dark: {
+    label: "無明",
+    description: "予告が短く、判断が速い",
+    warningMultiplier: 0.72,
+    cooldownMultiplier: 0.84,
+    parryWindow: 120,
+  },
+};
+
+export const CHAPTER_REWARD_OPTIONS: ReadonlyArray<ChapterRewardOption> = [
+  {
+    kind: "heal",
+    label: "生命を整える",
+    description: "体力を30回復する",
+  },
+  {
+    kind: "parry-window",
+    label: "静かな見切り",
+    description: "次の章だけ受け流し受付を45ms延長する",
+  },
+  {
+    kind: "score-multiplier",
+    label: "修験の勢い",
+    description: "次の章だけ得点を15%増やす",
+  },
+];
+
+export const COMBO_MULTIPLIER_CAP = 8;
+
+export function modeLimitFor(mode: RunMode): number {
+  return RUN_MODE_CONFIG[mode].limit;
+}
+
+export function modeLabelFor(mode: RunMode): string {
+  return RUN_MODE_CONFIG[mode].label;
+}
+
+export function difficultyLabelFor(difficulty: Difficulty): string {
+  return DIFFICULTY_CONFIG[difficulty].label;
+}
+
+export function scoreForCombo(
+  basePoints: number,
+  combo: number,
+  scoreMultiplier = 1,
+): number {
+  const safeBase = Math.max(0, basePoints);
+  const safeCombo = Math.max(1, Math.min(COMBO_MULTIPLIER_CAP, combo));
+  const safeMultiplier = Math.max(0, scoreMultiplier);
+  return Math.round(safeBase * safeCombo * safeMultiplier);
+}
+
+export function normalizeSeed(seed: number): number {
+  const normalized = Math.trunc(seed) >>> 0;
+  return normalized === 0 ? 0x6d2b79f5 : normalized;
+}
+
+export function nextSeed(seed: number): { seed: number; value: number } {
+  const next = (normalizeSeed(seed) * 1664525 + 1013904223) >>> 0;
+  return { seed: normalizeSeed(next), value: next / 0x100000000 };
+}
+
+export function chapterRewardOptionsForDefeat(
+  defeatedWave: number,
+  modeLimit = 50,
+): ReadonlyArray<ChapterRewardOption> {
+  return chapterRewardForDefeat(defeatedWave, modeLimit)
+    ? CHAPTER_REWARD_OPTIONS.map((option) => ({ ...option }))
+    : [];
+}
+
+export function addChapterRewardEffect(
+  current: readonly ChapterRewardKind[],
+  nextEffect: ChapterRewardKind,
+  maximum = 2,
+): ChapterRewardKind[] {
+  const withoutDuplicate = current.filter((effect) => effect !== nextEffect);
+  const next = [...withoutDuplicate, nextEffect];
+  return next.slice(Math.max(0, next.length - Math.max(1, maximum)));
+}
 
 export type RunResetSnapshot = {
   hp: number;
@@ -225,8 +364,12 @@ export function followUpLanesFor(
   return [];
 }
 
-export function chapterRewardForDefeat(defeatedWave: number): ChapterReward {
-  if (defeatedWave <= 0 || defeatedWave % 10 !== 0) return null;
+export function chapterRewardForDefeat(
+  defeatedWave: number,
+  modeLimit = 50,
+): ChapterReward {
+  if (defeatedWave <= 0 || defeatedWave >= modeLimit || defeatedWave % 10 !== 0)
+    return null;
   const chapter = Math.min(5, defeatedWave / 10);
   return { chapter, hp: 12, score: chapter * 500 };
 }
@@ -283,7 +426,7 @@ export function defeatProgress(defeatedWave: number, modeLimit = 50) {
   return {
     advances: shouldAdvanceAfterDefeat(defeatedWave, modeLimit),
     victory: defeatedWave >= modeLimit,
-    chapterReward: chapterRewardForDefeat(defeatedWave),
+    chapterReward: chapterRewardForDefeat(defeatedWave, modeLimit),
   };
 }
 
