@@ -33,11 +33,51 @@ export default function GameCanvas() {
     });
     applyRenderQuality(engine, performanceTier);
     let handle: GameHandle | null = null;
+    let disposed = false;
+    let battleRenderActive = false;
+    let renderLoopRunning = false;
+    const renderFrame = () => handle?.scene.render();
+    const setBattleRenderActive = (active: boolean) => {
+      battleRenderActive = active;
+      if (!handle) return;
+      if (active && !renderLoopRunning) {
+        renderLoopRunning = true;
+        engine.runRenderLoop(renderFrame);
+        return;
+      }
+      if (!active) {
+        if (renderLoopRunning) {
+          engine.stopRenderLoop(renderFrame);
+          renderLoopRunning = false;
+          return;
+        }
+        renderFrame();
+      }
+    };
     createGameScene(engine, canvas, performanceTier).then((next) => {
+      if (disposed) {
+        next.dispose();
+        return;
+      }
       handle = next;
-      engine.runRenderLoop(() => next.scene.render());
+      setBattleRenderActive(battleRenderActive);
     });
-    const onResize = () => engine.resize();
+    const onResize = () => {
+      engine.resize();
+      if (!battleRenderActive) renderFrame();
+    };
+    const onGameState = (event: Event) => {
+      const state = (
+        event as CustomEvent<{
+          paused?: boolean;
+          defeated?: boolean;
+          rewardPending?: boolean;
+        }>
+      ).detail;
+      setBattleRenderActive(
+        !state?.paused && !state?.defeated && !state?.rewardPending,
+      );
+    };
     const onPerformance = (event: Event) => {
       const next = (event as CustomEvent<{ tier?: PerformanceTier }>).detail
         ?.tier;
@@ -46,22 +86,34 @@ export default function GameCanvas() {
       localStorage.setItem(SETTINGS_STORAGE_KEYS.performance, next);
       applyRenderQuality(engine, performanceTier);
       engine.resize();
+      if (!battleRenderActive) renderFrame();
     };
-    const onVisibilityChange = () => {
-      if (document.visibilityState === "hidden") {
-        window.dispatchEvent(
-          new CustomEvent("yamabushi-pause", {
-            detail: { paused: true, reason: "visibility" },
-          }),
-        );
-      }
+    const pauseForInterruption = (
+      reason: "visibility" | "pagehide" | "pageshow",
+    ) => {
+      window.dispatchEvent(
+        new CustomEvent("yamabushi-pause", {
+          detail: { paused: true, reason },
+        }),
+      );
     };
+    const onVisibilityChange = () => pauseForInterruption("visibility");
+    const onPageHide = () => pauseForInterruption("pagehide");
+    const onPageShow = () => pauseForInterruption("pageshow");
     window.addEventListener("resize", onResize);
+    window.addEventListener("yamabushi-state", onGameState);
     window.addEventListener("yamabushi-performance", onPerformance);
+    window.addEventListener("pagehide", onPageHide);
+    window.addEventListener("pageshow", onPageShow);
     document.addEventListener("visibilitychange", onVisibilityChange);
     return () => {
+      disposed = true;
+      if (renderLoopRunning) engine.stopRenderLoop(renderFrame);
       window.removeEventListener("resize", onResize);
+      window.removeEventListener("yamabushi-state", onGameState);
       window.removeEventListener("yamabushi-performance", onPerformance);
+      window.removeEventListener("pagehide", onPageHide);
+      window.removeEventListener("pageshow", onPageShow);
       document.removeEventListener("visibilitychange", onVisibilityChange);
       handle?.dispose();
       engine.dispose();

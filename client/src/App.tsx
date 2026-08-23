@@ -14,6 +14,7 @@ import {
 } from "@/game/config";
 import {
   DIFFICULTY_CONFIG,
+  RESUME_GRACE_MS,
   RUN_MODE_CONFIG,
   type ChapterRewardKind,
   type Difficulty,
@@ -74,6 +75,7 @@ type GameState = {
   paused: boolean;
   transitioning: boolean;
   tutorialStep: number;
+  tutorialObjectiveMet: boolean;
 };
 
 const initial: GameState = {
@@ -126,6 +128,7 @@ const initial: GameState = {
   paused: false,
   transitioning: false,
   tutorialStep: 1,
+  tutorialObjectiveMet: false,
 };
 
 function Bar({ value, tone }: { value: number; tone: "player" | "enemy" }) {
@@ -171,12 +174,6 @@ function formatPlayTime(milliseconds: number): string {
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;
   return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-}
-
-function rewardEffectLabel(effect: ChapterRewardKind): string {
-  if (effect === "heal") return "生命回復";
-  if (effect === "parry-window") return "受け流し延長";
-  return "得点倍率";
 }
 
 function volumeLabel(value: number): string {
@@ -334,7 +331,10 @@ export default function App() {
 
   const resumeGame = () => {
     setShowPause(false);
-    dispatchGameEvent("yamabushi-pause", { paused: false });
+    dispatchGameEvent("yamabushi-pause", {
+      paused: false,
+      resumeGraceMs: RESUME_GRACE_MS,
+    });
   };
 
   useEffect(() => {
@@ -374,13 +374,6 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    const block = (event: Event) => event.preventDefault();
-    document.addEventListener("contextmenu", block);
-    document.addEventListener("selectstart", block);
-    document.addEventListener("dragstart", block);
-    document.addEventListener("copy", block);
-    document.addEventListener("cut", block);
-
     const onPopState = () => {
       if (allowExit.current) {
         allowExit.current = false;
@@ -399,11 +392,6 @@ export default function App() {
     window.history.pushState({ yamabushiGame: true }, "", window.location.href);
     window.addEventListener("popstate", onPopState);
     return () => {
-      document.removeEventListener("contextmenu", block);
-      document.removeEventListener("selectstart", block);
-      document.removeEventListener("dragstart", block);
-      document.removeEventListener("copy", block);
-      document.removeEventListener("cut", block);
       window.removeEventListener("popstate", onPopState);
     };
   }, []);
@@ -458,10 +446,16 @@ export default function App() {
   };
 
   const victory = state.enemyHp === 0 && state.wave >= state.modeLimit;
+  const overlayOpen =
+    showTitle ||
+    showPause ||
+    showExitConfirm ||
+    state.defeated ||
+    state.rewardPending;
 
   return (
     <main
-      className={`game-shell ${handedness === "left" ? "is-left-handed" : ""} performance-${performanceTier}`}
+      className={`game-shell ${handedness === "left" ? "is-left-handed" : ""} ${overlayOpen ? "is-overlay-open" : ""} performance-${performanceTier}`}
       onPointerDown={handlePointerDown}
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerCancel}
@@ -506,8 +500,8 @@ export default function App() {
           <span className="victory-rays" />
           <small>THE MOUNTAIN LORD FALLS</small>
           <strong>峠の主、断つ</strong>
-          <em>生命 +30・構え +30</em>
-          <b>体力 {state.hp} / 100</b>
+          <em>撃破。次の敵影を読め</em>
+          <b>ボス撃破 {state.bossDefeats}</b>
         </div>
       )}
 
@@ -571,11 +565,11 @@ export default function App() {
           </div>
           <span className={`enemy-phase phase-${state.enemyPhase}`}>
             {state.enemyPhase === "防御"
-              ? "GUARD"
+              ? "防御"
               : state.enemyPhase === "大崩れ"
-                ? "BREAK"
+                ? "大崩れ"
                 : state.boss && state.enemyPhase === "巡回"
-                  ? `BOSS ${state.bossPhase === 2 ? "II" : "I"}`
+                  ? `ボス・${state.bossPhase === 2 ? "後半" : "前半"}`
                   : state.enemyPhase}
           </span>
         </div>
@@ -612,29 +606,6 @@ export default function App() {
       </section>
 
       <section className={`score-hud ${state.combo ? "is-combo" : ""}`}>
-        <div className="audio-toggles">
-          <button
-            type="button"
-            className="effect-toggle"
-            onClick={cycleEffects}
-            aria-label="演出強度を切り替える"
-          >
-            演出{" "}
-            {effectLevel === "full"
-              ? "標準"
-              : effectLevel === "reduced"
-                ? "軽量"
-                : "最小"}
-          </button>
-          <button
-            type="button"
-            className="audio-toggle"
-            onClick={cycleAmbient}
-            aria-label="環境音量を切り替える"
-          >
-            環境音 {volumeLabel(ambientVolume)}
-          </button>
-        </div>
         <div className="score-label">SCORE / CHAIN</div>
         <strong>{String(state.score).padStart(6, "0")}</strong>
         <small className="run-meta">
@@ -657,25 +628,33 @@ export default function App() {
       {state.tutorialStep > 0 && !state.defeated && (
         <aside className="combat-guide" aria-label="序盤の操作ガイド">
           <b>
-            {state.tutorialStep === 3
-              ? "K"
-              : state.tutorialStep === 1
-                ? "右"
-                : "左"}
+            {state.tutorialObjectiveMet
+              ? "成功"
+              : state.tutorialStep === 3
+                ? "防"
+                : state.tutorialStep === 1
+                  ? "右"
+                  : "左"}
           </b>{" "}
-          {state.tutorialStep === 3
-            ? "防御し、受け流し後にJで反撃"
-            : "予告と反対側へ回避"}
+          {state.tutorialObjectiveMet
+            ? state.tutorialStep === 3
+              ? "今すぐ斬で反撃"
+              : "斬で仕留める"
+            : state.tutorialStep === 3
+              ? "攻撃直前に押し、受け流したら斬"
+              : "赤い危険線と反対側へ回避"}
         </aside>
       )}
       <div className="stance">
         <span className="dot" />
         構え <strong>{state.stance}</strong>
         {state.counterReady && (
-          <small className="counter-ready">反撃受付 / J</small>
+          <small className="counter-ready">反撃受付 / 斬</small>
         )}
         {state.enemyPhase === "防御" && (
-          <small className="guard-break-ready">青輪 GUARD / 防御崩し J</small>
+          <small className="guard-break-ready">
+            青い輪・防御中 / 斬で防御崩し
+          </small>
         )}
         {state.attackPhase !== "待機" && (
           <small className="attack-phase">斬・{state.attackPhase}</small>
@@ -735,9 +714,7 @@ export default function App() {
               type="button"
               className="gb-btn action-btn slash-btn"
               aria-label="斬る"
-              onClick={() =>
-                window.dispatchEvent(new KeyboardEvent("keydown", { key: "j" }))
-              }
+              onClick={() => dispatchGameEvent("yamabushi-slash")}
             >
               <b>斬</b>
               <small>SLASH</small>
@@ -746,9 +723,7 @@ export default function App() {
               type="button"
               className="gb-btn action-btn guard-btn"
               aria-label="防御"
-              onClick={() =>
-                window.dispatchEvent(new KeyboardEvent("keydown", { key: "k" }))
-              }
+              onClick={() => dispatchGameEvent("yamabushi-guard")}
             >
               <b>防</b>
               <small>GUARD</small>
@@ -768,12 +743,7 @@ export default function App() {
           <h2 id="reward-title">第{state.rewardChapter}章を越えた</h2>
           <p>次の章だけ有効な修験を一つ選ぶ。</p>
           <div className="reward-owned">
-            所持効果 {state.rewardEffects.length} / 2
-            {state.rewardEffects.length > 0 && (
-              <span>
-                {state.rewardEffects.map(rewardEffectLabel).join("・")}
-              </span>
-            )}
+            <span>効果は重複せず、次の章を終えると消える</span>
           </div>
           <div className="reward-options">
             {state.rewardOptions.map((option) => (
@@ -946,41 +916,77 @@ export default function App() {
             墨霞<span>の</span>剣
           </h2>
           <p>敵の予告を読み、防御・回避・斬撃を選ぶ。</p>
-          <div className="title-choice-group">
-            <span>勝負の長さ</span>
-            <div className="title-choice-row">
-              {(Object.keys(RUN_MODE_CONFIG) as RunMode[]).map((mode) => (
-                <button
-                  type="button"
-                  key={mode}
-                  className={selectedMode === mode ? "is-selected" : ""}
-                  onClick={() => setSelectedMode(mode)}
-                >
-                  <strong>{RUN_MODE_CONFIG[mode].label}</strong>
-                  <small>{RUN_MODE_CONFIG[mode].description}</small>
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="title-choice-group">
-            <span>難易度</span>
-            <div className="title-choice-row difficulty-row">
-              {(Object.keys(DIFFICULTY_CONFIG) as Difficulty[]).map(
-                (difficulty) => (
+          <div className="title-choice-groups">
+            <div className="title-choice-group">
+              <span>勝負の長さ</span>
+              <div className="title-choice-row mode-row">
+                {(Object.keys(RUN_MODE_CONFIG) as RunMode[]).map((mode) => (
                   <button
                     type="button"
-                    key={difficulty}
-                    className={
-                      selectedDifficulty === difficulty ? "is-selected" : ""
-                    }
-                    onClick={() => setSelectedDifficulty(difficulty)}
+                    key={mode}
+                    className={selectedMode === mode ? "is-selected" : ""}
+                    aria-pressed={selectedMode === mode}
+                    onClick={() => setSelectedMode(mode)}
                   >
-                    <strong>{DIFFICULTY_CONFIG[difficulty].label}</strong>
-                    <small>{DIFFICULTY_CONFIG[difficulty].description}</small>
+                    <strong>{RUN_MODE_CONFIG[mode].label}</strong>
+                    <small>{RUN_MODE_CONFIG[mode].description}</small>
                   </button>
-                ),
-              )}
+                ))}
+              </div>
             </div>
+            <div className="title-choice-group">
+              <span>難易度</span>
+              <div className="title-choice-row difficulty-row">
+                {(Object.keys(DIFFICULTY_CONFIG) as Difficulty[]).map(
+                  (difficulty) => (
+                    <button
+                      type="button"
+                      key={difficulty}
+                      className={
+                        selectedDifficulty === difficulty ? "is-selected" : ""
+                      }
+                      aria-pressed={selectedDifficulty === difficulty}
+                      onClick={() => setSelectedDifficulty(difficulty)}
+                    >
+                      <strong>{DIFFICULTY_CONFIG[difficulty].label}</strong>
+                      <small>{DIFFICULTY_CONFIG[difficulty].description}</small>
+                    </button>
+                  ),
+                )}
+              </div>
+            </div>
+          </div>
+          <div className="title-settings" aria-label="端末設定">
+            <button type="button" onClick={toggleHandedness}>
+              操作配置：{handedness === "left" ? "左利き" : "右利き"}
+            </button>
+            <button
+              type="button"
+              onClick={toggleAudioMute}
+              aria-pressed={audioMuted}
+            >
+              全消音：{audioMuted ? "入" : "切"}
+            </button>
+            <button type="button" onClick={cycleMasterVolume}>
+              主音量：{volumeLabel(masterVolume)}
+            </button>
+            <button type="button" onClick={cycleEffectsVolume}>
+              効果音：{volumeLabel(effectsVolume)}
+            </button>
+            <button type="button" onClick={cycleAmbient}>
+              環境音：{volumeLabel(ambientVolume)}
+            </button>
+            <button type="button" onClick={cycleEffects}>
+              演出：
+              {effectLevel === "full"
+                ? "標準"
+                : effectLevel === "reduced"
+                  ? "軽量"
+                  : "最小"}
+            </button>
+            <button type="button" onClick={cyclePerformance}>
+              描画：{PERFORMANCE_CONFIG[performanceTier].label}
+            </button>
           </div>
           <button
             type="button"
@@ -1009,7 +1015,10 @@ export default function App() {
                 className="exit-cancel"
                 onClick={() => {
                   setShowExitConfirm(false);
-                  dispatchGameEvent("yamabushi-pause", { paused: false });
+                  dispatchGameEvent("yamabushi-pause", {
+                    paused: false,
+                    resumeGraceMs: RESUME_GRACE_MS,
+                  });
                 }}
               >
                 ゲームに戻る

@@ -44,8 +44,6 @@ export type AttackPlan = {
 
 export type ChapterReward = {
   chapter: number;
-  hp: number;
-  score: number;
 } | null;
 
 export const RUN_MODE_CONFIG: Readonly<
@@ -122,6 +120,7 @@ export const CHAPTER_REWARD_OPTIONS: ReadonlyArray<ChapterRewardOption> = [
 ];
 
 export const COMBO_MULTIPLIER_CAP = 8;
+export const RESUME_GRACE_MS = 700;
 
 export function modeLimitFor(mode: RunMode): number {
   return RUN_MODE_CONFIG[mode].limit;
@@ -221,6 +220,13 @@ export const INITIAL_RUN: Readonly<RunResetSnapshot> = {
 
 export function tutorialVariantIndex(wave: number): number | null {
   return wave >= 1 && wave <= 3 ? wave - 1 : null;
+}
+
+export function canSlashDuringTutorial(
+  tutorialStep: number,
+  objectiveMet: boolean,
+): boolean {
+  return tutorialStep < 1 || tutorialStep > 3 || objectiveMet;
 }
 
 export function attackPlanFor(
@@ -371,7 +377,7 @@ export function chapterRewardForDefeat(
   if (defeatedWave <= 0 || defeatedWave >= modeLimit || defeatedWave % 10 !== 0)
     return null;
   const chapter = Math.min(5, defeatedWave / 10);
-  return { chapter, hp: 12, score: chapter * 500 };
+  return { chapter };
 }
 
 export function crossedComboMilestones(
@@ -404,6 +410,14 @@ export function shouldAdvanceAfterDefeat(
   modeLimit = 50,
 ): boolean {
   return defeatedWave < modeLimit;
+}
+
+export function shouldAdvanceCombatClock(
+  paused: boolean,
+  defeated: boolean,
+  transitioning: boolean,
+): boolean {
+  return !paused && !defeated && !transitioning;
 }
 
 export function shiftActiveTimer(

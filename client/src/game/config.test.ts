@@ -52,11 +52,14 @@ describe("priority C device settings", () => {
   });
 
   it("calculates a bounded hardware scaling level for each render tier", () => {
-    expect(hardwareScalingLevelFor("high", 3)).toBe(2);
-    expect(hardwareScalingLevelFor("balanced", 2)).toBeCloseTo(2 / 0.78);
-    expect(hardwareScalingLevelFor("lite", 0.5)).toBeCloseTo(1 / 0.58);
+    expect(hardwareScalingLevelFor("high", 3)).toBe(0.5);
+    expect(hardwareScalingLevelFor("balanced", 2)).toBeCloseTo(1 / (2 * 0.78));
+    expect(hardwareScalingLevelFor("lite", 0.5)).toBeCloseTo(1 / 0.75);
     expect(hardwareScalingLevelFor("balanced", Number.NaN)).toBeCloseTo(
-      1 / 0.78,
+      1 / (1 * 0.78),
+    );
+    expect(hardwareScalingLevelFor("high", 2)).toBeLessThan(
+      hardwareScalingLevelFor("lite", 2),
     );
   });
 
