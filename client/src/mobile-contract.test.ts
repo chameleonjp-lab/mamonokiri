@@ -58,7 +58,6 @@ describe("smartphone play contract", () => {
     expect(sceneSource).toContain("tutorialObjectiveMet = true");
   });
 
-
   it("keeps result records and replay settings tied to the completed run", () => {
     expect(appSource).toContain("自己最高 {state.bestScore}点");
     expect(appSource).toContain("const restartCurrentRun = () =>");
