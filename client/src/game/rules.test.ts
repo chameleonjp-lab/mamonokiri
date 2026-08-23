@@ -7,6 +7,7 @@ import {
   attackTimingFor,
   bossPhaseForHealth,
   bossPoolForWave,
+  canSlashDuringTutorial,
   canStartPlayerAction,
   chapterForWave,
   chapterRewardForDefeat,
@@ -29,6 +30,7 @@ import {
   scoreForCombo,
   shiftActiveTimer,
   shouldAdvanceAfterDefeat,
+  shouldAdvanceCombatClock,
   tutorialVariantIndex,
 } from "./rules";
 
@@ -78,13 +80,17 @@ describe("priority S combat rules", () => {
     });
   });
 
+  it("does not let slash spam skip the three hands-on lessons", () => {
+    expect(canSlashDuringTutorial(1, false)).toBe(false);
+    expect(canSlashDuringTutorial(2, false)).toBe(false);
+    expect(canSlashDuringTutorial(3, false)).toBe(false);
+    expect(canSlashDuringTutorial(3, true)).toBe(true);
+    expect(canSlashDuringTutorial(0, false)).toBe(true);
+  });
+
   it("does not grant a chapter reward until the tenth enemy is defeated", () => {
     expect(chapterRewardForDefeat(9)).toBeNull();
-    expect(chapterRewardForDefeat(10)).toEqual({
-      chapter: 1,
-      hp: 12,
-      score: 500,
-    });
+    expect(chapterRewardForDefeat(10)).toEqual({ chapter: 1 });
   });
 
   it("fires a ten-chain milestone only when crossing ten", () => {
@@ -135,6 +141,14 @@ describe("priority S combat rules", () => {
     expect(shiftActiveTimer(0, 5000)).toBe(0);
     expect(shiftActiveTimer(1000, 5000, 1200)).toBe(1000);
     expect(shiftActiveTimer(1500, 5000, 1200)).toBe(6500);
+    expect(shiftActiveTimer(1500, 5000 + 700, 1200)).toBe(7200);
+  });
+
+  it("stops the combat clock while paused, defeated, or changing enemies", () => {
+    expect(shouldAdvanceCombatClock(false, false, false)).toBe(true);
+    expect(shouldAdvanceCombatClock(true, false, false)).toBe(false);
+    expect(shouldAdvanceCombatClock(false, true, false)).toBe(false);
+    expect(shouldAdvanceCombatClock(false, false, true)).toBe(false);
   });
 
   it("creates a clean retry snapshot instead of reusing mutable run state", () => {

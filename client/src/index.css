@@ -126,3 +126,461 @@ html,body,#root,.game-shell{overscroll-behavior:none;-webkit-user-select:none;us
   .pause-settings{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
   .pause-settings button{min-width:0;padding:8px 6px;font-size:9px}
 }
+
+/* スマホ仕様整合：動的ビューポート、Safe Area、情報画面のスクロールを両立する。 */
+html,
+body,
+#root {
+  height: 100dvh;
+  min-height: 100svh;
+}
+
+.game-shell {
+  height: 100dvh;
+  min-height: 100svh;
+}
+
+.game-shell.is-overlay-open,
+.game-shell.is-overlay-open .title-screen,
+.game-shell.is-overlay-open .pause-overlay,
+.game-shell.is-overlay-open .pause-panel,
+.game-shell.is-overlay-open .result-card,
+.game-shell.is-overlay-open .reward-card,
+.game-shell.is-overlay-open .exit-confirm,
+.game-shell.is-overlay-open .exit-panel,
+.game-shell.is-overlay-open .title-screen *,
+.game-shell.is-overlay-open .pause-panel *,
+.game-shell.is-overlay-open .result-card *,
+.game-shell.is-overlay-open .reward-card *,
+.game-shell.is-overlay-open .exit-panel * {
+  touch-action: pan-y pinch-zoom;
+}
+
+.game-shell.is-overlay-open .title-screen,
+.game-shell.is-overlay-open .pause-panel,
+.game-shell.is-overlay-open .result-card,
+.game-shell.is-overlay-open .reward-card,
+.game-shell.is-overlay-open .exit-panel {
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default;
+}
+
+.game-shell.is-overlay-open button,
+.game-shell.is-overlay-open .title-screen button,
+.game-shell.is-overlay-open .pause-panel button,
+.game-shell.is-overlay-open .result-card button,
+.game-shell.is-overlay-open .reward-card button,
+.game-shell.is-overlay-open .exit-panel button,
+.game-shell .gameboy-controls button,
+.game-shell .pause-button {
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.game-shell button:focus-visible {
+  outline: 2px solid #f0cc87;
+  outline-offset: 2px;
+}
+
+.title-screen {
+  max-height: 100dvh;
+  overflow-y: auto;
+  padding-top: max(30px, env(safe-area-inset-top));
+  padding-right: max(30px, env(safe-area-inset-right));
+  padding-bottom: max(30px, env(safe-area-inset-bottom));
+  padding-left: max(30px, env(safe-area-inset-left));
+}
+
+.title-choice-groups {
+  width: min(560px, 92vw);
+}
+
+.title-choice-groups .title-choice-group {
+  width: 100%;
+}
+
+.title-settings {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  width: min(560px, 92vw);
+  margin-top: 12px;
+}
+
+.title-settings button {
+  min-width: 0;
+  min-height: 40px;
+  padding: 7px 6px;
+  border-color: rgba(232, 227, 215, 0.22);
+  background: rgba(15, 18, 21, 0.58);
+  color: #bdb9af;
+  font-size: 9px;
+}
+
+.result-card,
+.reward-card,
+.pause-panel,
+.exit-panel {
+  max-height: calc(
+    100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom)
+  );
+  overflow-y: auto;
+}
+
+@media (max-width: 560px) {
+  .brand-lockup {
+    display: none;
+  }
+
+  .player-hud,
+  .enemy-hud {
+    top: calc(10px + env(safe-area-inset-top));
+    width: calc(50vw - 48px);
+    min-width: 108px;
+  }
+
+  .player-hud {
+    left: max(10px, env(safe-area-inset-left));
+  }
+
+  .enemy-hud {
+    right: max(10px, env(safe-area-inset-right));
+  }
+
+  .hud-card {
+    padding: 7px 7px 6px;
+  }
+
+  .hud-card .hud-label span {
+    font-size: 14px;
+  }
+
+  .hud-card .stat-line,
+  .enemy-count {
+    font-size: 9px;
+  }
+
+  .enemy-count strong {
+    font-size: 11px;
+  }
+
+  .posture-meter,
+  .posture-meter > strong {
+    font-size: 8px;
+  }
+
+  .enemy-hud .enemy-phase,
+  .boss-hud .enemy-phase {
+    max-width: 48px;
+    font-size: 8px;
+  }
+
+  .pause-button {
+    top: calc(10px + env(safe-area-inset-top));
+    right: auto;
+    left: 50%;
+    min-width: 64px;
+    min-height: 44px;
+    padding: 6px;
+    transform: translateX(-50%);
+    font-size: 9px;
+  }
+
+  .score-hud {
+    top: calc(96px + env(safe-area-inset-top));
+    right: 50%;
+    left: auto;
+    transform: translateX(50%);
+  }
+
+  .score-hud.is-combo {
+    transform: translateX(50%) scale(1.04);
+  }
+
+  .message {
+    bottom: calc(158px + env(safe-area-inset-bottom));
+    width: min(94vw, 430px);
+    max-width: 94vw;
+    white-space: normal;
+    text-align: center;
+  }
+
+  .stance {
+    right: auto;
+    bottom: calc(111px + env(safe-area-inset-bottom));
+    left: 50%;
+    justify-content: center;
+    width: max-content;
+    max-width: calc(100vw - 24px);
+    transform: translateX(-50%);
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .combat-guide {
+    bottom: calc(207px + env(safe-area-inset-bottom));
+    max-width: calc(100vw - 24px);
+    font-size: 10px;
+  }
+
+  .gameboy-controls {
+    gap: 12px;
+  }
+
+  .gameboy-dpad,
+  .gameboy-actions {
+    width: calc(50% - 6px);
+    min-width: 0;
+  }
+
+  .dpad-row,
+  .action-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px;
+  }
+
+  .gameboy-controls .gb-btn {
+    min-width: 0;
+    min-height: 52px;
+  }
+
+  .title-screen {
+    justify-content: flex-start;
+    padding-top: max(18px, env(safe-area-inset-top));
+    padding-right: max(16px, env(safe-area-inset-right));
+    padding-bottom: max(20px, env(safe-area-inset-bottom));
+    padding-left: max(16px, env(safe-area-inset-left));
+  }
+
+  .title-screen h2 {
+    margin-bottom: 8px;
+    font-size: 40px;
+  }
+
+  .title-screen > p:not(.eyebrow) {
+    margin-bottom: 8px;
+    font-size: 12px;
+  }
+
+  .title-choice-groups,
+  .title-settings,
+  .title-screen > .result-primary {
+    width: 100%;
+  }
+
+  .title-choice-row button {
+    min-height: 66px !important;
+  }
+
+  .title-choice-row button strong {
+    font-size: 11px;
+  }
+
+  .title-choice-row button small {
+    font-size: 9px;
+  }
+
+  .title-settings {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .title-settings button {
+    min-height: 44px;
+    font-size: 10px;
+  }
+
+  .result-stats {
+    font-size: 10px;
+  }
+
+  .result-actions button,
+  .pause-actions button,
+  .reward-option,
+  .exit-actions button {
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 340px) and (orientation: portrait) {
+  .mode-row {
+    grid-template-columns: 1fr;
+  }
+
+  .mode-row button {
+    min-height: 52px !important;
+  }
+
+  .title-screen h2 {
+    font-size: 36px;
+  }
+}
+
+/* 横画面は幅ではなく高さで判定し、iPhoneの各世代で同じ役割配置にする。 */
+@media (max-height: 500px) and (orientation: landscape) {
+  .brand-lockup {
+    display: none;
+  }
+
+  .player-hud,
+  .enemy-hud {
+    top: calc(8px + env(safe-area-inset-top));
+    width: clamp(138px, 20vw, 172px);
+  }
+
+  .player-hud {
+    left: max(10px, env(safe-area-inset-left));
+  }
+
+  .enemy-hud {
+    right: max(10px, env(safe-area-inset-right));
+  }
+
+  .score-hud {
+    top: calc(8px + env(safe-area-inset-top));
+    right: auto;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .score-hud.is-combo {
+    transform: translateX(-50%) scale(1.04);
+  }
+
+  .pause-button {
+    top: auto;
+    right: auto;
+    bottom: calc(11px + env(safe-area-inset-bottom));
+    left: 50%;
+    min-width: 76px;
+    min-height: 44px;
+    transform: translateX(-50%);
+  }
+
+  .stance {
+    top: calc(54px + env(safe-area-inset-top));
+    right: auto;
+    bottom: auto;
+    left: 50%;
+    max-width: calc(100vw - 360px);
+    transform: translateX(-50%);
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .message {
+    bottom: calc(72px + env(safe-area-inset-bottom));
+    width: min(480px, calc(100vw - 330px));
+    max-width: none;
+    overflow: hidden;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .combat-guide {
+    display: none;
+  }
+
+  .gameboy-dpad,
+  .gameboy-actions {
+    width: clamp(142px, 22vw, 180px);
+  }
+
+  .gameboy-controls .gb-btn {
+    min-width: 0;
+    min-height: 48px;
+  }
+
+  .title-screen {
+    justify-content: flex-start;
+    padding-top: max(8px, env(safe-area-inset-top));
+    padding-right: max(18px, env(safe-area-inset-right));
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+    padding-left: max(18px, env(safe-area-inset-left));
+  }
+
+  .title-screen > .eyebrow {
+    display: none;
+  }
+
+  .title-screen h2 {
+    margin: 0 0 3px;
+    font-size: 30px;
+  }
+
+  .title-screen > p:not(.eyebrow) {
+    margin-bottom: 3px;
+    font-size: 11px;
+  }
+
+  .title-choice-groups {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    width: min(760px, 94vw);
+  }
+
+  .title-choice-group {
+    margin-top: 3px;
+  }
+
+  .title-choice-group > span {
+    margin-bottom: 3px;
+    font-size: 9px;
+  }
+
+  .title-choice-row button {
+    min-height: 50px !important;
+    padding: 5px !important;
+  }
+
+  .title-choice-row button strong {
+    font-size: 10px;
+  }
+
+  .title-choice-row button small {
+    margin-top: 2px;
+    font-size: 8px;
+    line-height: 1.25;
+  }
+
+  .title-settings {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    width: min(760px, 94vw);
+    margin-top: 5px;
+  }
+
+  .title-settings button {
+    min-height: 34px;
+    padding: 4px;
+    font-size: 8px;
+  }
+
+  .title-screen > .result-primary {
+    min-height: 38px;
+    margin-top: 6px;
+    padding: 6px 14px;
+  }
+
+  .pause-overlay {
+    padding: 10px max(14px, env(safe-area-inset-right)) 10px
+      max(14px, env(safe-area-inset-left));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .game-shell *,
+  .game-shell *::before,
+  .game-shell *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

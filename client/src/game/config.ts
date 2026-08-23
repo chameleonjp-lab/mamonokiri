@@ -103,10 +103,13 @@ export function hardwareScalingLevelFor(
   const safeDevicePixelRatio = Number.isFinite(devicePixelRatio)
     ? Math.max(1, Math.min(2, devicePixelRatio))
     : 1;
-  return Math.max(
-    1,
-    safeDevicePixelRatio / PERFORMANCE_CONFIG[tier].resolutionScale,
+  const targetPixelRatio = Math.max(
+    0.75,
+    safeDevicePixelRatio * PERFORMANCE_CONFIG[tier].resolutionScale,
   );
+
+  // Babylon.jsは1未満ほど高解像度、1超ほど低解像度になる。
+  return 1 / targetPixelRatio;
 }
 
 export function nextVolume(value: number): number {
