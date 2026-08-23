@@ -321,6 +321,12 @@ export default function App() {
     });
   };
 
+  const restartCurrentRun = () =>
+    startNewRun("yamabushi-restart", {
+      mode: state.mode,
+      difficulty: state.difficulty,
+    });
+
   const openTitle = () => {
     setShowPause(false);
     setShowExitConfirm(false);
@@ -780,6 +786,10 @@ export default function App() {
           <p>
             スコア {state.score}　／　最大連撃 {state.maxCombo}
           </p>
+          <p className="result-record">
+            自己最高 {state.bestScore}点
+            {state.isNewRecord ? "（今回更新）" : "（モード・難易度別）"}
+          </p>
           <div className="result-stats">
             <span>ボス撃破 {state.bossDefeats}</span>
             <span>受け流し {state.parrySuccesses}</span>
@@ -798,7 +808,7 @@ export default function App() {
             <button
               type="button"
               className="result-primary"
-              onClick={() => startNewRun()}
+              onClick={restartCurrentRun}
             >
               もう一度遊ぶ
             </button>
@@ -857,7 +867,7 @@ export default function App() {
               <button
                 type="button"
                 className="result-secondary"
-                onClick={() => startNewRun()}
+                onClick={restartCurrentRun}
               >
                 最初から
               </button>

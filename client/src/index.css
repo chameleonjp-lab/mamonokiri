@@ -584,3 +584,10 @@ body,
     transition-duration: 0.01ms !important;
   }
 }
+
+.result-record {
+  margin: 8px 0 0;
+  color: #f0cc87 !important;
+  font-size: 11px !important;
+  letter-spacing: 0.06em;
+}
