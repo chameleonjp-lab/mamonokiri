@@ -64,4 +64,9 @@ describe("smartphone play contract", () => {
     expect(appSource).toContain("mode: state.mode");
     expect(appSource).toContain("difficulty: state.difficulty");
   });
+
+  it("clears transient attack direction state before a retry starts", () => {
+    expect(sceneSource).toMatch(/spearAttackSide = 0;\s+dangerLane = 0;/);
+    expect(sceneSource).toMatch(/recoilUntil = 0;\s+recoilDirection = 1;/);
+  });
 });
