@@ -2391,7 +2391,7 @@ export async function createGameScene(
     const key = event.key.toLowerCase();
     if (event.repeat) return;
     if (key === "r") {
-      resetRun(new CustomEvent("yamabushi-restart"));
+      if (!paused && defeated) resetRun(new CustomEvent("yamabushi-restart"));
       return;
     }
     if (key === "j") {
@@ -2881,6 +2881,10 @@ export async function createGameScene(
               recoilUntil = Math.max(recoilUntil, now + 900);
               triggerImpact(dangerLane || 1, 0.1);
               hp = applyDamage(hp, 10).hp;
+              hitsTaken += 1;
+              enemyHitTaken = true;
+              combo = 0;
+              comboMilestone = 0;
               message = hp
                 ? "構えを砕かれた。短い間、防御も回避もできない。"
                 : "防御を崩され、倒れた。";

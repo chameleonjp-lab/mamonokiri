@@ -311,6 +311,13 @@ export default function App() {
     setShowPause(false);
     setShowTitle(false);
     setShowExitConfirm(false);
+    setShowClimax(false);
+    setShowCounter(false);
+    setShowBossVictory(false);
+    previousClimax.current = 0;
+    previousCounter.current = 0;
+    previousBossVictory.current = 0;
+    swipeStart.current = null;
     titleOpenRef.current = false;
     dispatchGameEvent(eventName, {
       mode,

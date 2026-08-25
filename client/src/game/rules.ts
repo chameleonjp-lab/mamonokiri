@@ -24,10 +24,17 @@ export type EnemyRole =
   | "heavy";
 
 export type BossFamily =
-  "獣型" | "モンスター型" | "人型" | "鳥型" | "モニュメント型";
+  | "獣型"
+  | "モンスター型"
+  | "人型"
+  | "鳥型"
+  | "モニュメント型";
 
 export type PlayerAttackKind =
-  "normal" | "counter" | "guard-break" | "finisher";
+  | "normal"
+  | "counter"
+  | "guard-break"
+  | "finisher";
 
 export type AttackTiming = {
   startup: number;
@@ -245,7 +252,8 @@ export function attackPlanFor(
     return { dangerLane: lane, spearSide: lane, isWide: false };
   }
 
-  const lane = playerX < -0.3 ? -1 : playerX > 0.3 ? 1 : 0;
+  const lane =
+    playerX < -0.3 ? -1 : playerX > 0.3 ? 1 : attackCount % 2 === 1 ? -1 : 1;
   return { dangerLane: lane, spearSide: lane, isWide: false };
 }
 
