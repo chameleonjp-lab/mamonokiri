@@ -14,6 +14,7 @@ import {
   PERFORMANCE_CONFIG,
   clampVolume,
   readAudioSettings,
+  readEffectLevel,
   readPerformanceTier,
   SETTINGS_STORAGE_KEYS,
   type PerformanceTier,
@@ -1118,9 +1119,9 @@ export async function createGameScene(
   let message = "第1試練。左槍の予告を見て、右へ避けよ。";
   let paused = false;
   let pauseStartedAt = 0;
-  let effectLevel =
-    (localStorage.getItem(SETTINGS_STORAGE_KEYS.effectsLevel) as
-      "full" | "reduced" | "minimal" | null) ?? "full";
+  let effectLevel = readEffectLevel(
+    localStorage.getItem(SETTINGS_STORAGE_KEYS.effectsLevel),
+  );
   let defeated = false;
   let transitioning = false;
   let transitionRemaining = 0;
@@ -2155,6 +2156,7 @@ export async function createGameScene(
     enemyTargetX = 0;
     enemyMoveAt = performance.now() + 800;
     spearAttackSide = 0;
+    dangerLane = 0;
     feintLane = 0;
     feintApplied = false;
     lastTelegraphedLane = 0;
@@ -2205,6 +2207,7 @@ export async function createGameScene(
     lastBossVariantIndex = -1;
     sheathUntil = 0;
     recoilUntil = 0;
+    recoilDirection = 1;
     slashImpactAt = 0;
     slashDirection = 1;
     slashAngle = 0;

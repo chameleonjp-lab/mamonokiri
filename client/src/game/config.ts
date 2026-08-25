@@ -1,5 +1,6 @@
 export type Handedness = "right" | "left";
 export type PerformanceTier = "high" | "balanced" | "lite";
+export type EffectLevel = "full" | "reduced" | "minimal";
 
 export type AudioSettings = {
   masterVolume: number;
@@ -121,6 +122,10 @@ export function nextVolume(value: number): number {
 
 export function readHandedness(value: string | null): Handedness {
   return value === "left" ? "left" : "right";
+}
+
+export function readEffectLevel(value: string | null): EffectLevel {
+  return value === "reduced" || value === "minimal" ? value : "full";
 }
 
 export function readPerformanceTier(value: string | null): PerformanceTier {

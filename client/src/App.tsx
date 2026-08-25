@@ -5,10 +5,12 @@ import {
   PERFORMANCE_CONFIG,
   nextVolume,
   readAudioSettings,
+  readEffectLevel,
   readHandedness,
   readPerformanceTier,
   SETTINGS_STORAGE_KEYS,
   type AudioSettings,
+  type EffectLevel,
   type Handedness,
   type PerformanceTier,
 } from "@/game/config";
@@ -193,12 +195,8 @@ export default function App() {
   const [selectedMode, setSelectedMode] = useState<RunMode>("fifty");
   const [selectedDifficulty, setSelectedDifficulty] =
     useState<Difficulty>("standard");
-  const [effectLevel, setEffectLevel] = useState<
-    "full" | "reduced" | "minimal"
-  >(
-    () =>
-      (localStorage.getItem(SETTINGS_STORAGE_KEYS.effectsLevel) as
-        "full" | "reduced" | "minimal" | null) ?? "full",
+  const [effectLevel, setEffectLevel] = useState<EffectLevel>(() =>
+    readEffectLevel(localStorage.getItem(SETTINGS_STORAGE_KEYS.effectsLevel)),
   );
   const [ambientVolume, setAmbientVolume] = useState(
     () => readAudioSettings(localStorage).ambientVolume,

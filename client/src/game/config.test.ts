@@ -6,6 +6,7 @@ import {
   hardwareScalingLevelFor,
   nextVolume,
   readAudioSettings,
+  readEffectLevel,
   readHandedness,
   readPerformanceTier,
   SETTINGS_STORAGE_KEYS,
@@ -28,6 +29,8 @@ describe("priority C device settings", () => {
   it("normalizes persisted layout and performance values", () => {
     expect(readHandedness("left")).toBe("left");
     expect(readHandedness("unknown")).toBe("right");
+    expect(readEffectLevel("reduced")).toBe("reduced");
+    expect(readEffectLevel("corrupted")).toBe("full");
     expect(readPerformanceTier("high")).toBe("high");
     expect(readPerformanceTier("lite")).toBe("lite");
     expect(readPerformanceTier("unknown")).toBe("balanced");
