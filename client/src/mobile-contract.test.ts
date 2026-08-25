@@ -69,4 +69,30 @@ describe("smartphone play contract", () => {
     expect(sceneSource).toMatch(/spearAttackSide = 0;\s+dangerLane = 0;/);
     expect(sceneSource).toMatch(/recoilUntil = 0;\s+recoilDirection = 1;/);
   });
+
+  it("counts posture-break damage as a hit and resets the combo", () => {
+    expect(sceneSource).toMatch(
+      /hp = applyDamage\(hp, 10\)\.hp;\s+hitsTaken \+= 1;\s+enemyHitTaken = true;\s+combo = 0;\s+comboMilestone = 0;/,
+    );
+  });
+
+  it("limits the R shortcut to the defeated result state", () => {
+    expect(sceneSource).toMatch(
+      /if \(key === "r"\) \{\s+if \(!paused && defeated\)\s+resetRun\(/,
+    );
+  });
+
+  it("clears React-only milestone overlays and swipe state on retry", () => {
+    const startNewRunBlock =
+      appSource.match(
+        /const startNewRun = \([\s\S]*?\n  \};\n\n  const restartCurrentRun/m,
+      )?.[0] ?? "";
+    expect(startNewRunBlock).toContain("setShowClimax(false)");
+    expect(startNewRunBlock).toContain("setShowCounter(false)");
+    expect(startNewRunBlock).toContain("setShowBossVictory(false)");
+    expect(startNewRunBlock).toContain("previousClimax.current = 0");
+    expect(startNewRunBlock).toContain("previousCounter.current = 0");
+    expect(startNewRunBlock).toContain("previousBossVictory.current = 0");
+    expect(startNewRunBlock).toContain("swipeStart.current = null");
+  });
 });

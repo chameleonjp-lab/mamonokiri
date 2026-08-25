@@ -72,6 +72,11 @@ describe("priority S combat rules", () => {
     expect(attackPlanFor("alternate", 3, 0).dangerLane).toBe(-1);
   });
 
+  it("gives target attacks a readable side from the center", () => {
+    expect(attackPlanFor("target", 1, 0).dangerLane).toBe(-1);
+    expect(attackPlanFor("target", 2, 0).dangerLane).toBe(1);
+  });
+
   it("makes the third tutorial enemy a readable guard lesson", () => {
     expect(attackPlanFor("alternate", 1, 0, 3)).toEqual({
       dangerLane: 0,
