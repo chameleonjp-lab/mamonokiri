@@ -598,3 +598,19 @@ body,
   font-size: 11px !important;
   letter-spacing: 0.06em;
 }
+
+.title-visual-enemy-secondary {
+  left: 48%;
+  height: 91%;
+  bottom: -4px;
+  opacity: .72;
+  transform: scaleX(-1);
+  filter: drop-shadow(0 7px 7px rgba(0,0,0,.62)) saturate(.78);
+}
+
+@media (max-width: 560px) {
+  .title-visual-enemy-secondary {
+    left: 47%;
+    height: 88%;
+  }
+}

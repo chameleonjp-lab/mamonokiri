@@ -182,6 +182,7 @@ const PRODUCTION_ASSETS = {
   arena: `${import.meta.env.BASE_URL}assets/production/mamonokiri-arena-mist-shrine-v1.webp`,
   player: `${import.meta.env.BASE_URL}assets/production/mamonokiri-player-yamabushi-v1.webp`,
   enemy: `${import.meta.env.BASE_URL}assets/production/mamonokiri-enemy-kagemen-v1.webp`,
+  enemySecondary: `${import.meta.env.BASE_URL}assets/production/mamonokiri-enemy-kakugan-v1.webp`,
   boss: `${import.meta.env.BASE_URL}assets/production/mamonokiri-boss-garei-v1.webp`,
 } as const;
 
@@ -953,6 +954,12 @@ export default function App() {
             <img
               className="title-visual-figure title-visual-enemy"
               src={PRODUCTION_ASSETS.enemy}
+              alt=""
+              aria-hidden="true"
+            />
+            <img
+              className="title-visual-figure title-visual-enemy-secondary"
+              src={PRODUCTION_ASSETS.enemySecondary}
               alt=""
               aria-hidden="true"
             />
