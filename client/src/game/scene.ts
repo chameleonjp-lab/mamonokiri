@@ -37,6 +37,7 @@ import {
   enemyAttackPlanFor,
   enemyPostureDamageFor,
   followUpLanesFor,
+  isPlayerInDangerLine,
   modeLimitFor,
   nextSeed,
   normalEnemyPoolForWave,
@@ -2828,9 +2829,12 @@ export async function createGameScene(
                 ? 1.48
                 : 1.3
               : 0.8;
-          const inLine =
-            bossAttack ||
-            Math.abs(player.root.position.x - dangerLane * 0.9) < hitWidth;
+          const inLine = isPlayerInDangerLine(
+            player.root.position.x,
+            dangerLane as -1 | 0 | 1,
+            bossAttack,
+            hitWidth,
+          );
           const isParryWindow =
             guardUntil >= now &&
             guardStartedAt > 0 &&

@@ -407,6 +407,21 @@ export function correctDodgeForLane(
   return !isWide && dangerLane !== 0 && dodgeDirection === -dangerLane;
 }
 
+export function isPlayerInDangerLine(
+  playerX: number,
+  dangerLane: -1 | 0 | 1,
+  isWide: boolean,
+  hitWidth = 0.8,
+): boolean {
+  if (isWide || dangerLane === 0) return true;
+  const laneCenter = dangerLane * 0.9;
+  const safeSeamHalfWidth = Math.max(0, 0.9 - Math.max(0, hitWidth));
+  return (
+    Math.abs(playerX - laneCenter) < Math.max(0, hitWidth) ||
+    Math.abs(playerX) <= safeSeamHalfWidth
+  );
+}
+
 export function counterMayBeGranted(
   source: "player-parry" | "enemy-guard-break" | "enemy-block" | "other",
 ): boolean {

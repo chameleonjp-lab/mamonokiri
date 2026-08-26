@@ -22,6 +22,7 @@ import {
   enemyPostureDamageFor,
   followUpLanesFor,
   freshRun,
+  isPlayerInDangerLine,
   normalEnemyPoolForWave,
   modeLimitFor,
   nextSeed,
@@ -109,6 +110,14 @@ describe("priority S combat rules", () => {
     expect(correctDodgeForLane(1, -1, false)).toBe(true);
     expect(correctDodgeForLane(-1, -1, false)).toBe(false);
     expect(correctDodgeForLane(1, 0, true)).toBe(false);
+  });
+
+  it("does not leave a passive safe seam between side attack lanes", () => {
+    expect(isPlayerInDangerLine(0, -1, false)).toBe(true);
+    expect(isPlayerInDangerLine(0, 1, false)).toBe(true);
+    expect(isPlayerInDangerLine(0.9, -1, false)).toBe(false);
+    expect(isPlayerInDangerLine(-0.9, -1, false)).toBe(true);
+    expect(isPlayerInDangerLine(0.9, -1, true)).toBe(true);
   });
 
   it("allows counter input only after a player parry", () => {
