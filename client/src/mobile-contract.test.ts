@@ -82,6 +82,13 @@ describe("smartphone play contract", () => {
     );
   });
 
+  it("routes enemy hit detection through the shared danger-line rule", () => {
+    expect(sceneSource).toContain("isPlayerInDangerLine(");
+    expect(sceneSource).not.toContain(
+      "Math.abs(player.root.position.x - dangerLane * 0.9) < hitWidth",
+    );
+  });
+
   it("clears React-only milestone overlays and swipe state on retry", () => {
     const startNewRunBlock =
       appSource.match(
