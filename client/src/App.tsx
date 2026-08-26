@@ -178,6 +178,13 @@ function formatPlayTime(milliseconds: number): string {
   return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 }
 
+const PRODUCTION_ASSETS = {
+  arena: `${import.meta.env.BASE_URL}assets/production/mamonokiri-arena-mist-shrine-v1.webp`,
+  player: `${import.meta.env.BASE_URL}assets/production/mamonokiri-player-yamabushi-v1.webp`,
+  enemy: `${import.meta.env.BASE_URL}assets/production/mamonokiri-enemy-kagemen-v1.webp`,
+  boss: `${import.meta.env.BASE_URL}assets/production/mamonokiri-boss-garei-v1.webp`,
+} as const;
+
 function volumeLabel(value: number): string {
   if (value >= 0.99) return "大";
   if (value <= 0.36) return "小";
@@ -930,6 +937,33 @@ export default function App() {
           <h2 id="title-heading">
             墨霞<span>の</span>剣
           </h2>
+          <div className="title-visual" aria-label="登場人物と戦場の写実3D素材">
+            <img
+              className="title-visual-bg"
+              src={PRODUCTION_ASSETS.arena}
+              alt=""
+              aria-hidden="true"
+            />
+            <img
+              className="title-visual-figure title-visual-player"
+              src={PRODUCTION_ASSETS.player}
+              alt=""
+              aria-hidden="true"
+            />
+            <img
+              className="title-visual-figure title-visual-enemy"
+              src={PRODUCTION_ASSETS.enemy}
+              alt=""
+              aria-hidden="true"
+            />
+            <img
+              className="title-visual-figure title-visual-boss"
+              src={PRODUCTION_ASSETS.boss}
+              alt=""
+              aria-hidden="true"
+            />
+            <span className="title-visual-caption">写実3D素材プレビュー</span>
+          </div>
           <p>敵の予告を読み、防御・回避・斬撃を選ぶ。</p>
           <div className="title-choice-groups">
             <div className="title-choice-group">

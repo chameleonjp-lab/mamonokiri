@@ -102,4 +102,22 @@ describe("smartphone play contract", () => {
     expect(startNewRunBlock).toContain("previousBossVictory.current = 0");
     expect(startNewRunBlock).toContain("swipeStart.current = null");
   });
+
+  it("keeps the production render pack connected to the title showcase", () => {
+    expect(appSource).toContain(
+      "import.meta.env.BASE_URL",
+    );
+    expect(appSource).toContain(
+      "assets/production/mamonokiri-arena-mist-shrine-v1.webp",
+    );
+    expect(appSource).toContain(
+      "assets/production/mamonokiri-player-yamabushi-v1.webp",
+    );
+    expect(appSource).toContain(
+      "assets/production/mamonokiri-enemy-kagemen-v1.webp",
+    );
+    expect(appSource).toContain(
+      "assets/production/mamonokiri-boss-garei-v1.webp",
+    );
+  });
 });
