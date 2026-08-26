@@ -179,10 +179,10 @@ function formatPlayTime(milliseconds: number): string {
 }
 
 const PRODUCTION_ASSETS = {
-  arena: "/assets/production/mamonokiri-arena-mist-shrine-v1.webp",
-  player: "/assets/production/mamonokiri-player-yamabushi-v1.webp",
-  enemy: "/assets/production/mamonokiri-enemy-kagemen-v1.webp",
-  boss: "/assets/production/mamonokiri-boss-garei-v1.webp",
+  arena: `${import.meta.env.BASE_URL}assets/production/mamonokiri-arena-mist-shrine-v1.webp`,
+  player: `${import.meta.env.BASE_URL}assets/production/mamonokiri-player-yamabushi-v1.webp`,
+  enemy: `${import.meta.env.BASE_URL}assets/production/mamonokiri-enemy-kagemen-v1.webp`,
+  boss: `${import.meta.env.BASE_URL}assets/production/mamonokiri-boss-garei-v1.webp`,
 } as const;
 
 function volumeLabel(value: number): string {

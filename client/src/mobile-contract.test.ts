@@ -105,16 +105,19 @@ describe("smartphone play contract", () => {
 
   it("keeps the production render pack connected to the title showcase", () => {
     expect(appSource).toContain(
-      "/assets/production/mamonokiri-arena-mist-shrine-v1.webp",
+      "import.meta.env.BASE_URL",
     );
     expect(appSource).toContain(
-      "/assets/production/mamonokiri-player-yamabushi-v1.webp",
+      "assets/production/mamonokiri-arena-mist-shrine-v1.webp",
     );
     expect(appSource).toContain(
-      "/assets/production/mamonokiri-enemy-kagemen-v1.webp",
+      "assets/production/mamonokiri-player-yamabushi-v1.webp",
     );
     expect(appSource).toContain(
-      "/assets/production/mamonokiri-boss-garei-v1.webp",
+      "assets/production/mamonokiri-enemy-kagemen-v1.webp",
+    );
+    expect(appSource).toContain(
+      "assets/production/mamonokiri-boss-garei-v1.webp",
     );
   });
 });
