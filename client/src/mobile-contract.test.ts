@@ -115,6 +115,7 @@ describe("smartphone play contract", () => {
     );
     expect(appSource).toContain(
       "assets/production/mamonokiri-enemy-kagemen-v1.webp",
+      "assets/production/mamonokiri-enemy-kakugan-v1.webp",
     );
     expect(appSource).toContain(
       "assets/production/mamonokiri-boss-garei-v1.webp",
