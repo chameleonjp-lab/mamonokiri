@@ -36,6 +36,7 @@ export default function GameCanvas() {
     let disposed = false;
     let battleRenderActive = false;
     let renderLoopRunning = false;
+    let motionStopTimer: number | null = null;
     const renderFrame = () => handle?.scene.render();
     const setBattleRenderActive = (active: boolean) => {
       battleRenderActive = active;
@@ -74,9 +75,19 @@ export default function GameCanvas() {
           rewardPending?: boolean;
         }>
       ).detail;
-      setBattleRenderActive(
-        !state?.paused && !state?.defeated && !state?.rewardPending,
-      );
+      if (motionStopTimer !== null) {
+        window.clearTimeout(motionStopTimer);
+        motionStopTimer = null;
+      }
+      if (state?.defeated || state?.rewardPending) {
+        setBattleRenderActive(true);
+        motionStopTimer = window.setTimeout(() => {
+          motionStopTimer = null;
+          if (!disposed) setBattleRenderActive(false);
+        }, 1050);
+        return;
+      }
+      setBattleRenderActive(!state?.paused);
     };
     const onPerformance = (event: Event) => {
       const next = (event as CustomEvent<{ tier?: PerformanceTier }>).detail
@@ -108,6 +119,7 @@ export default function GameCanvas() {
     document.addEventListener("visibilitychange", onVisibilityChange);
     return () => {
       disposed = true;
+      if (motionStopTimer !== null) window.clearTimeout(motionStopTimer);
       if (renderLoopRunning) engine.stopRenderLoop(renderFrame);
       window.removeEventListener("resize", onResize);
       window.removeEventListener("yamabushi-state", onGameState);
