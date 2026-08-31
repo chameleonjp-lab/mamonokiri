@@ -15,6 +15,10 @@ const htmlSource = readFileSync(
   new URL("../index.html", import.meta.url),
   "utf8",
 );
+const viteConfigSource = readFileSync(
+  new URL("../../vite.config.ts", import.meta.url),
+  "utf8",
+);
 
 describe("smartphone play contract", () => {
   it("uses a Japanese, safe-area-aware viewport without disabling menu zoom", () => {
@@ -111,5 +115,22 @@ describe("smartphone play contract", () => {
     expect(appSource).not.toContain("<img");
     expect(appSource).not.toContain("assets/production/");
     expect(cssSource).not.toContain("data:image");
+  });
+
+  it("keeps time-based HUD values synchronized during an active fight", () => {
+    expect(sceneSource).toContain("const UI_SYNC_INTERVAL_MS = 100;");
+    expect(sceneSource).toMatch(
+      /if \(\s+!defeated &&\s+!rewardPending &&\s+now - lastUiSyncAt >= UI_SYNC_INTERVAL_MS\s+\) \{\s+lastUiSyncAt = now;\s+announce\(state\(\)\);\s+\}/,
+    );
+  });
+
+  it("keeps the battle camera fixed so touch gestures stay game controls", () => {
+    expect(sceneSource).not.toContain("attachControl(");
+  });
+
+  it("keeps Manus editor hooks out of the app build configuration", () => {
+    expect(viteConfigSource).not.toMatch(/manus/i);
+    expect(viteConfigSource).not.toContain("BUILT_IN_FORGE_API");
+    expect(viteConfigSource).not.toContain("jsxLocPlugin");
   });
 });

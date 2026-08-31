@@ -475,10 +475,8 @@ function makeEnemy(
 function announce(state: State) {
   window.dispatchEvent(new CustomEvent("yamabushi-state", { detail: state }));
 }
-
 export async function createGameScene(
   engine: Engine,
-  canvas: HTMLCanvasElement,
   initialPerformanceTier: PerformanceTier = readPerformanceTier(
     localStorage.getItem(SETTINGS_STORAGE_KEYS.performance),
   ),
@@ -497,8 +495,6 @@ export async function createGameScene(
   applyPerformanceTier(performanceTier);
   const camera = new FreeCamera("camera", new Vector3(7.6, 5.2, -8.5), scene);
   camera.setTarget(new Vector3(0, 1.05, 2.2));
-  camera.attachControl(canvas, true);
-  camera.speed = 0.15;
   camera.minZ = 0.1;
   const light = new HemisphericLight(
     "moonlight",
@@ -1004,6 +1000,8 @@ export async function createGameScene(
   let lastNormalVariantIndex = 0;
   let lastBossVariantIndex = -1;
   const COMBO_WINDOW = 4200;
+  const UI_SYNC_INTERVAL_MS = 100;
+  let lastUiSyncAt = 0;
   const DODGE_DURATION = 360;
   const DODGE_SAFE_START = 120;
   const DODGE_SAFE_END = 300;
@@ -1989,6 +1987,7 @@ export async function createGameScene(
     hitsTaken = 0;
     whiffs = 0;
     activePlayTimeMs = 0;
+    lastUiSyncAt = 0;
     enemyHitTaken = false;
     enemyStaggerUntil = 0;
     playerGuardBrokenUntil = 0;
@@ -3010,6 +3009,15 @@ export async function createGameScene(
         (0.16 - player.leftArm.rotation.z) * Math.min(1, dt * 8);
       player.torso.rotation.z +=
         (0 - player.torso.rotation.z) * Math.min(1, dt * 8);
+    }
+    // Keep result/reward notifications sparse so GameCanvas can stop rendering.
+    if (
+      !defeated &&
+      !rewardPending &&
+      now - lastUiSyncAt >= UI_SYNC_INTERVAL_MS
+    ) {
+      lastUiSyncAt = now;
+      announce(state());
     }
     updatePlayerMotion(now);
   });
