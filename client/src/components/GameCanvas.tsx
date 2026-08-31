@@ -55,7 +55,7 @@ export default function GameCanvas() {
         renderFrame();
       }
     };
-    createGameScene(engine, canvas, performanceTier).then((next) => {
+    createGameScene(engine, performanceTier).then((next) => {
       if (disposed) {
         next.dispose();
         return;
