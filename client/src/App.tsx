@@ -171,6 +171,17 @@ function dispatchGameEvent(name: string, detail: Record<string, unknown> = {}) {
   window.dispatchEvent(new CustomEvent(name, { detail }));
 }
 
+function dispatchMobileAction(
+  event: React.PointerEvent<HTMLButtonElement>,
+  name: string,
+  detail: Record<string, unknown> = {},
+): boolean {
+  if (event.pointerType === "mouse") return false;
+  event.preventDefault();
+  dispatchGameEvent(name, detail);
+  return true;
+}
+
 function formatPlayTime(milliseconds: number): string {
   const totalSeconds = Math.max(0, Math.floor(milliseconds / 1000));
   const minutes = Math.floor(totalSeconds / 60);
@@ -225,6 +236,7 @@ export default function App() {
   const allowExit = useRef(false);
   const exitConfirmRef = useRef(false);
   const titleOpenRef = useRef(true);
+  const lastMobileActionAt = useRef(0);
   exitConfirmRef.current = showExitConfirm;
   titleOpenRef.current = showTitle;
 
@@ -454,6 +466,31 @@ export default function App() {
 
   const handlePointerCancel = () => {
     swipeStart.current = null;
+  };
+
+  const handleMobileActionPointerDown = (
+    event: React.PointerEvent<HTMLButtonElement>,
+    name: string,
+    detail: Record<string, unknown> = {},
+  ) => {
+    if (dispatchMobileAction(event, name, detail)) {
+      lastMobileActionAt.current = performance.now();
+    }
+  };
+
+  const handleMobileActionClick = (
+    event: React.MouseEvent<HTMLButtonElement>,
+    name: string,
+    detail: Record<string, unknown> = {},
+  ) => {
+    // Touch browsers may synthesize a click after pointerdown. The pointer
+    // path has already dispatched the action, so do not execute it twice.
+    if (
+      lastMobileActionAt.current > 0 &&
+      performance.now() - lastMobileActionAt.current < 750
+    )
+      return;
+    dispatchGameEvent(name, detail);
   };
 
   const victory = state.enemyHp === 0 && state.wave >= state.modeLimit;
@@ -698,8 +735,15 @@ export default function App() {
               type="button"
               className="gb-btn direction-btn"
               aria-label="左へ回避"
-              onClick={() =>
-                dispatchGameEvent("yamabushi-dodge", { direction: -1 })
+              onPointerDown={(event) =>
+                handleMobileActionPointerDown(event, "yamabushi-dodge", {
+                  direction: -1,
+                })
+              }
+              onClick={(event) =>
+                handleMobileActionClick(event, "yamabushi-dodge", {
+                  direction: -1,
+                })
               }
             >
               <b>◀</b>
@@ -709,8 +753,15 @@ export default function App() {
               type="button"
               className="gb-btn direction-btn"
               aria-label="右へ回避"
-              onClick={() =>
-                dispatchGameEvent("yamabushi-dodge", { direction: 1 })
+              onPointerDown={(event) =>
+                handleMobileActionPointerDown(event, "yamabushi-dodge", {
+                  direction: 1,
+                })
+              }
+              onClick={(event) =>
+                handleMobileActionClick(event, "yamabushi-dodge", {
+                  direction: 1,
+                })
               }
             >
               <b>▶</b>
@@ -725,7 +776,12 @@ export default function App() {
               type="button"
               className="gb-btn action-btn slash-btn"
               aria-label="斬る"
-              onClick={() => dispatchGameEvent("yamabushi-slash")}
+              onPointerDown={(event) =>
+                handleMobileActionPointerDown(event, "yamabushi-slash")
+              }
+              onClick={(event) =>
+                handleMobileActionClick(event, "yamabushi-slash")
+              }
             >
               <b>斬</b>
               <small>SLASH</small>
@@ -734,7 +790,12 @@ export default function App() {
               type="button"
               className="gb-btn action-btn guard-btn"
               aria-label="防御"
-              onClick={() => dispatchGameEvent("yamabushi-guard")}
+              onPointerDown={(event) =>
+                handleMobileActionPointerDown(event, "yamabushi-guard")
+              }
+              onClick={(event) =>
+                handleMobileActionClick(event, "yamabushi-guard")
+              }
             >
               <b>防</b>
               <small>GUARD</small>

@@ -28,8 +28,10 @@ describe("smartphone play contract", () => {
   });
 
   it("keeps touch actions independent from keyboard-only events and labels", () => {
-    expect(appSource).toContain('dispatchGameEvent("yamabushi-slash")');
-    expect(appSource).toContain('dispatchGameEvent("yamabushi-guard")');
+    expect(appSource).toContain('"yamabushi-slash"');
+    expect(appSource).toContain('"yamabushi-guard"');
+    expect(appSource).toContain("handleMobileActionPointerDown");
+    expect(appSource).toContain("handleMobileActionClick");
     expect(appSource).not.toContain("new KeyboardEvent");
     expect(appSource).not.toContain("反撃受付 / J");
     expect(appSource).not.toContain("防御崩し J");
@@ -56,10 +58,13 @@ describe("smartphone play contract", () => {
     expect(canvasSource).toContain("state?.defeated || state?.rewardPending");
   });
 
-  it("requires a real tutorial success before slash can advance the first three fights", () => {
-    expect(sceneSource).toContain(
-      "canSlashDuringTutorial(tutorialStep, tutorialObjectiveMet)",
+  it("keeps tutorial guidance while allowing slash input to animate", () => {
+    expect(sceneSource).toMatch(
+      /canSlashDuringTutorial\(\s*tutorialStep,\s*tutorialObjectiveMet,?\s*\)/,
     );
+    expect(sceneSource).toContain("const tutorialHint");
+    expect(sceneSource).toContain('"斬撃を放つ。"');
+    expect(sceneSource).toContain("launchPlayerSlash(now, direction)");
     expect(sceneSource).toContain("tutorialObjectiveMet = true");
   });
 
@@ -126,6 +131,22 @@ describe("smartphone play contract", () => {
 
   it("keeps the battle camera fixed so touch gestures stay game controls", () => {
     expect(sceneSource).not.toContain("attachControl(");
+  });
+
+  it("keeps portrait HUD layers separated and the title surface opaque", () => {
+    expect(cssSource).toContain(
+      "top: calc(clamp(128px, 17dvh, 152px) + env(safe-area-inset-top))",
+    );
+    expect(cssSource).toContain(
+      "background: radial-gradient(ellipse at center, #1d2226 0%, #06090b 72%)",
+    );
+  });
+
+  it("does not silently discard a playable slash because of 3D depth distance", () => {
+    expect(sceneSource).toContain('"斬撃を放つ。"');
+    expect(sceneSource).not.toContain(
+      "Vector3.Distance(player.root.position, enemy.root.position) < 6",
+    );
   });
 
   it("keeps Manus editor hooks out of the app build configuration", () => {

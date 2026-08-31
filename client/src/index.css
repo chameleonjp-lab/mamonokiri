@@ -112,6 +112,12 @@ html,body,#root,.game-shell{overscroll-behavior:none;-webkit-user-select:none;us
 .pause-button{position:fixed;z-index:7;top:max(18px,env(safe-area-inset-top));right:max(18px,env(safe-area-inset-right));padding:7px 10px;border:1px solid rgba(232,227,215,.38);background:rgba(11,14,17,.72);color:#eee9df;font:600 10px 'Noto Sans JP',sans-serif;letter-spacing:.08em;backdrop-filter:blur(7px);touch-action:manipulation}.pause-button:active{background:#b74732;color:#fff}.pause-button:disabled{opacity:.45;pointer-events:none}.result-actions{display:flex;justify-content:center;gap:8px;margin-top:20px}.result-actions button,.pause-actions button,.title-screen button{min-height:42px;padding:10px 14px;border:1px solid rgba(232,227,215,.38);font:600 11px 'Noto Sans JP',sans-serif;letter-spacing:.06em;touch-action:manipulation}.result-primary{background:#e8e3d7;color:#11171a}.result-secondary{background:transparent;color:#eee9df;border-color:#b74732!important}.result-actions button:active,.pause-actions button:active,.title-screen button:active{transform:translateY(1px);background:#b74732;color:#fff}.pause-overlay{position:fixed;inset:0;z-index:21;display:grid;place-items:center;padding:24px;background:rgba(5,8,11,.72);backdrop-filter:blur(10px)}.pause-panel{width:min(440px,calc(100vw - 36px));padding:30px 26px 24px;border:1px solid rgba(232,227,215,.38);border-top:3px solid #b74732;background:linear-gradient(145deg,rgba(22,25,28,.98),rgba(10,13,16,.98));box-shadow:0 24px 70px rgba(0,0,0,.45);text-align:center}.pause-panel h2{margin:10px 0 12px;color:#eee9df;font:600 30px 'Noto Serif JP',serif;letter-spacing:.12em}.pause-panel>p:not(.eyebrow){margin:0 auto 20px;color:#aaa9a2;font-size:12px;line-height:1.8}.pause-actions{display:flex;justify-content:center;gap:8px}.pause-settings{display:flex;justify-content:center;gap:8px;margin-top:16px}.pause-settings button{padding:6px 8px;border:1px solid rgba(232,227,215,.22);background:transparent;color:#aaa9a2;font:500 10px 'Noto Sans JP',sans-serif}.title-screen{position:fixed;inset:0;z-index:22;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px;text-align:center;background:radial-gradient(ellipse at center,rgba(29,34,38,.92),rgba(6,9,11,.98) 72%);color:#eee9df}.title-screen h2{margin:4px 0 12px;font:600 clamp(42px,10vw,78px) 'Noto Serif JP',serif;letter-spacing:.16em}.title-screen h2 span{color:#b74732;font-size:.55em;margin:0 5px}.title-screen>p:not(.eyebrow){margin:0 0 24px;color:#c9c0ae;font-size:13px;letter-spacing:.08em}.title-screen button{min-width:150px}.result-card p{line-height:1.8}.result-card p:last-of-type{margin-bottom:0;color:#c9c0ae;font-size:12px;letter-spacing:.06em}@media(max-width:560px){.pause-button{top:calc(54px + env(safe-area-inset-top));right:max(12px,env(safe-area-inset-right));padding:5px 7px;font-size:8px}.result-card{width:min(92vw,360px);padding:22px 18px}.result-card h2{font-size:29px}.result-actions{gap:6px}.result-actions button,.pause-actions button{padding:9px 8px;font-size:10px}.pause-panel{padding:26px 18px 20px}.pause-actions{flex-wrap:wrap}.pause-actions button{flex:1;min-width:84px}.pause-settings{flex-wrap:wrap}.title-screen{padding:22px}.title-screen h2{font-size:47px}}
 .result-card{z-index:20}
 
+/* タイトル画面は戦闘キャンバスを透かさず、独立したホームとして表示する。 */
+.title-screen {
+  isolation: isolate;
+  background: radial-gradient(ellipse at center, #1d2226 0%, #06090b 72%);
+}
+
 /* Priority B：モード選択、章報酬、結果記録を一つの判断画面へまとめる。 */
 .title-visual{position:relative;isolation:isolate;width:min(620px,92vw);height:clamp(150px,22vw,220px);margin:4px 0 16px;overflow:hidden;border:1px solid rgba(232,227,215,.26);background:#11181c;box-shadow:0 14px 36px rgba(0,0,0,.32)}.title-visual::after{content:"";position:absolute;inset:0;z-index:4;pointer-events:none;background:linear-gradient(180deg,rgba(6,9,11,.14),rgba(6,9,11,.08) 48%,rgba(6,9,11,.72)),linear-gradient(90deg,rgba(6,9,11,.55),transparent 28%,transparent 72%,rgba(6,9,11,.55))}.title-visual-bg{position:absolute;inset:0;z-index:0;width:100%;height:100%;object-fit:cover;object-position:center 58%;opacity:.56;filter:saturate(.72) contrast(1.06)}.title-visual-figure{position:absolute;z-index:2;bottom:-12px;width:auto;height:116%;object-fit:contain;object-position:center bottom;filter:drop-shadow(0 8px 8px rgba(0,0,0,.62)) drop-shadow(0 0 9px rgba(175,199,205,.12))}.title-visual-player{left:11%;height:108%}.title-visual-enemy{left:39%;height:113%;transform:scaleX(-1)}.title-visual-boss{right:5%;height:128%;bottom:-25px}.title-visual-caption{position:absolute;z-index:5;right:9px;bottom:7px;color:rgba(240,232,215,.76);font:500 8px 'Noto Sans JP',sans-serif;letter-spacing:.16em;text-shadow:0 1px 5px #050607;pointer-events:none}
 .run-meta{display:block;margin-top:3px;color:#999d99;font-size:8px;letter-spacing:.08em}
@@ -451,6 +457,13 @@ body,
   .reward-option,
   .exit-actions button {
     min-height: 44px;
+  }
+}
+
+/* 縦長スマホでは上段カードの最下端より下へスコアを送る。 */
+@media (max-width: 560px) and (orientation: portrait) {
+  .score-hud {
+    top: calc(clamp(128px, 17dvh, 152px) + env(safe-area-inset-top));
   }
 }
 
