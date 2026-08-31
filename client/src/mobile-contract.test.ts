@@ -49,6 +49,7 @@ describe("smartphone play contract", () => {
   it("stops continuous 3D rendering while a menu or result overlay is open", () => {
     expect(canvasSource).toContain('window.addEventListener("yamabushi-state"');
     expect(canvasSource).toContain("engine.stopRenderLoop(renderFrame)");
+    expect(canvasSource).toContain("state?.defeated || state?.rewardPending");
   });
 
   it("requires a real tutorial success before slash can advance the first three fights", () => {
@@ -103,22 +104,12 @@ describe("smartphone play contract", () => {
     expect(startNewRunBlock).toContain("swipeStart.current = null");
   });
 
-  it("keeps the production render pack connected to the title showcase", () => {
-    expect(appSource).toContain(
-      "import.meta.env.BASE_URL",
-    );
-    expect(appSource).toContain(
-      "assets/production/mamonokiri-arena-mist-shrine-v1.webp",
-    );
-    expect(appSource).toContain(
-      "assets/production/mamonokiri-player-yamabushi-v1.webp",
-    );
-    expect(appSource).toContain(
-      "assets/production/mamonokiri-enemy-kagemen-v1.webp",
-      "assets/production/mamonokiri-enemy-kakugan-v1.webp",
-    );
-    expect(appSource).toContain(
-      "assets/production/mamonokiri-boss-garei-v1.webp",
-    );
+  it("keeps the title showcase independent from image and texture assets", () => {
+    expect(appSource).toContain("procedural-title-visual");
+    expect(appSource).toContain("code-figure-player");
+    expect(appSource).toContain("code-figure-enemy");
+    expect(appSource).not.toContain("<img");
+    expect(appSource).not.toContain("assets/production/");
+    expect(cssSource).not.toContain("data:image");
   });
 });

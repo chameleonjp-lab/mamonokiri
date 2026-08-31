@@ -8,8 +8,11 @@ import { Mesh } from "@babylonjs/core/Meshes/mesh";
 import { MeshBuilder } from "@babylonjs/core/Meshes/meshBuilder";
 import { StandardMaterial } from "@babylonjs/core/Materials/standardMaterial";
 import { HemisphericLight } from "@babylonjs/core/Lights/hemisphericLight";
-import { Texture } from "@babylonjs/core/Materials/Textures/texture";
 import "@babylonjs/core/Materials/standardMaterial";
+import {
+  makeProceduralPlayer,
+  type PlayerMotionKind,
+} from "./proceduralCharacter";
 import {
   PERFORMANCE_CONFIG,
   clampVolume,
@@ -140,202 +143,6 @@ function box(
   m.position = pos;
   m.material = material;
   return m;
-}
-function makePlayer(scene: Scene, materials: Record<string, StandardMaterial>) {
-  const root = new Mesh("yamabushi_samurai", scene);
-  root.position = new Vector3(0, 0.18, 0);
-  const torso = box(
-    scene,
-    "samurai_kimono",
-    new Vector3(0.82, 0.92, 0.52),
-    new Vector3(0, 1.15, 0),
-    materials.indigo,
-  );
-  torso.parent = root;
-  const lapel = box(
-    scene,
-    "kimono_lapel",
-    new Vector3(0.16, 0.72, 0.56),
-    new Vector3(0.08, 1.25, -0.03),
-    materials.cream,
-  );
-  lapel.rotation.z = -0.16;
-  lapel.parent = root;
-  const sash = box(
-    scene,
-    "obi_sash",
-    new Vector3(0.88, 0.16, 0.58),
-    new Vector3(0, 0.82, -0.01),
-    materials.leather,
-  );
-  sash.parent = root;
-  const knot = box(
-    scene,
-    "obi_knot",
-    new Vector3(0.22, 0.24, 0.12),
-    new Vector3(-0.38, 0.86, 0.24),
-    materials.vermilion,
-  );
-  knot.parent = root;
-  const hakama = MeshBuilder.CreateCylinder(
-    "hakama",
-    { height: 0.58, diameterTop: 0.72, diameterBottom: 1.0, tessellation: 6 },
-    scene,
-  );
-  hakama.position = new Vector3(0, 0.46, 0);
-  hakama.material = materials.indigo;
-  hakama.parent = root;
-  const leftLeg = box(
-    scene,
-    "left_leg",
-    new Vector3(0.2, 0.54, 0.26),
-    new Vector3(-0.2, 0.12, 0),
-    materials.gaiter,
-  );
-  leftLeg.parent = root;
-  const rightLeg = box(
-    scene,
-    "right_leg",
-    new Vector3(0.2, 0.54, 0.26),
-    new Vector3(0.2, 0.12, 0),
-    materials.gaiter,
-  );
-  rightLeg.parent = root;
-  const leftSandal = box(
-    scene,
-    "left_zori",
-    new Vector3(0.3, 0.08, 0.48),
-    new Vector3(-0.2, -0.16, -0.03),
-    materials.wood,
-  );
-  leftSandal.parent = root;
-  const rightSandal = box(
-    scene,
-    "right_zori",
-    new Vector3(0.3, 0.08, 0.48),
-    new Vector3(0.2, -0.16, -0.03),
-    materials.wood,
-  );
-  rightSandal.parent = root;
-  const head = MeshBuilder.CreateSphere(
-    "samurai_face",
-    { diameter: 0.48, segments: 12 },
-    scene,
-  );
-  head.position = new Vector3(0, 1.9, -0.02);
-  head.material = materials.skin;
-  head.parent = root;
-  const hair = MeshBuilder.CreateSphere(
-    "chonmage_hair",
-    { diameter: 0.52, segments: 8 },
-    scene,
-  );
-  hair.scaling = new Vector3(0.92, 0.58, 0.92);
-  hair.position = new Vector3(0, 2.13, 0.02);
-  hair.material = materials.hair;
-  hair.parent = root;
-  const topknot = MeshBuilder.CreateCylinder(
-    "topknot",
-    { height: 0.22, diameterTop: 0.14, diameterBottom: 0.22, tessellation: 8 },
-    scene,
-  );
-  topknot.position = new Vector3(0, 2.32, 0.02);
-  topknot.material = materials.hair;
-  topknot.parent = root;
-  const headband = box(
-    scene,
-    "hachimaki",
-    new Vector3(0.5, 0.06, 0.5),
-    new Vector3(0, 2.0, -0.02),
-    materials.vermilion,
-  );
-  headband.parent = root;
-  const neckCloth = box(
-    scene,
-    "neck_cloth",
-    new Vector3(0.42, 0.16, 0.42),
-    new Vector3(0, 1.65, 0),
-    materials.cream,
-  );
-  neckCloth.parent = root;
-  const leftArm = box(
-    scene,
-    "left_sleeve",
-    new Vector3(0.2, 0.72, 0.24),
-    new Vector3(-0.52, 1.15, 0),
-    materials.indigo,
-  );
-  leftArm.rotation.z = 0.16;
-  leftArm.parent = root;
-  const rightArm = box(
-    scene,
-    "right_sleeve",
-    new Vector3(0.2, 0.72, 0.24),
-    new Vector3(0.52, 1.15, 0),
-    materials.indigo,
-  );
-  rightArm.rotation.z = -0.16;
-  rightArm.parent = root;
-  const staff = MeshBuilder.CreateCylinder(
-    "staff",
-    { height: 1.9, diameter: 0.07, tessellation: 8 },
-    scene,
-  );
-  staff.position = new Vector3(-0.72, 1.05, 0.05);
-  staff.rotation.z = -0.1;
-  staff.material = materials.wood;
-  staff.parent = root;
-  const scabbard = box(
-    scene,
-    "katana_scabbard",
-    new Vector3(0.1, 1.18, 0.1),
-    new Vector3(0.28, 0.82, 0.22),
-    materials.wood,
-  );
-  scabbard.rotation.z = -0.72;
-  scabbard.parent = root;
-  const blade = box(
-    scene,
-    "katana",
-    new Vector3(0.07, 1.45, 0.08),
-    new Vector3(0.68, 1.3, -0.08),
-    materials.steel,
-  );
-  blade.rotation.z = -0.65;
-  blade.parent = root;
-  const guard = MeshBuilder.CreateTorus(
-    "tsuba",
-    { diameter: 0.2, thickness: 0.035, tessellation: 16 },
-    scene,
-  );
-  guard.position = new Vector3(0.4, 1.73, -0.08);
-  guard.rotation.y = Math.PI / 2;
-  guard.material = materials.gold;
-  guard.parent = root;
-  const prayer = MeshBuilder.CreateTorus(
-    "prayer_beads",
-    { diameter: 0.28, thickness: 0.025, tessellation: 12 },
-    scene,
-  );
-  prayer.position = new Vector3(-0.2, 1.62, -0.28);
-  prayer.rotation.x = Math.PI / 2;
-  prayer.material = materials.vermilion;
-  prayer.parent = root;
-  return {
-    root,
-    blade,
-    torso,
-    leftArm,
-    rightArm,
-    leftLeg,
-    rightLeg,
-    head,
-    hair,
-    neckCloth,
-    prayer,
-    sash,
-    scabbard,
-  };
 }
 type EnemyAttackSide = "left" | "right" | "alternate" | "wide" | "target";
 type EnemyVariant = {
@@ -758,7 +565,7 @@ export async function createGameScene(
       materials.vermilion,
     );
   }
-  const player = makePlayer(scene, materials);
+  const player = makeProceduralPlayer(scene, materials);
   const attackAreaMaterial = mat(
     scene,
     "attack_area_red",
@@ -1206,6 +1013,16 @@ export async function createGameScene(
   let lastFootstepAt = 0;
   let lastEnemyFootstepAt = 0;
   let previousEnemyX = 0;
+  let playerHitStartedAt = 0;
+  let playerHitUntil = 0;
+  let playerHitDirection: -1 | 1 = 1;
+  let playerSpawnUntil = 0;
+  let playerVictoryStartedAt = 0;
+  let playerDefeatStartedAt = 0;
+  let playerSheathStartedAt = 0;
+  const PLAYER_SPAWN_DURATION = 720;
+  const PLAYER_VICTORY_DURATION = 980;
+  const PLAYER_DEFEAT_DURATION = 760;
   let nextAmbientAt = performance.now() + 1600;
   let audioContext: AudioContext | null = null;
   const getAudioContext = () => {
@@ -1560,6 +1377,7 @@ export async function createGameScene(
   setEnemyGlow(false);
   announce(state());
   const spawnNextEnemy = () => {
+    const spawnNow = performance.now();
     wave += 1;
     boss = wave % 5 === 0;
     const tutorialIndex = tutorialVariantIndex(wave);
@@ -1637,14 +1455,14 @@ export async function createGameScene(
     updateFootZones(false, 0);
     guardRing.isVisible = false;
     enemyGuardUntil = 0;
-    nextGuardAt = performance.now() + 2200;
+    nextGuardAt = spawnNow + 2200;
     enemy.root.scaling.setAll(boss ? 1.38 : 1);
     setEnemyGlow(boss);
     enemy.root.position.z = 5.2;
     enemy.root.position.y = 0.2;
     enemy.root.position.x = 0;
     enemyTargetX = 0;
-    enemyMoveAt = performance.now() + 800;
+    enemyMoveAt = spawnNow + 800;
     enemy.root.rotation.y = 0;
     enemy.blade.rotation.z = -0.7;
     setSpearState(false);
@@ -1654,6 +1472,12 @@ export async function createGameScene(
     dodgeFromX = player.root.position.x;
     dodgeFromZ = player.root.position.z;
     dodgeStartAt = 0;
+    playerSpawnUntil = spawnNow + PLAYER_SPAWN_DURATION;
+    playerVictoryStartedAt = 0;
+    playerHitStartedAt = 0;
+    playerHitUntil = 0;
+    playerDefeatStartedAt = 0;
+    playerSheathStartedAt = 0;
     if (tutorialIndex === 0)
       message = "第1試練。左槍の予告を見て、右へ避けよ。";
     else if (tutorialIndex === 1)
@@ -1724,6 +1548,16 @@ export async function createGameScene(
     comboExpiresAt = shiftActiveTimer(comboExpiresAt, delta, pauseStartedAt);
     sheathUntil = shiftActiveTimer(sheathUntil, delta, pauseStartedAt);
     recoilUntil = shiftActiveTimer(recoilUntil, delta, pauseStartedAt);
+    playerHitStartedAt = shiftActiveTimer(playerHitStartedAt, delta);
+    playerHitUntil = shiftActiveTimer(playerHitUntil, delta, pauseStartedAt);
+    playerSpawnUntil = shiftActiveTimer(
+      playerSpawnUntil,
+      delta,
+      pauseStartedAt,
+    );
+    playerVictoryStartedAt = shiftActiveTimer(playerVictoryStartedAt, delta);
+    playerDefeatStartedAt = shiftActiveTimer(playerDefeatStartedAt, delta);
+    playerSheathStartedAt = shiftActiveTimer(playerSheathStartedAt, delta);
     slashImpactAt = shiftActiveTimer(slashImpactAt, delta, pauseStartedAt);
     shakeUntil = shiftActiveTimer(shakeUntil, delta, pauseStartedAt);
     hitStopUntil = shiftActiveTimer(hitStopUntil, delta, pauseStartedAt);
@@ -1768,9 +1602,13 @@ export async function createGameScene(
   };
   const retireEvent = () => {
     if (defeated) return;
+    const retireNow = performance.now();
     transitioning = false;
     transitionRemaining = 0;
     defeated = true;
+    playerDefeatStartedAt = retireNow;
+    playerVictoryStartedAt = 0;
+    playerSpawnUntil = 0;
     paused = false;
     pauseStartedAt = 0;
     attackUntil = 0;
@@ -1870,6 +1708,7 @@ export async function createGameScene(
   const resolveEnemyDefeat = () => {
     if (enemyHp > 0 || transitioning || rewardPending || defeated) return;
 
+    const defeatNow = performance.now();
     const defeatedWave = wave;
     const progress = defeatProgress(defeatedWave, modeLimit);
     const rewardMessages: string[] = [];
@@ -1888,6 +1727,8 @@ export async function createGameScene(
 
     enemyAttackAt = 0;
     enemyAttackHit = false;
+    playerVictoryStartedAt = defeatNow;
+    playerDefeatStartedAt = 0;
     enemyGuardUntil = 0;
     guardRing.isVisible = false;
     warningLine.isVisible = false;
@@ -1988,6 +1829,7 @@ export async function createGameScene(
     playerAttackStartedAt = now;
     attackUntil = now + timing.total;
     sheathUntil = attackUntil;
+    playerSheathStartedAt = now;
     guardUntil = 0;
     dodgeUntil = 0;
     player.blade.rotation.z = -1.35;
@@ -2049,6 +1891,7 @@ export async function createGameScene(
   ) => {
     if (enemyHp <= 0 || transitioning || defeated) return;
     sheathUntil = now + 620;
+    playerSheathStartedAt = now;
 
     if (Math.abs(enemy.root.position.x - slashTargetX) > 0.72) {
       whiffs += 1;
@@ -2149,6 +1992,13 @@ export async function createGameScene(
     enemyHitTaken = false;
     enemyStaggerUntil = 0;
     playerGuardBrokenUntil = 0;
+    playerHitStartedAt = 0;
+    playerHitUntil = 0;
+    playerHitDirection = 1;
+    playerSpawnUntil = performance.now() + PLAYER_SPAWN_DURATION;
+    playerVictoryStartedAt = 0;
+    playerDefeatStartedAt = 0;
+    playerSheathStartedAt = 0;
     wave = 1;
     boss = false;
     bossPhase = 1;
@@ -2419,6 +2269,98 @@ export async function createGameScene(
   window.addEventListener("yamabushi-retire", retireEvent);
   window.addEventListener("yamabushi-restart", resetRun);
   window.addEventListener("yamabushi-start", resetRun);
+  const updatePlayerMotion = (now: number) => {
+    let kind: PlayerMotionKind = "idle";
+    let progress = 0;
+    let direction: -1 | 1 =
+      player.root.position.x <= enemy.root.position.x ? -1 : 1;
+    let attackKind: PlayerAttackKind | undefined;
+
+    if (defeated) {
+      if (enemyHp <= 0) {
+        kind = "victory";
+        const start = playerVictoryStartedAt || now;
+        progress = Math.min(
+          1,
+          Math.max(0, (now - start) / PLAYER_VICTORY_DURATION),
+        );
+      } else {
+        kind = "defeat";
+        const start = playerDefeatStartedAt || now;
+        progress = Math.min(
+          1,
+          Math.max(0, (now - start) / PLAYER_DEFEAT_DURATION),
+        );
+      }
+    } else if (transitioning) {
+      kind = "victory";
+      const start = playerVictoryStartedAt || now;
+      progress = Math.min(
+        1,
+        Math.max(0, (now - start) / PLAYER_VICTORY_DURATION),
+      );
+    } else if (dodgeStartAt > 0 && dodgeUntil > now) {
+      kind = "dodge";
+      direction = dodgeDirection < 0 ? -1 : 1;
+      progress = Math.min(
+        1,
+        Math.max(0, (now - dodgeStartAt) / DODGE_DURATION),
+      );
+    } else if (playerAttackKind && attackUntil > now) {
+      kind = "attack";
+      attackKind = playerAttackKind;
+      progress = Math.min(
+        1,
+        Math.max(
+          0,
+          (now - playerAttackStartedAt) /
+            attackTimingFor(playerAttackKind).total,
+        ),
+      );
+    } else if (counterUntil > now && recoilUntil > now) {
+      kind = "parry";
+      direction = recoilDirection < 0 ? -1 : 1;
+      progress = Math.min(1, Math.max(0, 1 - (recoilUntil - now) / 190));
+    } else if (guardUntil > now) {
+      kind = "guard";
+      progress = 1;
+    } else if (playerHitUntil > now) {
+      kind = "hit";
+      direction = playerHitDirection;
+      progress = Math.min(
+        1,
+        Math.max(
+          0,
+          (now - playerHitStartedAt) /
+            Math.max(1, playerHitUntil - playerHitStartedAt),
+        ),
+      );
+    } else if (sheathUntil > now) {
+      kind = "sheath";
+      progress = Math.min(
+        1,
+        Math.max(
+          0,
+          (now - playerSheathStartedAt) /
+            Math.max(1, sheathUntil - playerSheathStartedAt),
+        ),
+      );
+    } else if (playerSpawnUntil > now) {
+      kind = "spawn";
+      progress = Math.min(
+        1,
+        Math.max(0, 1 - (playerSpawnUntil - now) / PLAYER_SPAWN_DURATION),
+      );
+    }
+
+    player.applyMotion({
+      kind,
+      progress,
+      timeSeconds: now / 1000,
+      direction,
+      attackKind,
+    });
+  };
   const observer = scene.onBeforeRenderObservable.add(() => {
     const now = performance.now();
     const dt = Math.min(0.05, engine.getDeltaTime() / 1000);
@@ -2460,11 +2402,15 @@ export async function createGameScene(
         slashPower,
         Math.min(1.8, 0.65 + bladeAngularSpeed),
       );
-    if (paused || now < hitStopUntil) return;
+    if (paused || now < hitStopUntil) {
+      if (paused && rewardPending) updatePlayerMotion(now);
+      return;
+    }
     if (transitioning) {
       if (combo > 0) comboExpiresAt += dt * 1000;
       transitionRemaining -= dt * 1000;
       if (transitionRemaining <= 0) spawnNextEnemy();
+      updatePlayerMotion(now);
       return;
     }
     resolveGuardBreak(now);
@@ -2882,6 +2828,9 @@ export async function createGameScene(
             if (guarded.broken) {
               guardUntil = 0;
               playerGuardBrokenUntil = now + 900;
+              playerHitStartedAt = now;
+              playerHitUntil = now + 900;
+              playerHitDirection = dangerLane < 0 ? -1 : 1;
               recoilUntil = Math.max(recoilUntil, now + 900);
               triggerImpact(dangerLane || 1, 0.1);
               hp = applyDamage(hp, 10).hp;
@@ -2894,6 +2843,8 @@ export async function createGameScene(
                 : "防御を崩され、倒れた。";
               if (!hp) {
                 defeated = true;
+                playerDefeatStartedAt = now;
+                playerVictoryStartedAt = 0;
                 saveBestRecord();
                 queuedAttackLanes = [];
                 clearEnemyAttackVisuals();
@@ -2932,6 +2883,9 @@ export async function createGameScene(
           } else {
             hitsTaken += 1;
             enemyHitTaken = true;
+            playerHitStartedAt = now;
+            playerHitUntil = now + 520;
+            playerHitDirection = dangerLane < 0 ? -1 : 1;
             triggerImpact(dangerLane || 1, 0.12);
             const hitDamage =
               currentVariant.role === "heavy"
@@ -2948,6 +2902,8 @@ export async function createGameScene(
             message = hp ? "岩刃を受けた。" : "倒れた。再起を選べる。";
             if (!hp) {
               defeated = true;
+              playerDefeatStartedAt = now;
+              playerVictoryStartedAt = 0;
               saveBestRecord();
               queuedAttackLanes = [];
               clearEnemyAttackVisuals();
@@ -3055,6 +3011,7 @@ export async function createGameScene(
       player.torso.rotation.z +=
         (0 - player.torso.rotation.z) * Math.min(1, dt * 8);
     }
+    updatePlayerMotion(now);
   });
   return {
     scene,
