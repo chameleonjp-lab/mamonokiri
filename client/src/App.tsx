@@ -133,6 +133,79 @@ const initial: GameState = {
   tutorialObjectiveMet: false,
 };
 
+const SUPABASE_URL = "https://mlpnjgezrnhdxsxolyzj.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_drzcy0v97knU6FgjqSgBHw_0A9XPdFM";
+const GAME_SLUG = "mamonokiri";
+const CLIENT_VERSION = "mamonokiri-2026-08-31-platform";
+const LAB_URL = "https://chameleonjp-lab.github.io/chameleonjp_lab/";
+const PLAYER_NAME_KEY = "mamonokiri.player-name";
+
+function cleanPlayerName(value: string): string {
+  return value.replace(/[\u0000-\u001f\u007f]/g, "").trim().slice(0, 20);
+}
+
+function readPlayerName(): string {
+  try {
+    return cleanPlayerName(localStorage.getItem(PLAYER_NAME_KEY) ?? "");
+  } catch {
+    return "";
+  }
+}
+
+function currentGameUrl(): string {
+  return new URL(window.location.href).toString().split("#")[0] ?? window.location.href;
+}
+
+function homeShareMessage(): string {
+  return `墨霞の剣で敵の予告を読み、受け流しと連撃を決めよう！\n${currentGameUrl()}\n#墨霞の剣 #ミニゲーム`;
+}
+
+function resultShareMessage(state: GameState, playerName: string): string {
+  const resultLabel = state.enemyHp === 0 && state.wave >= state.modeLimit ? "勝利" : "挑戦終了";
+  return `${playerName || "ななし"}さんの墨霞の剣結果：${resultLabel}、スコア${state.score}点、到達${state.wave}体目、最大連撃${state.maxCombo}、受け流し${state.parrySuccesses}回。\n${currentGameUrl()}\n#墨霞の剣 #ミニゲーム`;
+}
+
+async function shareOrCopy(text: string, setStatus: (message: string) => void): Promise<void> {
+  setStatus("");
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: "墨霞の剣", text, url: currentGameUrl() });
+      setStatus("共有しました。");
+      return;
+    } catch (error: unknown) {
+      if (error instanceof DOMException && error.name === "AbortError") return;
+    }
+  }
+  try {
+    if (!navigator.clipboard?.writeText) throw new Error("clipboard unavailable");
+    await navigator.clipboard.writeText(text);
+    setStatus("シェア文をコピーしました。");
+  } catch {
+    setStatus("シェア文をコピーできませんでした。長押しで選択してください。");
+  }
+}
+
+async function callRankingRpc(name: string, payload: Record<string, unknown>): Promise<unknown> {
+  const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${name}`, {
+    method: "POST",
+    headers: {
+      apikey: SUPABASE_PUBLISHABLE_KEY,
+      Authorization: `Bearer ${SUPABASE_PUBLISHABLE_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+  const body = await response.text();
+  let data: unknown = null;
+  try {
+    data = body ? JSON.parse(body) : null;
+  } catch {
+    data = body;
+  }
+  if (!response.ok) throw new Error(`${name}: ${response.status}`);
+  return data;
+}
+
 function Bar({ value, tone }: { value: number; tone: "player" | "enemy" }) {
   return (
     <div className={`bar ${tone}`}>
@@ -197,6 +270,11 @@ function volumeLabel(value: number): string {
 
 export default function App() {
   const [state, setState] = useState(initial);
+  const [playerName, setPlayerName] = useState(readPlayerName);
+  const [nameMessage, setNameMessage] = useState("");
+  const [shareStatus, setShareStatus] = useState("");
+  const [ranking, setRanking] = useState<Array<{ name: string; score: number }>>([]);
+  const [rankingStatus, setRankingStatus] = useState("結果を送信すると上位10名を表示します。");
   const [showClimax, setShowClimax] = useState(false);
   const [showBossVictory, setShowBossVictory] = useState(false);
   const [showCounter, setShowCounter] = useState(false);
@@ -237,8 +315,55 @@ export default function App() {
   const exitConfirmRef = useRef(false);
   const titleOpenRef = useRef(true);
   const lastMobileActionAt = useRef(0);
+  const resultPlatformKey = useRef("");
   exitConfirmRef.current = showExitConfirm;
   titleOpenRef.current = showTitle;
+
+  useEffect(() => {
+    if (!state.defeated || !playerName) {
+      if (!state.defeated) resultPlatformKey.current = "";
+      return;
+    }
+    const key = `${state.seed}:${state.mode}:${state.difficulty}:${state.score}:${playerName}`;
+    if (resultPlatformKey.current === key) return;
+    resultPlatformKey.current = key;
+    setRanking([]);
+    setRankingStatus("ランキングを更新中…");
+    void (async () => {
+      try {
+        await callRankingRpc("submit_score", {
+          p_display_name: playerName,
+          p_game_slug: GAME_SLUG,
+          p_score: Math.trunc(state.score),
+          p_client_version: CLIENT_VERSION,
+        });
+      } catch {
+        setRankingStatus("今回のスコアを送信できませんでした。ランキングを表示します。");
+      }
+      try {
+        const data = await callRankingRpc("get_best_score_ranking", {
+          p_game_slug: GAME_SLUG,
+          p_limit: 10,
+        });
+        const rows = Array.isArray(data)
+          ? data.slice(0, 10).flatMap(row => {
+              if (!row || typeof row !== "object") return [];
+              const item = row as Record<string, unknown>;
+              const rawName = item.display_name ?? item.player_name ?? item.name;
+              const score = Number(item.score ?? item.best_score);
+              return [{
+                name: typeof rawName === "string" && rawName.trim() ? rawName : "ななし",
+                score: Number.isFinite(score) ? Math.trunc(score) : 0,
+              }];
+            })
+          : [];
+        setRanking(rows);
+        setRankingStatus(rows.length ? "上位10名を表示しています。" : "まだランキングがありません。");
+      } catch {
+        setRankingStatus("ランキングを読み込めませんでした。");
+      }
+    })();
+  }, [playerName, state.defeated, state.difficulty, state.mode, state.score, state.seed]);
 
   const cycleEffects = () => {
     const next =
@@ -318,6 +443,12 @@ export default function App() {
     eventName = "yamabushi-restart",
     options: { seed?: number; mode?: RunMode; difficulty?: Difficulty } = {},
   ) => {
+    if (!playerName) {
+      setNameMessage("プレイヤー名を入力してから始めてください。");
+      setShowTitle(true);
+      titleOpenRef.current = true;
+      return;
+    }
     const mode = options.mode ?? selectedMode;
     const difficulty = options.difficulty ?? selectedDifficulty;
     setShowPause(false);
@@ -870,6 +1001,29 @@ export default function App() {
           {state.isNewRecord && (
             <strong className="new-record">自己最高記録を更新</strong>
           )}
+          <section className="result-platform" aria-labelledby="result-platform-title">
+            <p className="eyebrow" id="result-platform-title">RESULT RECORD</p>
+            <p className="result-player">{playerName || "ななし"}さんの結果</p>
+            <textarea readOnly rows={4} value={resultShareMessage(state, playerName)} aria-label="結果のシェア文" />
+            <button
+              type="button"
+              className="result-secondary"
+              onClick={() => void shareOrCopy(resultShareMessage(state, playerName), setShareStatus)}
+            >
+              結果をシェア
+            </button>
+            <p className="platform-status" role="status" aria-live="polite">{shareStatus}</p>
+            <div className="online-ranking">
+              <p className="eyebrow">TOP 10</p>
+              <ol>
+                {ranking.length ? ranking.map((item, index) => (
+                  <li key={`${item.name}-${index}`}><span>{index + 1}位 {item.name}</span><b>{item.score}点</b></li>
+                )) : <li>ランキングを読み込み中…</li>}
+              </ol>
+              <p className="platform-status" role="status" aria-live="polite">{rankingStatus}</p>
+            </div>
+            <a className="platform-link" href={LAB_URL} target="_blank" rel="noopener noreferrer">カメレオンJPの実験場</a>
+          </section>
           <div className="result-actions">
             <button
               type="button"
@@ -1020,6 +1174,30 @@ export default function App() {
             </span>
           </div>
           <p>敵の予告を読み、防御・回避・斬撃を選ぶ。</p>
+          <section className="player-name-gate" aria-labelledby="player-name-title">
+            <label className="eyebrow" id="player-name-title" htmlFor="player-name">ランキング表示名（必須）</label>
+            <input
+              id="player-name"
+              type="text"
+              value={playerName}
+              maxLength={20}
+              autoComplete="name"
+              placeholder="20文字以内で入力"
+              required
+              onChange={event => {
+                const next = cleanPlayerName(event.target.value);
+                setPlayerName(next);
+                setNameMessage(next ? "" : "名前を入力すると開始できます。");
+                try {
+                  if (next) localStorage.setItem(PLAYER_NAME_KEY, next);
+                  else localStorage.removeItem(PLAYER_NAME_KEY);
+                } catch {
+                  // Keep the current-session name when storage is unavailable.
+                }
+              }}
+            />
+            <small className="platform-status">{nameMessage || (playerName ? `${playerName}さんの名前で記録します。` : "名前を入力すると開始できます。")}</small>
+          </section>
           <div className="title-choice-groups">
             <div className="title-choice-group">
               <span>勝負の長さ</span>
@@ -1099,6 +1277,15 @@ export default function App() {
           >
             新しく始める
           </button>
+          <button
+            type="button"
+            className="result-secondary platform-share-button"
+            onClick={() => void shareOrCopy(homeShareMessage(), setShareStatus)}
+          >
+            ゲームをシェア
+          </button>
+          <p className="platform-status" role="status" aria-live="polite">{shareStatus}</p>
+          <a className="platform-link" href={LAB_URL} target="_blank" rel="noopener noreferrer">カメレオンJPの実験場</a>
         </div>
       )}
 
