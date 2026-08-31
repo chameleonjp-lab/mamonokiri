@@ -1672,12 +1672,14 @@ export async function createGameScene(
           0.66,
       ),
     );
+  const announceActionMessage = (nextMessage: string) => {
+    message = nextMessage;
+    announce(state());
+  };
   const performDodge = (direction: number) => {
     const now = performance.now();
+    if (paused || defeated || transitioning) return;
     if (
-      paused ||
-      defeated ||
-      transitioning ||
       !canStartPlayerAction(now, [
         dodgeUntil,
         attackUntil,
@@ -1685,8 +1687,10 @@ export async function createGameScene(
         recoilUntil,
         playerGuardBrokenUntil,
       ])
-    )
+    ) {
+      announceActionMessage("まだ動作中。回避の終わりを待て。");
       return;
+    }
     dodgeDirection = direction < 0 ? -1 : 1;
     dodgeStartAt = now;
     dodgeUntil = now + DODGE_DURATION;
@@ -2105,9 +2109,12 @@ export async function createGameScene(
   const performSlash = () => {
     if (paused || transitioning || defeated) return;
     const now = performance.now();
+    if (enemyHp <= 0) return;
+    if (slashProjectile) {
+      announceActionMessage("飛刃が届くまで、次の斬撃を待て。");
+      return;
+    }
     if (
-      slashProjectile ||
-      enemyHp <= 0 ||
       !canStartPlayerAction(now, [
         attackUntil,
         guardUntil,
@@ -2115,16 +2122,14 @@ export async function createGameScene(
         recoilUntil,
         playerGuardBrokenUntil,
       ])
-    )
-      return;
-    if (!canSlashDuringTutorial(tutorialStep, tutorialObjectiveMet)) {
-      message =
-        tutorialStep === 3
-          ? "まず敵の攻撃直前に防を押し、受け流しを成功させよ。"
-          : `まず危険線と反対の${tutorialStep === 1 ? "右" : "左"}へ避けよ。`;
-      announce(state());
+    ) {
+      announceActionMessage("まだ振り終わり。次の一閃を待て。");
       return;
     }
+    const tutorialHint = !canSlashDuringTutorial(
+      tutorialStep,
+      tutorialObjectiveMet,
+    );
     const direction = player.root.position.x <= enemy.root.position.x ? -1 : 1;
 
     if (enemyStaggerUntil > now && counterUntil <= now) {
@@ -2192,15 +2197,16 @@ export async function createGameScene(
       return;
     }
 
-    if (
-      Vector3.Distance(player.root.position, enemy.root.position) < 6 &&
-      enemyHp > 0
-    ) {
-      beginPlayerAttack("normal", now);
-      playFootstep(Math.min(1.2, slashPower * 0.75));
-      playSlashSound(slashPower);
-      launchPlayerSlash(now, direction);
-    }
+    beginPlayerAttack("normal", now);
+    playFootstep(Math.min(1.2, slashPower * 0.75));
+    playSlashSound(slashPower);
+    message = tutorialHint
+      ? tutorialStep === 3
+        ? "斬撃は届く。敵の攻撃直前に防を押し、受け流しを狙え。"
+        : "斬撃は届く。次は危険線と反対へ避けよ。"
+      : "斬撃を放つ。";
+    launchPlayerSlash(now, direction);
+    announce(state());
   };
 
   const performGuard = () => {
@@ -2214,8 +2220,10 @@ export async function createGameScene(
         recoilUntil,
         playerGuardBrokenUntil,
       ])
-    )
+    ) {
+      announceActionMessage("まだ動作中。構え直してから防御せよ。");
       return;
+    }
     if (playerPosture <= 0) {
       message = "構えが尽きている。間を置くか、攻撃を当てて整えよ。";
       announce(state());
