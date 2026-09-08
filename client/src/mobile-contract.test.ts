@@ -49,7 +49,8 @@ describe("smartphone play contract", () => {
     expect(canvasSource).toContain('window.addEventListener("pagehide"');
     expect(canvasSource).toContain('window.addEventListener("pageshow"');
     expect(appSource).toContain("resumeGraceMs: RESUME_GRACE_MS");
-    expect(sceneSource).toContain("pauseDuration + resumeGraceMs");
+    // Deadline preservation is exercised in scene-clock.test.ts.
+    expect(sceneSource).toContain("clock.resume(realNow, detail?.resumeGraceMs)");
   });
 
   it("stops continuous 3D rendering while a menu or result overlay is open", () => {

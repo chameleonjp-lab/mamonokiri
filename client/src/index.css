@@ -683,3 +683,18 @@ body,
     height: 88%;
   }
 }
+
+/* Startup and storage failures must leave an actionable, readable title. */
+.scene-status,
+.storage-notice {
+  width: min(620px, 100%);
+  margin: 8px auto;
+  color: #f0cc87;
+  font-size: 13px;
+  line-height: 1.65;
+  letter-spacing: normal;
+  overflow-wrap: anywhere;
+}
+.scene-status:empty { display: none; }
+.scene-status button { min-width: 44px; min-height: 44px; font-size: 14px; }
+.title-screen > .result-primary:disabled { opacity: .5; cursor: wait; }

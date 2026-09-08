@@ -68,7 +68,7 @@ export function clampVolume(value: unknown, fallback: number): number {
 }
 
 export function readStoredVolume(
-  storage: Storage,
+  storage: Pick<Storage, "getItem">,
   key: string,
   fallback: number,
 ): number {
@@ -76,7 +76,7 @@ export function readStoredVolume(
   return stored === null ? fallback : clampVolume(Number(stored), fallback);
 }
 
-export function readAudioSettings(storage: Storage): AudioSettings {
+export function readAudioSettings(storage: Pick<Storage, "getItem">): AudioSettings {
   return {
     masterVolume: readStoredVolume(
       storage,
