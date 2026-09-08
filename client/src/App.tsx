@@ -1,5 +1,5 @@
 // 墨霞の修験道：中央は剣戟の余白、情報は四隅へ。UIも能舞台のように静かに置く。
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import GameCanvas from "@/components/GameCanvas";
 import {
   PERFORMANCE_CONFIG,
@@ -23,115 +23,8 @@ import {
   type RunMode,
 } from "@/game/rules";
 
-type GameState = {
-  mode: RunMode;
-  modeLimit: number;
-  difficulty: Difficulty;
-  seed: number;
-  chapter: number;
-  hp: number;
-  playerPosture: number;
-  playerPostureMax: number;
-  enemyHp: number;
-  enemyMaxHp: number;
-  enemyPosture: number;
-  enemyPostureMax: number;
-  wave: number;
-  remainingEnemies: number;
-  boss: boolean;
-  bossPhase: 1 | 2;
-  bossDefeatPulse: number;
-  enemyName: string;
-  enemyEpithet: string;
-  enemyFamily: string;
-  enemyAttackStyle: "left" | "right" | "alternate" | "wide" | "target";
-  enemyPhase: string;
-  counterReady: boolean;
-  counterPulse: number;
-  stance: string;
-  attackPhase: string;
-  message: string;
-  defeated: boolean;
-  combo: number;
-  maxCombo: number;
-  score: number;
-  comboTime: number;
-  defeatedCount: number;
-  bossDefeats: number;
-  parrySuccesses: number;
-  correctDodges: number;
-  hitsTaken: number;
-  whiffs: number;
-  playTimeMs: number;
-  bestScore: number;
-  isNewRecord: boolean;
-  rewardPending: boolean;
-  rewardChapter: number;
-  rewardOptions: ReadonlyArray<{
-    kind: ChapterRewardKind;
-    label: string;
-    description: string;
-  }>;
-  rewardEffects: ReadonlyArray<ChapterRewardKind>;
-  climax: number;
-  paused: boolean;
-  transitioning: boolean;
-  tutorialStep: number;
-  tutorialObjectiveMet: boolean;
-};
-
-const initial: GameState = {
-  mode: "fifty",
-  modeLimit: 50,
-  difficulty: "standard",
-  seed: 0,
-  chapter: 1,
-  hp: 100,
-  playerPosture: 100,
-  playerPostureMax: 100,
-  enemyHp: 100,
-  enemyMaxHp: 100,
-  enemyPosture: 80,
-  enemyPostureMax: 80,
-  wave: 1,
-  remainingEnemies: 50,
-  boss: false,
-  bossPhase: 1,
-  bossDefeatPulse: 0,
-  enemyName: "影面",
-  enemyEpithet: "左薙の影",
-  enemyFamily: "左右教材型",
-  enemyAttackStyle: "left",
-  enemyPhase: "巡回",
-  counterReady: false,
-  counterPulse: 0,
-  stance: "静止",
-  attackPhase: "待機",
-  message: "第1試練。左槍の予告を見て、右へ避けよ。",
-  defeated: false,
-  combo: 0,
-  maxCombo: 0,
-  score: 0,
-  comboTime: 0,
-  defeatedCount: 0,
-  bossDefeats: 0,
-  parrySuccesses: 0,
-  correctDodges: 0,
-  hitsTaken: 0,
-  whiffs: 0,
-  playTimeMs: 0,
-  bestScore: 0,
-  isNewRecord: false,
-  rewardPending: false,
-  rewardChapter: 0,
-  rewardOptions: [],
-  rewardEffects: [],
-  climax: 0,
-  paused: false,
-  transitioning: false,
-  tutorialStep: 1,
-  tutorialObjectiveMet: false,
-};
+import { INITIAL_GAME_STATE as initial, type GameState, type SceneStatus } from "@/game/contracts";
+import { safeStorage, STORAGE_UNAVAILABLE_MESSAGE } from "@/game/storage";
 
 const SUPABASE_URL = "https://mlpnjgezrnhdxsxolyzj.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_drzcy0v97knU6FgjqSgBHw_0A9XPdFM";
@@ -146,7 +39,7 @@ function cleanPlayerName(value: string): string {
 
 function readPlayerName(): string {
   try {
-    return cleanPlayerName(localStorage.getItem(PLAYER_NAME_KEY) ?? "");
+    return cleanPlayerName(safeStorage.getItem(PLAYER_NAME_KEY) ?? "");
   } catch {
     return "";
   }
@@ -270,6 +163,8 @@ function volumeLabel(value: number): string {
 
 export default function App() {
   const [state, setState] = useState(initial);
+  const [sceneStatus, setSceneStatus] = useState<SceneStatus>({ phase: "loading" });
+  const [sceneAttempt, setSceneAttempt] = useState(0);
   const [playerName, setPlayerName] = useState(readPlayerName);
   const [nameMessage, setNameMessage] = useState("");
   const [shareStatus, setShareStatus] = useState("");
@@ -285,28 +180,34 @@ export default function App() {
   const [selectedDifficulty, setSelectedDifficulty] =
     useState<Difficulty>("standard");
   const [effectLevel, setEffectLevel] = useState<EffectLevel>(() =>
-    readEffectLevel(localStorage.getItem(SETTINGS_STORAGE_KEYS.effectsLevel)),
+    readEffectLevel(safeStorage.getItem(SETTINGS_STORAGE_KEYS.effectsLevel)),
   );
   const [ambientVolume, setAmbientVolume] = useState(
-    () => readAudioSettings(localStorage).ambientVolume,
+    () => readAudioSettings(safeStorage).ambientVolume,
   );
   const [masterVolume, setMasterVolume] = useState(
-    () => readAudioSettings(localStorage).masterVolume,
+    () => readAudioSettings(safeStorage).masterVolume,
   );
   const [effectsVolume, setEffectsVolume] = useState(
-    () => readAudioSettings(localStorage).effectsVolume,
+    () => readAudioSettings(safeStorage).effectsVolume,
   );
   const [audioMuted, setAudioMuted] = useState(
-    () => readAudioSettings(localStorage).muted,
+    () => readAudioSettings(safeStorage).muted,
   );
   const [handedness, setHandedness] = useState<Handedness>(() =>
-    readHandedness(localStorage.getItem(SETTINGS_STORAGE_KEYS.handedness)),
+    readHandedness(safeStorage.getItem(SETTINGS_STORAGE_KEYS.handedness)),
   );
   const [performanceTier, setPerformanceTier] = useState<PerformanceTier>(() =>
     readPerformanceTier(
-      localStorage.getItem(SETTINGS_STORAGE_KEYS.performance),
+      safeStorage.getItem(SETTINGS_STORAGE_KEYS.performance),
     ),
   );
+  const storageUnavailable = useSyncExternalStore(
+    safeStorage.subscribe, safeStorage.isUnavailable, safeStorage.isUnavailable,
+  );
+  const storageNotice = storageUnavailable
+    ? <p className="storage-notice" role="status">{STORAGE_UNAVAILABLE_MESSAGE}</p>
+    : null;
   const previousClimax = useRef(0);
   const previousCounter = useRef(0);
   const previousBossVictory = useRef(0);
@@ -373,7 +274,7 @@ export default function App() {
           ? "minimal"
           : "full";
     setEffectLevel(next);
-    localStorage.setItem(SETTINGS_STORAGE_KEYS.effectsLevel, next);
+    safeStorage.setItem(SETTINGS_STORAGE_KEYS.effectsLevel, next);
     dispatchGameEvent("yamabushi-effects", { level: next });
   };
 
@@ -389,19 +290,19 @@ export default function App() {
     setEffectsVolume(next.effectsVolume);
     setAmbientVolume(next.ambientVolume);
     setAudioMuted(next.muted);
-    localStorage.setItem(
+    safeStorage.setItem(
       SETTINGS_STORAGE_KEYS.masterVolume,
       String(next.masterVolume),
     );
-    localStorage.setItem(
+    safeStorage.setItem(
       SETTINGS_STORAGE_KEYS.effectsVolume,
       String(next.effectsVolume),
     );
-    localStorage.setItem(
+    safeStorage.setItem(
       SETTINGS_STORAGE_KEYS.ambientVolume,
       String(next.ambientVolume),
     );
-    localStorage.setItem(SETTINGS_STORAGE_KEYS.audioMuted, String(next.muted));
+    safeStorage.setItem(SETTINGS_STORAGE_KEYS.audioMuted, String(next.muted));
     dispatchGameEvent("yamabushi-audio", next);
   };
 
@@ -424,7 +325,7 @@ export default function App() {
   const toggleHandedness = () => {
     const next = handedness === "right" ? "left" : "right";
     setHandedness(next);
-    localStorage.setItem(SETTINGS_STORAGE_KEYS.handedness, next);
+    safeStorage.setItem(SETTINGS_STORAGE_KEYS.handedness, next);
   };
 
   const cyclePerformance = () => {
@@ -435,7 +336,7 @@ export default function App() {
           ? "lite"
           : "high";
     setPerformanceTier(next);
-    localStorage.setItem(SETTINGS_STORAGE_KEYS.performance, next);
+    safeStorage.setItem(SETTINGS_STORAGE_KEYS.performance, next);
     dispatchGameEvent("yamabushi-performance", { tier: next });
   };
 
@@ -443,6 +344,7 @@ export default function App() {
     eventName = "yamabushi-restart",
     options: { seed?: number; mode?: RunMode; difficulty?: Difficulty } = {},
   ) => {
+    if (sceneStatus.phase !== "ready") return;
     if (!playerName) {
       setNameMessage("プレイヤー名を入力してから始めてください。");
       setShowTitle(true);
@@ -639,7 +541,7 @@ export default function App() {
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerCancel}
     >
-      <GameCanvas />
+      <GameCanvas attempt={sceneAttempt} onStatusChange={setSceneStatus} />
       <div
         className={`threat-vignette ${state.enemyPhase === "予備" ? "is-warning" : ""}`}
         aria-hidden="true"
@@ -1024,6 +926,7 @@ export default function App() {
             </div>
             <a className="platform-link" href={LAB_URL} target="_blank" rel="noopener noreferrer">カメレオンJPの実験場</a>
           </section>
+          {storageNotice}
           <div className="result-actions">
             <button
               type="button"
@@ -1065,7 +968,11 @@ export default function App() {
           <div className="pause-panel">
             <p className="eyebrow">THE BLADE RESTS</p>
             <h2 id="pause-title">一時停止</h2>
-            <p>停止中は攻撃・防御・回避・連撃の時間が進みません。</p>
+            {state.pauseReason === "frame-gap" && (
+              <p role="status">画面の更新が遅れたため一時停止しました。攻撃が途中で消えないよう、停止前の状態を保っています。</p>
+            )}
+            <p>停止中は攻撃・防御・回避・連撃の時間が進みません。再開後は0.7秒待ってから続きます。</p>
+            {storageNotice}
             <div className="pause-actions">
               <button
                 type="button"
@@ -1174,6 +1081,19 @@ export default function App() {
             </span>
           </div>
           <p>敵の予告を読み、防御・回避・斬撃を選ぶ。</p>
+          <div className="scene-status" role="status" aria-live="polite">
+            {sceneStatus.phase === "loading" && <p>ゲーム画面を準備中です…</p>}
+            {sceneStatus.phase === "error" && (
+              <>
+                <p>3Dのゲーム画面を準備できませんでした。描画が利用できないか、読み込みに失敗しています。</p>
+                <button type="button" className="result-secondary" onClick={() => {
+                  setSceneStatus({ phase: "loading" });
+                  setSceneAttempt((attempt) => attempt + 1);
+                }}>画面の準備をやり直す</button>
+              </>
+            )}
+          </div>
+          {storageNotice}
           <section className="player-name-gate" aria-labelledby="player-name-title">
             <label className="eyebrow" id="player-name-title" htmlFor="player-name">ランキング表示名（必須）</label>
             <input
@@ -1189,8 +1109,8 @@ export default function App() {
                 setPlayerName(next);
                 setNameMessage(next ? "" : "名前を入力すると開始できます。");
                 try {
-                  if (next) localStorage.setItem(PLAYER_NAME_KEY, next);
-                  else localStorage.removeItem(PLAYER_NAME_KEY);
+                  if (next) safeStorage.setItem(PLAYER_NAME_KEY, next);
+                  else safeStorage.removeItem(PLAYER_NAME_KEY);
                 } catch {
                   // Keep the current-session name when storage is unavailable.
                 }
@@ -1273,6 +1193,7 @@ export default function App() {
           <button
             type="button"
             className="result-primary"
+            disabled={sceneStatus.phase !== "ready"}
             onClick={() => startNewRun("yamabushi-start")}
           >
             新しく始める

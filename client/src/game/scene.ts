@@ -48,7 +48,6 @@ import {
   postureAfterGuard,
   recoverPosture,
   scoreForCombo,
-  shiftActiveTimer,
   shouldAdvanceCombatClock,
   tutorialVariantIndex,
   type ChapterRewardKind,
@@ -59,63 +58,10 @@ import {
   type PlayerAttackKind,
 } from "./rules";
 
-type State = {
-  mode: RunMode;
-  modeLimit: number;
-  difficulty: Difficulty;
-  seed: number;
-  chapter: number;
-  hp: number;
-  playerPosture: number;
-  playerPostureMax: number;
-  enemyHp: number;
-  enemyMaxHp: number;
-  enemyPosture: number;
-  enemyPostureMax: number;
-  wave: number;
-  remainingEnemies: number;
-  boss: boolean;
-  bossPhase: 1 | 2;
-  bossDefeatPulse: number;
-  enemyName: string;
-  enemyEpithet: string;
-  enemyFamily: string;
-  enemyAttackStyle: EnemyAttackSide;
-  enemyPhase: string;
-  stance: string;
-  attackPhase: string;
-  message: string;
-  defeated: boolean;
-  combo: number;
-  maxCombo: number;
-  score: number;
-  comboTime: number;
-  defeatedCount: number;
-  bossDefeats: number;
-  parrySuccesses: number;
-  correctDodges: number;
-  hitsTaken: number;
-  whiffs: number;
-  playTimeMs: number;
-  bestScore: number;
-  isNewRecord: boolean;
-  rewardPending: boolean;
-  rewardChapter: number;
-  rewardOptions: ReadonlyArray<{
-    kind: ChapterRewardKind;
-    label: string;
-    description: string;
-  }>;
-  rewardEffects: ReadonlyArray<ChapterRewardKind>;
-  climax: number;
-  counterReady: boolean;
-  counterPulse: number;
-  paused: boolean;
-  transitioning: boolean;
-  tutorialStep: number;
-  tutorialObjectiveMet: boolean;
-};
-export type GameHandle = { scene: Scene; dispose: () => void };
+import type { GameState, PauseReason, PauseRequest } from "./contracts";
+import { RunClock } from "./clock";
+import { safeStorage } from "./storage";
+export type GameHandle = { scene: Scene; getState: () => GameState; dispose: () => void };
 
 const VERMILION = new Color3(0.72, 0.17, 0.1);
 const INK = new Color3(0.035, 0.045, 0.06);
@@ -472,16 +418,26 @@ function makeEnemy(
     spearTips: [spearTipL, spearTipR],
   };
 }
-function announce(state: State) {
+function announce(state: GameState) {
   window.dispatchEvent(new CustomEvent("yamabushi-state", { detail: state }));
 }
 export async function createGameScene(
   engine: Engine,
   initialPerformanceTier: PerformanceTier = readPerformanceTier(
-    localStorage.getItem(SETTINGS_STORAGE_KEYS.performance),
+    safeStorage.getItem(SETTINGS_STORAGE_KEYS.performance),
   ),
 ): Promise<GameHandle> {
+  const clock = new RunClock();
   const scene = new Scene(engine);
+  const pendingEffects = new Set<number>();
+  const scheduleEffect = (callback: () => void, delay: number) => {
+    const timer = window.setTimeout(() => {
+      pendingEffects.delete(timer);
+      callback();
+    }, delay);
+    pendingEffects.add(timer);
+    return timer;
+  };
   scene.clearColor = new Color4(0.06, 0.075, 0.09, 1);
   scene.fogMode = Scene.FOGMODE_EXP2;
   scene.fogDensity = 0.045;
@@ -597,7 +553,7 @@ export async function createGameScene(
       zone.position.x = player.root.position.x + (index - 1) * 0.92;
       zone.material = zoneMaterials[index];
       const pulse =
-        0.84 + 0.16 * (0.5 + 0.5 * Math.sin(performance.now() * 0.035));
+        0.84 + 0.16 * (0.5 + 0.5 * Math.sin(clock.nowMs * 0.035));
       zoneMaterials[index].alpha = visible
         ? index - 1 === targetLane
           ? 0.78 * pulse
@@ -652,7 +608,7 @@ export async function createGameScene(
   let dangerLane = 0;
   const triggerImpact = (direction: number, strength = 0.08) => {
     if (effectLevel === "minimal") return;
-    const now = performance.now();
+    const now = clock.nowMs;
     const duration = effectLevel === "reduced" ? 110 : 220;
     shakeUntil = now + duration;
     hitStopUntil = now + (effectLevel === "reduced" ? 35 : 75);
@@ -664,7 +620,7 @@ export async function createGameScene(
     if (effectLevel === "minimal") return;
     const rewardMaterial = mat(
       scene,
-      `boss_reward_${performance.now()}`,
+      `boss_reward_${clock.nowMs}`,
       new Color3(1, 0.78, 0.36),
       0.92,
     );
@@ -680,7 +636,7 @@ export async function createGameScene(
       beam.scaling.x = 0.35;
       return beam;
     });
-    window.setTimeout(() => {
+    scheduleEffect(() => {
       beams.forEach((beam) => beam.dispose());
       rewardMaterial.dispose();
     }, 1250);
@@ -689,7 +645,7 @@ export async function createGameScene(
     if (effectLevel === "minimal") return;
     const counterMaterial = mat(
       scene,
-      `counter_fx_${performance.now()}`,
+      `counter_fx_${clock.nowMs}`,
       new Color3(0.42, 0.86, 1),
       0.95,
     );
@@ -714,7 +670,7 @@ export async function createGameScene(
     window.dispatchEvent(
       new CustomEvent("yamabushi-counter", { detail: { direction } }),
     );
-    window.setTimeout(
+    scheduleEffect(
       () => {
         wave.dispose();
         spark.dispose();
@@ -727,7 +683,7 @@ export async function createGameScene(
     if (effectLevel === "minimal") return;
     const breakMaterial = mat(
       scene,
-      `guard_break_${performance.now()}`,
+      `guard_break_${clock.nowMs}`,
       new Color3(1, 0.64, 0.18),
       0.98,
     );
@@ -747,20 +703,20 @@ export async function createGameScene(
     );
     breakA.rotation.z = direction * 0.42;
     breakB.rotation.z = -direction * 0.68;
-    window.setTimeout(() => {
+    scheduleEffect(() => {
       breakA.dispose();
       breakB.dispose();
       breakMaterial.dispose();
     }, 300);
   };
   const showGuardSpark = (direction = 1) => {
-    recoilUntil = performance.now() + 190;
+    recoilUntil = clock.nowMs + 190;
     recoilDirection = direction < 0 ? -1 : 1;
     playParrySound(1, direction);
     if (effectLevel === "minimal") return;
     const guardMaterial = mat(
       scene,
-      `guard_fx_${performance.now()}`,
+      `guard_fx_${clock.nowMs}`,
       new Color3(0.55, 0.82, 1),
       0.95,
     );
@@ -780,7 +736,7 @@ export async function createGameScene(
     );
     sparkA.rotation.z = -0.55;
     sparkB.rotation.z = 0.78;
-    window.setTimeout(() => {
+    scheduleEffect(() => {
       sparkA.dispose();
       sparkB.dispose();
       guardMaterial.dispose();
@@ -797,7 +753,7 @@ export async function createGameScene(
     if (effectLevel === "minimal") return;
     const fxMaterial = mat(
       scene,
-      `hit_fx_${performance.now()}`,
+      `hit_fx_${clock.nowMs}`,
       new Color3(0.95, 0.3, 0.12),
       0.8,
     );
@@ -835,7 +791,7 @@ export async function createGameScene(
       (boss ? 1.38 : 1) * 1.12,
       (boss ? 1.38 : 1) * 1.12,
     );
-    window.setTimeout(() => {
+    scheduleEffect(() => {
       flash.dispose();
       sparkA.dispose();
       sparkB.dispose();
@@ -922,9 +878,10 @@ export async function createGameScene(
   let counterPulse = 0;
   let message = "第1試練。左槍の予告を見て、右へ避けよ。";
   let paused = false;
-  let pauseStartedAt = 0;
+  let pauseReason: PauseReason | null = "title";
+  let pauseVisualAt = performance.now();
   let effectLevel = readEffectLevel(
-    localStorage.getItem(SETTINGS_STORAGE_KEYS.effectsLevel),
+    safeStorage.getItem(SETTINGS_STORAGE_KEYS.effectsLevel),
   );
   let defeated = false;
   let transitioning = false;
@@ -939,7 +896,7 @@ export async function createGameScene(
   const loadBestScore = () => {
     try {
       const saved = JSON.parse(
-        localStorage.getItem(bestRecordKey()) ?? "null",
+        safeStorage.getItem(bestRecordKey()) ?? "null",
       ) as { score?: number } | null;
       return Number.isFinite(saved?.score) ? Math.max(0, saved?.score ?? 0) : 0;
     } catch {
@@ -965,7 +922,7 @@ export async function createGameScene(
     if (isNewRecord) {
       bestScore = score;
       try {
-        localStorage.setItem(
+        safeStorage.setItem(
           bestRecordKey(),
           JSON.stringify({
             score,
@@ -994,7 +951,7 @@ export async function createGameScene(
   let enemyAttackAt = 0;
   let enemyAttackHit = false;
   let enemyGuardUntil = 0;
-  let nextGuardAt = performance.now() + 2600;
+  let nextGuardAt = clock.nowMs + 2600;
   let queuedAttackLanes: Lane[] = [];
   let forcedAttackReadyAt = 0;
   let lastNormalVariantIndex = 0;
@@ -1021,7 +978,7 @@ export async function createGameScene(
   const PLAYER_SPAWN_DURATION = 720;
   const PLAYER_VICTORY_DURATION = 980;
   const PLAYER_DEFEAT_DURATION = 760;
-  let nextAmbientAt = performance.now() + 1600;
+  let nextAmbientAt = clock.nowMs + 1600;
   let audioContext: AudioContext | null = null;
   const getAudioContext = () => {
     const AudioCtor =
@@ -1033,7 +990,7 @@ export async function createGameScene(
     if (audioContext.state === "suspended") void audioContext.resume();
     return audioContext;
   };
-  const storedAudioSettings = readAudioSettings(localStorage);
+  const storedAudioSettings = readAudioSettings(safeStorage);
   let masterVolume = storedAudioSettings.masterVolume;
   let effectsVolume = storedAudioSettings.effectsVolume;
   let ambientVolume = storedAudioSettings.ambientVolume;
@@ -1096,7 +1053,7 @@ export async function createGameScene(
       "triangle",
       pan,
     );
-    window.setTimeout(
+    scheduleEffect(
       () =>
         playTone(
           980 + power * 130,
@@ -1176,7 +1133,7 @@ export async function createGameScene(
   const playAmbientPulse = () => {
     if (ambientVolume <= 0.01) return;
     playTone(128, 74, 0.8, 0.012, "sine", -0.25, "ambient");
-    window.setTimeout(() => {
+    scheduleEffect(() => {
       if (ambientVolume > 0.01)
         playTone(176, 92, 0.62, 0.009, "triangle", 0.32, "ambient");
     }, 180);
@@ -1265,8 +1222,8 @@ export async function createGameScene(
       tip.position.x = side * 0.72;
     });
   };
-  const state = (): State => {
-    const stateNow = performance.now();
+  const state = (): GameState => {
+    const stateNow = clock.nowMs;
     const attackElapsed = enemyAttackAt ? stateNow - enemyAttackAt : 99999;
     const enemyPhase =
       enemyStaggerUntil > stateNow
@@ -1359,6 +1316,7 @@ export async function createGameScene(
       counterReady: counterUntil > stateNow,
       counterPulse,
       paused,
+      pauseReason,
       transitioning,
       tutorialStep,
       tutorialObjectiveMet,
@@ -1367,7 +1325,7 @@ export async function createGameScene(
 
   bestScore = loadBestScore();
   paused = true;
-  pauseStartedAt = performance.now();
+  clock.pause(performance.now());
   player.root.position.x = -0.9;
   dodgeFromX = player.root.position.x;
   dodgeFromZ = player.root.position.z;
@@ -1375,7 +1333,7 @@ export async function createGameScene(
   setEnemyGlow(false);
   announce(state());
   const spawnNextEnemy = () => {
-    const spawnNow = performance.now();
+    const spawnNow = clock.nowMs;
     wave += 1;
     boss = wave % 5 === 0;
     const tutorialIndex = tutorialVariantIndex(wave);
@@ -1420,7 +1378,7 @@ export async function createGameScene(
     enemyAttackCount = 0;
     feintApplied = false;
     lastTelegraphedLane = 0;
-    lastEnemyStrike = 0;
+    lastEnemyStrike = spawnNow;
     attackUntil = 0;
     playerAttackStartedAt = 0;
     playerAttackKind = null;
@@ -1489,79 +1447,24 @@ export async function createGameScene(
     announce(state());
   };
   const pauseEvent = (event: Event) => {
-    const detail = (
-      event as CustomEvent<{ paused?: boolean; resumeGraceMs?: number }>
-    ).detail;
+    const detail = (event as CustomEvent<PauseRequest>).detail;
     const nextPaused = Boolean(detail?.paused);
     if (nextPaused === paused) {
       announce(state());
       return;
     }
-
+    const realNow = performance.now();
     if (nextPaused) {
+      advanceFrame(realNow);
       paused = true;
-      pauseStartedAt = performance.now();
-      announce(state());
-      return;
+      pauseReason = detail?.reason ?? "manual";
+      pauseVisualAt = realNow;
+      clock.pause(realNow);
+    } else {
+      paused = false;
+      pauseReason = null;
+      clock.resume(realNow, detail?.resumeGraceMs);
     }
-
-    const now = performance.now();
-    const pauseDuration = pauseStartedAt > 0 ? now - pauseStartedAt : 0;
-    const resumeGraceMs = Number.isFinite(detail?.resumeGraceMs)
-      ? Math.max(0, Math.min(1500, detail?.resumeGraceMs ?? 0))
-      : 0;
-    const delta = pauseDuration + resumeGraceMs;
-    attackUntil = shiftActiveTimer(attackUntil, delta, pauseStartedAt);
-    playerAttackStartedAt = shiftActiveTimer(playerAttackStartedAt, delta);
-    guardBreakImpactAt = shiftActiveTimer(
-      guardBreakImpactAt,
-      delta,
-      pauseStartedAt,
-    );
-    guardUntil = shiftActiveTimer(guardUntil, delta, pauseStartedAt);
-    guardStartedAt = shiftActiveTimer(guardStartedAt, delta);
-    lastEnemyStrike = shiftActiveTimer(lastEnemyStrike, delta);
-    counterUntil = shiftActiveTimer(counterUntil, delta, pauseStartedAt);
-    dodgeStartAt = shiftActiveTimer(dodgeStartAt, delta);
-    dodgeUntil = shiftActiveTimer(dodgeUntil, delta, pauseStartedAt);
-    enemyAttackAt = shiftActiveTimer(enemyAttackAt, delta);
-    enemyGuardUntil = shiftActiveTimer(enemyGuardUntil, delta, pauseStartedAt);
-    enemyStaggerUntil = shiftActiveTimer(
-      enemyStaggerUntil,
-      delta,
-      pauseStartedAt,
-    );
-    playerGuardBrokenUntil = shiftActiveTimer(
-      playerGuardBrokenUntil,
-      delta,
-      pauseStartedAt,
-    );
-    forcedAttackReadyAt = shiftActiveTimer(
-      forcedAttackReadyAt,
-      delta,
-      pauseStartedAt,
-    );
-    nextGuardAt = shiftActiveTimer(nextGuardAt, delta, pauseStartedAt);
-    enemyMoveAt = shiftActiveTimer(enemyMoveAt, delta, pauseStartedAt);
-    comboExpiresAt = shiftActiveTimer(comboExpiresAt, delta, pauseStartedAt);
-    sheathUntil = shiftActiveTimer(sheathUntil, delta, pauseStartedAt);
-    recoilUntil = shiftActiveTimer(recoilUntil, delta, pauseStartedAt);
-    playerHitStartedAt = shiftActiveTimer(playerHitStartedAt, delta);
-    playerHitUntil = shiftActiveTimer(playerHitUntil, delta, pauseStartedAt);
-    playerSpawnUntil = shiftActiveTimer(
-      playerSpawnUntil,
-      delta,
-      pauseStartedAt,
-    );
-    playerVictoryStartedAt = shiftActiveTimer(playerVictoryStartedAt, delta);
-    playerDefeatStartedAt = shiftActiveTimer(playerDefeatStartedAt, delta);
-    playerSheathStartedAt = shiftActiveTimer(playerSheathStartedAt, delta);
-    slashImpactAt = shiftActiveTimer(slashImpactAt, delta, pauseStartedAt);
-    shakeUntil = shiftActiveTimer(shakeUntil, delta, pauseStartedAt);
-    hitStopUntil = shiftActiveTimer(hitStopUntil, delta, pauseStartedAt);
-    nextAmbientAt = shiftActiveTimer(nextAmbientAt, delta, pauseStartedAt);
-    paused = false;
-    pauseStartedAt = 0;
     announce(state());
   };
   const rewardEvent = (event: Event) => {
@@ -1600,7 +1503,7 @@ export async function createGameScene(
   };
   const retireEvent = () => {
     if (defeated) return;
-    const retireNow = performance.now();
+    const retireNow = clock.nowMs;
     transitioning = false;
     transitionRemaining = 0;
     defeated = true;
@@ -1608,7 +1511,8 @@ export async function createGameScene(
     playerVictoryStartedAt = 0;
     playerSpawnUntil = 0;
     paused = false;
-    pauseStartedAt = 0;
+    pauseReason = null;
+    clock.resume(performance.now());
     attackUntil = 0;
     playerAttackStartedAt = 0;
     playerAttackKind = null;
@@ -1672,13 +1576,17 @@ export async function createGameScene(
           0.66,
       ),
     );
+  const prepareAction = () => {
+    advanceFrame(performance.now());
+    return !paused && !transitioning && !defeated && clock.acceptingInput;
+  };
   const announceActionMessage = (nextMessage: string) => {
     message = nextMessage;
     announce(state());
   };
   const performDodge = (direction: number) => {
-    const now = performance.now();
-    if (paused || defeated || transitioning) return;
+    if (!prepareAction()) return;
+    const now = clock.nowMs;
     if (
       !canStartPlayerAction(now, [
         dodgeUntil,
@@ -1710,7 +1618,7 @@ export async function createGameScene(
   const resolveEnemyDefeat = () => {
     if (enemyHp > 0 || transitioning || rewardPending || defeated) return;
 
-    const defeatNow = performance.now();
+    const defeatNow = clock.nowMs;
     const defeatedWave = wave;
     const progress = defeatProgress(defeatedWave, modeLimit);
     const rewardMessages: string[] = [];
@@ -1747,7 +1655,11 @@ export async function createGameScene(
       rewardOptions = chapterRewardOptionsForDefeat(defeatedWave, modeLimit);
       rewardPending = rewardOptions.length > 0;
       paused = rewardPending;
-      pauseStartedAt = rewardPending ? performance.now() : 0;
+      if (rewardPending) {
+        clock.pause(performance.now());
+        pauseVisualAt = performance.now();
+        pauseReason = null;
+      }
       message = "第" + rewardChapter + "章を越えた。次の章の修験を一つ選べ。";
       announce(state());
       return;
@@ -1942,6 +1854,7 @@ export async function createGameScene(
     announce(state());
   };
   const resetRun = (event: Event) => {
+    clock.reset(performance.now());
     const detail = (
       event as CustomEvent<{
         mode?: RunMode;
@@ -1998,7 +1911,7 @@ export async function createGameScene(
     playerHitStartedAt = 0;
     playerHitUntil = 0;
     playerHitDirection = 1;
-    playerSpawnUntil = performance.now() + PLAYER_SPAWN_DURATION;
+    playerSpawnUntil = clock.nowMs + PLAYER_SPAWN_DURATION;
     playerVictoryStartedAt = 0;
     playerDefeatStartedAt = 0;
     playerSheathStartedAt = 0;
@@ -2008,7 +1921,7 @@ export async function createGameScene(
     bossAttack = false;
     bossDefeatPulse = 0;
     enemyTargetX = 0;
-    enemyMoveAt = performance.now() + 800;
+    enemyMoveAt = clock.nowMs + 800;
     spearAttackSide = 0;
     dangerLane = 0;
     feintLane = 0;
@@ -2054,7 +1967,7 @@ export async function createGameScene(
     enemyAttackAt = 0;
     enemyAttackHit = false;
     enemyGuardUntil = 0;
-    nextGuardAt = performance.now() + 2600;
+    nextGuardAt = clock.nowMs + 2600;
     queuedAttackLanes = [];
     forcedAttackReadyAt = 0;
     lastNormalVariantIndex = 0;
@@ -2076,9 +1989,9 @@ export async function createGameScene(
     lastFootstepAt = 0;
     lastEnemyFootstepAt = 0;
     previousEnemyX = 0;
-    nextAmbientAt = performance.now() + 1600;
+    nextAmbientAt = clock.nowMs + 1600;
     paused = false;
-    pauseStartedAt = 0;
+    pauseReason = null;
     currentVariant = ENEMY_VARIANTS[0];
     setEnemyVariant(currentVariant);
     setEnemyGlow(false);
@@ -2107,8 +2020,8 @@ export async function createGameScene(
   };
 
   const performSlash = () => {
-    if (paused || transitioning || defeated) return;
-    const now = performance.now();
+    if (!prepareAction()) return;
+    const now = clock.nowMs;
     if (enemyHp <= 0) return;
     if (slashProjectile) {
       announceActionMessage("飛刃が届くまで、次の斬撃を待て。");
@@ -2210,8 +2123,8 @@ export async function createGameScene(
   };
 
   const performGuard = () => {
-    if (paused || transitioning || defeated) return;
-    const now = performance.now();
+    if (!prepareAction()) return;
+    const now = clock.nowMs;
     if (
       !canStartPlayerAction(now, [
         guardUntil,
@@ -2286,27 +2199,27 @@ export async function createGameScene(
     if (defeated) {
       if (enemyHp <= 0) {
         kind = "victory";
-        const start = playerVictoryStartedAt || now;
+        const start = playerVictoryStartedAt;
         progress = Math.min(
           1,
           Math.max(0, (now - start) / PLAYER_VICTORY_DURATION),
         );
       } else {
         kind = "defeat";
-        const start = playerDefeatStartedAt || now;
+        const start = playerDefeatStartedAt;
         progress = Math.min(
           1,
           Math.max(0, (now - start) / PLAYER_DEFEAT_DURATION),
         );
       }
-    } else if (transitioning) {
+    } else if (transitioning || rewardPending) {
       kind = "victory";
-      const start = playerVictoryStartedAt || now;
+      const start = playerVictoryStartedAt;
       progress = Math.min(
         1,
         Math.max(0, (now - start) / PLAYER_VICTORY_DURATION),
       );
-    } else if (dodgeStartAt > 0 && dodgeUntil > now) {
+    } else if (dodgeUntil > now) {
       kind = "dodge";
       direction = dodgeDirection < 0 ? -1 : 1;
       progress = Math.min(
@@ -2368,9 +2281,8 @@ export async function createGameScene(
       attackKind,
     });
   };
-  const observer = scene.onBeforeRenderObservable.add(() => {
-    const now = performance.now();
-    const dt = Math.min(0.05, engine.getDeltaTime() / 1000);
+  const update = (dt: number) => {
+    const now = clock.nowMs;
     if (shouldAdvanceCombatClock(paused, defeated, transitioning))
       activePlayTimeMs += dt * 1000;
     if (
@@ -2478,7 +2390,7 @@ export async function createGameScene(
       player.rightArm.rotation.z = -0.5 + direction * arc * 0.22;
       player.torso.rotation.z = -direction * arc * 0.1;
       player.blade.rotation.z = -0.65 + direction * 0.5 + arc * 0.25;
-    } else if (dodgeStartAt > 0 && dodgeUntil <= now) {
+    } else if (dodgeUntil > 0 && dodgeUntil <= now) {
       player.root.position.z = dodgeFromZ;
       player.root.rotation.z = 0;
       player.root.scaling.y = 1;
@@ -2489,6 +2401,7 @@ export async function createGameScene(
       player.torso.rotation.z = 0;
       player.blade.rotation.z = -0.65;
       dodgeStartAt = 0;
+      dodgeUntil = 0;
     }
     if (slashProjectile && now < slashImpactAt) {
       const travelDuration = attackTimingFor("normal").startup + 60;
@@ -2790,7 +2703,6 @@ export async function createGameScene(
           );
           const isParryWindow =
             guardUntil >= now &&
-            guardStartedAt > 0 &&
             now - guardStartedAt <= parryWindow();
           const dodgeElapsed = now - dodgeStartAt;
           const dodgeInSafety =
@@ -3028,10 +2940,29 @@ export async function createGameScene(
       announce(state());
     }
     updatePlayerMotion(now);
-  });
+  };
+  const advanceFrame = (realNow: number) => {
+    const interrupted = clock.frame(realNow, update);
+    if (interrupted && !defeated && !rewardPending) {
+      paused = true;
+      pauseReason = "frame-gap";
+      pauseVisualAt = realNow;
+      announce(state());
+    } else if (interrupted) {
+      clock.resume(realNow);
+    }
+    if (paused && rewardPending) {
+      updatePlayerMotion(clock.nowMs + Math.min(1050, realNow - pauseVisualAt));
+    }
+  };
+  const observer = scene.onBeforeRenderObservable.add(() => advanceFrame(performance.now()));
   return {
     scene,
+    getState: state,
     dispose: () => {
+      pendingEffects.forEach((timer) => window.clearTimeout(timer));
+      pendingEffects.clear();
+      if (audioContext) void audioContext.close().catch(() => {});
       scene.onBeforeRenderObservable.remove(observer);
       window.removeEventListener("keydown", keydown);
       window.removeEventListener("yamabushi-slash", slashEvent);

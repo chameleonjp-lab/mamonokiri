@@ -1,7 +1,10 @@
-// 墨霞の修験道：Reactは枠、Babylon.jsは剣戟の舞台。全画面キャンバスの寿命をここで管理する。
+// React owns the canvas lifetime; the title remains usable when 3D cannot start.
 import { useEffect, useRef } from "react";
 import { Engine } from "@babylonjs/core/Engines/engine";
 import { createGameScene, type GameHandle } from "@/game/scene";
+import { startGameRuntime } from "@/game/bootstrap";
+import type { GameState, SceneStatus } from "@/game/contracts";
+import { safeStorage } from "@/game/storage";
 import {
   hardwareScalingLevelFor,
   readPerformanceTier,
@@ -11,27 +14,23 @@ import {
 
 function applyRenderQuality(engine: Engine, tier: PerformanceTier) {
   engine.setHardwareScalingLevel(
-    hardwareScalingLevelFor(tier, window.devicePixelRatio || 1),
+    hardwareScalingLevelFor(tier, window.devicePixelRatio || 1)
   );
 }
 
-export default function GameCanvas() {
+export default function GameCanvas({
+  attempt,
+  onStatusChange,
+}: {
+  attempt: number;
+  onStatusChange: (status: SceneStatus) => void;
+}) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const startedRef = useRef(false);
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas || startedRef.current) return;
-    startedRef.current = true;
-    let performanceTier = readPerformanceTier(
-      localStorage.getItem(SETTINGS_STORAGE_KEYS.performance),
-    );
-    const engine = new Engine(canvas, true, {
-      preserveDrawingBuffer: false,
-      stencil: true,
-      adaptToDeviceRatio: false,
-    });
-    applyRenderQuality(engine, performanceTier);
+    if (!canvas) return;
+    let engine: Engine | null = null;
     let handle: GameHandle | null = null;
     let disposed = false;
     let battleRenderActive = false;
@@ -40,41 +39,25 @@ export default function GameCanvas() {
     const renderFrame = () => handle?.scene.render();
     const setBattleRenderActive = (active: boolean) => {
       battleRenderActive = active;
-      if (!handle) return;
+      if (!handle || !engine) return;
       if (active && !renderLoopRunning) {
         renderLoopRunning = true;
         engine.runRenderLoop(renderFrame);
-        return;
-      }
-      if (!active) {
+      } else if (!active) {
         if (renderLoopRunning) {
           engine.stopRenderLoop(renderFrame);
           renderLoopRunning = false;
-          return;
+        } else {
+          renderFrame();
         }
-        renderFrame();
       }
     };
-    createGameScene(engine, performanceTier).then((next) => {
-      if (disposed) {
-        next.dispose();
-        return;
-      }
-      handle = next;
-      setBattleRenderActive(battleRenderActive);
-    });
     const onResize = () => {
-      engine.resize();
+      engine?.resize();
       if (!battleRenderActive) renderFrame();
     };
     const onGameState = (event: Event) => {
-      const state = (
-        event as CustomEvent<{
-          paused?: boolean;
-          defeated?: boolean;
-          rewardPending?: boolean;
-        }>
-      ).detail;
+      const state = (event as CustomEvent<GameState>).detail;
       if (motionStopTimer !== null) {
         window.clearTimeout(motionStopTimer);
         motionStopTimer = null;
@@ -92,20 +75,22 @@ export default function GameCanvas() {
     const onPerformance = (event: Event) => {
       const next = (event as CustomEvent<{ tier?: PerformanceTier }>).detail
         ?.tier;
-      if (next !== "high" && next !== "balanced" && next !== "lite") return;
-      performanceTier = next;
-      localStorage.setItem(SETTINGS_STORAGE_KEYS.performance, next);
-      applyRenderQuality(engine, performanceTier);
-      engine.resize();
-      if (!battleRenderActive) renderFrame();
+      if (
+        !engine ||
+        (next !== "high" && next !== "balanced" && next !== "lite")
+      )
+        return;
+      safeStorage.setItem(SETTINGS_STORAGE_KEYS.performance, next);
+      applyRenderQuality(engine, next);
+      onResize();
     };
     const pauseForInterruption = (
-      reason: "visibility" | "pagehide" | "pageshow",
+      reason: "visibility" | "pagehide" | "pageshow"
     ) => {
       window.dispatchEvent(
         new CustomEvent("yamabushi-pause", {
           detail: { paused: true, reason },
-        }),
+        })
       );
     };
     const onVisibilityChange = () => pauseForInterruption("visibility");
@@ -117,27 +102,60 @@ export default function GameCanvas() {
     window.addEventListener("pagehide", onPageHide);
     window.addEventListener("pageshow", onPageShow);
     document.addEventListener("visibilitychange", onVisibilityChange);
+
+    onStatusChange({ phase: "loading" });
+    const runtime = startGameRuntime({
+      createEngine: () =>
+        new Engine(canvas, true, {
+          preserveDrawingBuffer: false,
+          stencil: true,
+          adaptToDeviceRatio: false,
+        }),
+      createScene: async nextEngine => {
+        engine = nextEngine;
+        const tier = readPerformanceTier(
+          safeStorage.getItem(SETTINGS_STORAGE_KEYS.performance)
+        );
+        applyRenderQuality(nextEngine, tier);
+        return createGameScene(nextEngine, tier);
+      },
+      onReady: next => {
+        handle = next;
+        // A scene is ready only after the first frame has actually succeeded.
+        renderFrame();
+        if (battleRenderActive) setBattleRenderActive(true);
+        onStatusChange({ phase: "ready" });
+      },
+      onError: error => {
+        engine = null;
+        handle = null;
+        renderLoopRunning = false;
+        console.error("Game scene initialization failed", error);
+        onStatusChange({ phase: "error" });
+      },
+    });
     return () => {
       disposed = true;
       if (motionStopTimer !== null) window.clearTimeout(motionStopTimer);
-      if (renderLoopRunning) engine.stopRenderLoop(renderFrame);
+      if (renderLoopRunning) engine?.stopRenderLoop(renderFrame);
       window.removeEventListener("resize", onResize);
       window.removeEventListener("yamabushi-state", onGameState);
       window.removeEventListener("yamabushi-performance", onPerformance);
       window.removeEventListener("pagehide", onPageHide);
       window.removeEventListener("pageshow", onPageShow);
       document.removeEventListener("visibilitychange", onVisibilityChange);
-      handle?.dispose();
-      engine.dispose();
-      startedRef.current = false;
+      runtime.dispose();
+      handle = null;
+      engine = null;
     };
-  }, []);
+  }, [attempt, onStatusChange]);
 
   return (
     <canvas
       ref={canvasRef}
       className="fixed inset-0 h-full w-full outline-none"
       style={{ touchAction: "none" }}
+      aria-hidden="true"
     />
   );
 }
