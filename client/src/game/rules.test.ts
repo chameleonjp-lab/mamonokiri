@@ -112,9 +112,9 @@ describe("priority S combat rules", () => {
     expect(correctDodgeForLane(1, 0, true)).toBe(false);
   });
 
-  it("does not leave a passive safe seam between side attack lanes", () => {
-    expect(isPlayerInDangerLine(0, -1, false)).toBe(true);
-    expect(isPlayerInDangerLine(0, 1, false)).toBe(true);
+  it("keeps the center transit lane outside a narrow side attack", () => {
+    expect(isPlayerInDangerLine(0, -1, false)).toBe(false);
+    expect(isPlayerInDangerLine(0, 1, false)).toBe(false);
     expect(isPlayerInDangerLine(0.9, -1, false)).toBe(false);
     expect(isPlayerInDangerLine(-0.9, -1, false)).toBe(true);
     expect(isPlayerInDangerLine(0.9, -1, true)).toBe(true);
@@ -185,7 +185,7 @@ describe("priority B run configuration and scoring", () => {
     expect(DIFFICULTY_CONFIG.apprentice.warningMultiplier).toBeGreaterThan(1);
     expect(DIFFICULTY_CONFIG.dark.warningMultiplier).toBeLessThan(1);
     expect(DIFFICULTY_CONFIG.apprentice.parryWindow).toBeGreaterThan(
-      DIFFICULTY_CONFIG.dark.parryWindow,
+      DIFFICULTY_CONFIG.dark.parryWindow
     );
   });
 
@@ -197,7 +197,7 @@ describe("priority B run configuration and scoring", () => {
 
   it("limits held temporary effects without duplicating a choice", () => {
     expect(
-      addChapterRewardEffect(["heal", "parry-window"], "score-multiplier"),
+      addChapterRewardEffect(["heal", "parry-window"], "score-multiplier")
     ).toEqual(["parry-window", "score-multiplier"]);
     expect(addChapterRewardEffect(["heal"], "heal")).toEqual(["heal"]);
   });
@@ -227,10 +227,10 @@ describe("priority A combat depth", () => {
       total: 760,
     });
     expect(attackTimingFor("counter").total).toBeLessThan(
-      attackTimingFor("normal").total,
+      attackTimingFor("normal").total
     );
     expect(attackTimingFor("guard-break").startup).toBeGreaterThan(
-      attackTimingFor("normal").startup,
+      attackTimingFor("normal").startup
     );
   });
 
@@ -249,12 +249,12 @@ describe("priority A combat depth", () => {
 
   it("eventually defeats guard spam and makes heavy guards fail sooner", () => {
     const afterFourNormalGuards = [1, 2, 3, 4].reduce(
-      (posture) => postureAfterGuard(posture, 28).posture,
-      100,
+      posture => postureAfterGuard(posture, 28).posture,
+      100
     );
     const afterTwoHeavyGuards = [1, 2].reduce(
-      (posture) => postureAfterGuard(posture, 52).posture,
-      100,
+      posture => postureAfterGuard(posture, 52).posture,
+      100
     );
     expect(afterFourNormalGuards).toBe(0);
     expect(afterTwoHeavyGuards).toBe(0);
@@ -262,10 +262,10 @@ describe("priority A combat depth", () => {
 
   it("orders enemy posture pressure as normal < counter < guard break", () => {
     expect(enemyPostureDamageFor("normal")).toBeLessThan(
-      enemyPostureDamageFor("counter"),
+      enemyPostureDamageFor("counter")
     );
     expect(enemyPostureDamageFor("counter")).toBeLessThan(
-      enemyPostureDamageFor("guard-break"),
+      enemyPostureDamageFor("guard-break")
     );
   });
 
@@ -274,13 +274,13 @@ describe("priority A combat depth", () => {
     expect(enemyAttackPlanFor("right-teacher", 2, 0).dangerLane).toBe(1);
     expect(
       [1, 2, 3, 4].map(
-        (count) => enemyAttackPlanFor("alternate", count, 0).dangerLane,
-      ),
+        count => enemyAttackPlanFor("alternate", count, 0).dangerLane
+      )
     ).toEqual([-1, 1, -1, 1]);
     expect(
       [1, 2, 3, 4].map(
-        (count) => enemyAttackPlanFor("pattern", count, 0).dangerLane,
-      ),
+        count => enemyAttackPlanFor("pattern", count, 0).dangerLane
+      )
     ).toEqual([1, 1, -1, 1]);
     expect(enemyAttackPlanFor("tracking", 1, -0.8).dangerLane).toBe(-1);
     expect(followUpLanesFor("double", "二段攻撃型", -1, 1)).toEqual([1]);
