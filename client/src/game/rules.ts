@@ -14,6 +14,9 @@ export type ChapterRewardOption = {
 
 export type Lane = -1 | 0 | 1;
 
+/** Stable horizontal anchors shared by movement, warnings, and hit checks. */
+export const COMBAT_LANE_SPACING = 0.9;
+
 export type EnemyRole =
   | "left-teacher"
   | "right-teacher"
@@ -144,7 +147,7 @@ export function difficultyLabelFor(difficulty: Difficulty): string {
 export function scoreForCombo(
   basePoints: number,
   combo: number,
-  scoreMultiplier = 1,
+  scoreMultiplier = 1
 ): number {
   const safeBase = Math.max(0, basePoints);
   const safeCombo = Math.max(1, Math.min(COMBO_MULTIPLIER_CAP, combo));
@@ -164,19 +167,19 @@ export function nextSeed(seed: number): { seed: number; value: number } {
 
 export function chapterRewardOptionsForDefeat(
   defeatedWave: number,
-  modeLimit = 50,
+  modeLimit = 50
 ): ReadonlyArray<ChapterRewardOption> {
   return chapterRewardForDefeat(defeatedWave, modeLimit)
-    ? CHAPTER_REWARD_OPTIONS.map((option) => ({ ...option }))
+    ? CHAPTER_REWARD_OPTIONS.map(option => ({ ...option }))
     : [];
 }
 
 export function addChapterRewardEffect(
   current: readonly ChapterRewardKind[],
   nextEffect: ChapterRewardKind,
-  maximum = 2,
+  maximum = 2
 ): ChapterRewardKind[] {
-  const withoutDuplicate = current.filter((effect) => effect !== nextEffect);
+  const withoutDuplicate = current.filter(effect => effect !== nextEffect);
   const next = [...withoutDuplicate, nextEffect];
   return next.slice(Math.max(0, next.length - Math.max(1, maximum)));
 }
@@ -231,7 +234,7 @@ export function tutorialVariantIndex(wave: number): number | null {
 
 export function canSlashDuringTutorial(
   tutorialStep: number,
-  objectiveMet: boolean,
+  objectiveMet: boolean
 ): boolean {
   return tutorialStep < 1 || tutorialStep > 3 || objectiveMet;
 }
@@ -240,7 +243,7 @@ export function attackPlanFor(
   side: AttackSide,
   attackCount: number,
   playerX: number,
-  tutorialWave = 0,
+  tutorialWave = 0
 ): AttackPlan {
   if (tutorialWave === 3) return { dangerLane: 0, spearSide: 0, isWide: true };
 
@@ -261,7 +264,7 @@ export function enemyAttackPlanFor(
   role: EnemyRole,
   attackCount: number,
   playerX: number,
-  tutorialWave = 0,
+  tutorialWave = 0
 ): AttackPlan {
   if (tutorialWave > 0) {
     const tutorialSide: AttackSide =
@@ -296,14 +299,14 @@ export function attackTimingFor(kind: PlayerAttackKind): AttackTiming {
 
 export function canStartPlayerAction(
   now: number,
-  activeDeadlines: readonly number[],
+  activeDeadlines: readonly number[]
 ): boolean {
-  return activeDeadlines.every((deadline) => deadline <= now);
+  return activeDeadlines.every(deadline => deadline <= now);
 }
 
 export function postureAfterGuard(
   current: number,
-  pressure: number,
+  pressure: number
 ): { posture: number; broken: boolean } {
   const posture = Math.max(0, current - Math.max(0, pressure));
   return { posture, broken: current > 0 && posture === 0 };
@@ -312,7 +315,7 @@ export function postureAfterGuard(
 export function recoverPosture(
   current: number,
   amount: number,
-  maximum = 100,
+  maximum = 100
 ): number {
   return Math.min(maximum, Math.max(0, current) + Math.max(0, amount));
 }
@@ -348,11 +351,11 @@ export function bossPoolForWave(wave: number): number[] {
 export function chooseNonRepeatingIndex(
   pool: readonly number[],
   previous: number,
-  randomValue = Math.random(),
+  randomValue = Math.random()
 ): number {
   if (pool.length === 0) throw new Error("Encounter pool must not be empty");
   const candidates =
-    pool.length > 1 ? pool.filter((value) => value !== previous) : [...pool];
+    pool.length > 1 ? pool.filter(value => value !== previous) : [...pool];
   const safeRandom = Math.max(0, Math.min(0.999999, randomValue));
   return candidates[Math.floor(safeRandom * candidates.length)];
 }
@@ -365,7 +368,7 @@ export function followUpLanesFor(
   role: EnemyRole,
   family: string,
   initialLane: Lane,
-  bossPhase: 1 | 2,
+  bossPhase: 1 | 2
 ): Lane[] {
   const opposite: Lane = initialLane === 0 ? 1 : initialLane === -1 ? 1 : -1;
   if (family === "モニュメント型")
@@ -380,7 +383,7 @@ export function followUpLanesFor(
 
 export function chapterRewardForDefeat(
   defeatedWave: number,
-  modeLimit = 50,
+  modeLimit = 50
 ): ChapterReward {
   if (defeatedWave <= 0 || defeatedWave >= modeLimit || defeatedWave % 10 !== 0)
     return null;
@@ -390,19 +393,19 @@ export function chapterRewardForDefeat(
 
 export function crossedComboMilestones(
   previousCombo: number,
-  nextCombo: number,
+  nextCombo: number
 ): number {
   if (nextCombo <= previousCombo) return 0;
   return Math.max(
     0,
-    Math.floor(nextCombo / 10) - Math.floor(previousCombo / 10),
+    Math.floor(nextCombo / 10) - Math.floor(previousCombo / 10)
   );
 }
 
 export function correctDodgeForLane(
   dodgeDirection: -1 | 1,
   dangerLane: -1 | 0 | 1,
-  isWide: boolean,
+  isWide: boolean
 ): boolean {
   return !isWide && dangerLane !== 0 && dodgeDirection === -dangerLane;
 }
@@ -411,26 +414,22 @@ export function isPlayerInDangerLine(
   playerX: number,
   dangerLane: -1 | 0 | 1,
   isWide: boolean,
-  hitWidth = 0.8,
+  hitWidth = 0.8
 ): boolean {
   if (isWide || dangerLane === 0) return true;
-  const laneCenter = dangerLane * 0.9;
-  const safeSeamHalfWidth = Math.max(0, 0.9 - Math.max(0, hitWidth));
-  return (
-    Math.abs(playerX - laneCenter) < Math.max(0, hitWidth) ||
-    Math.abs(playerX) <= safeSeamHalfWidth
-  );
+  const laneCenter = dangerLane * COMBAT_LANE_SPACING;
+  return Math.abs(playerX - laneCenter) < Math.max(0, hitWidth);
 }
 
 export function counterMayBeGranted(
-  source: "player-parry" | "enemy-guard-break" | "enemy-block" | "other",
+  source: "player-parry" | "enemy-guard-break" | "enemy-block" | "other"
 ): boolean {
   return source === "player-parry";
 }
 
 export function shouldAdvanceAfterDefeat(
   defeatedWave: number,
-  modeLimit = 50,
+  modeLimit = 50
 ): boolean {
   return defeatedWave < modeLimit;
 }
@@ -438,7 +437,7 @@ export function shouldAdvanceAfterDefeat(
 export function shouldAdvanceCombatClock(
   paused: boolean,
   defeated: boolean,
-  transitioning: boolean,
+  transitioning: boolean
 ): boolean {
   return !paused && !defeated && !transitioning;
 }
@@ -446,14 +445,14 @@ export function shouldAdvanceCombatClock(
 export function shiftActiveTimer(
   value: number,
   delta: number,
-  activeAfter = 0,
+  activeAfter = 0
 ): number {
   return value > activeAfter ? value + delta : value;
 }
 
 export function applyDamage(
   currentHp: number,
-  damage: number,
+  damage: number
 ): { hp: number; defeated: boolean } {
   const hp = Math.max(0, currentHp - Math.max(0, damage));
   return { hp, defeated: hp === 0 };

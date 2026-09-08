@@ -51,6 +51,7 @@ import {
   shouldAdvanceCombatClock,
   tutorialVariantIndex,
   type ChapterRewardKind,
+  type AttackPlan,
   type Difficulty,
   type RunMode,
   type EnemyRole,
@@ -61,7 +62,20 @@ import {
 import type { GameState, PauseReason, PauseRequest } from "./contracts";
 import { RunClock } from "./clock";
 import { safeStorage } from "./storage";
-export type GameHandle = { scene: Scene; getState: () => GameState; dispose: () => void };
+import {
+  CAMERA_BASE_POSITION,
+  CAMERA_TARGET,
+  COMBAT_MAX_X,
+  cameraFrameForViewport,
+  clampCombatX,
+  dodgeTargetX,
+  laneX,
+} from "./arena";
+export type GameHandle = {
+  scene: Scene;
+  getState: () => GameState;
+  dispose: () => void;
+};
 
 const VERMILION = new Color3(0.72, 0.17, 0.1);
 const INK = new Color3(0.035, 0.045, 0.06);
@@ -79,12 +93,12 @@ function box(
   name: string,
   size: Vector3,
   pos: Vector3,
-  material: StandardMaterial,
+  material: StandardMaterial
 ) {
   const m = MeshBuilder.CreateBox(
     name,
     { width: size.x, height: size.y, depth: size.z },
-    scene,
+    scene
   );
   m.position = pos;
   m.material = material;
@@ -290,14 +304,14 @@ const BOSS_VARIANTS: EnemyVariant[] = [
 function makeEnemy(
   scene: Scene,
   materials: Record<string, StandardMaterial>,
-  variant: EnemyVariant,
+  variant: EnemyVariant
 ) {
   const root = new Mesh("mountain_wraith", scene);
   root.position = new Vector3(0, 0.2, 5.2);
   const body0 = MeshBuilder.CreatePolyhedron(
     "wraith_body_shadow",
     { type: 1, size: 1.45 },
-    scene,
+    scene
   );
   body0.position.y = 1.05;
   body0.scaling.y = 1.4;
@@ -306,7 +320,7 @@ function makeEnemy(
   const body1 = MeshBuilder.CreateCylinder(
     "wraith_body_rock",
     { height: 1.8, diameterTop: 0.72, diameterBottom: 1.28, tessellation: 6 },
-    scene,
+    scene
   );
   body1.position.y = 1.05;
   body1.material = materials.stone;
@@ -314,7 +328,7 @@ function makeEnemy(
   const body2 = MeshBuilder.CreateSphere(
     "wraith_body_vessel",
     { diameter: 1.35, segments: 8 },
-    scene,
+    scene
   );
   body2.position.y = 1.05;
   body2.scaling.y = 1.18;
@@ -323,7 +337,7 @@ function makeEnemy(
   const body3 = MeshBuilder.CreateBox(
     "wraith_body_spear",
     { width: 1.1, height: 1.9, depth: 0.9 },
-    scene,
+    scene
   );
   body3.position.y = 1.05;
   body3.rotation.z = 0.08;
@@ -332,7 +346,7 @@ function makeEnemy(
   const body4 = MeshBuilder.CreateTorus(
     "wraith_body_mist",
     { diameter: 1.5, thickness: 0.38, tessellation: 8 },
-    scene,
+    scene
   );
   body4.position.y = 1.05;
   body4.rotation.x = Math.PI / 2;
@@ -341,7 +355,7 @@ function makeEnemy(
   const body5 = MeshBuilder.CreateCylinder(
     "wraith_body_ring",
     { height: 1.35, diameterTop: 1.38, diameterBottom: 0.86, tessellation: 8 },
-    scene,
+    scene
   );
   body5.position.y = 1.05;
   body5.material = materials.stone;
@@ -349,7 +363,7 @@ function makeEnemy(
   const body6 = MeshBuilder.CreatePolyhedron(
     "wraith_body_lantern",
     { type: 2, size: 1.45 },
-    scene,
+    scene
   );
   body6.position.y = 1.05;
   body6.scaling.y = 1.2;
@@ -363,7 +377,7 @@ function makeEnemy(
   const eyeL = MeshBuilder.CreateSphere(
     "eye_l",
     { diameter: 0.1, segments: 6 },
-    scene,
+    scene
   );
   eyeL.position = new Vector3(-0.22, 1.35, -0.6);
   eyeL.material = materials.amber;
@@ -376,7 +390,7 @@ function makeEnemy(
     "wraith_blade",
     new Vector3(0.12, 1.25, 0.12),
     new Vector3(0.68, 1.05, -0.1),
-    materials.iron,
+    materials.iron
   );
   blade.rotation.z = -0.7;
   blade.parent = root;
@@ -385,7 +399,7 @@ function makeEnemy(
     "wraith_spear_l",
     new Vector3(0.09, 0.09, 1.15),
     new Vector3(-0.72, 1.08, -0.62),
-    materials.iron,
+    materials.iron
   );
   spearL.parent = root;
   const spearR = box(
@@ -393,13 +407,13 @@ function makeEnemy(
     "wraith_spear_r",
     new Vector3(0.09, 0.09, 1.15),
     new Vector3(0.72, 1.08, -0.62),
-    materials.iron,
+    materials.iron
   );
   spearR.parent = root;
   const spearTipL = MeshBuilder.CreateCylinder(
     "wraith_spear_tip_l",
     { height: 0.24, diameterTop: 0, diameterBottom: 0.18, tessellation: 4 },
-    scene,
+    scene
   );
   spearTipL.rotation.x = Math.PI / 2;
   spearTipL.position = new Vector3(-0.72, 1.08, -1.28);
@@ -424,8 +438,8 @@ function announce(state: GameState) {
 export async function createGameScene(
   engine: Engine,
   initialPerformanceTier: PerformanceTier = readPerformanceTier(
-    safeStorage.getItem(SETTINGS_STORAGE_KEYS.performance),
-  ),
+    safeStorage.getItem(SETTINGS_STORAGE_KEYS.performance)
+  )
 ): Promise<GameHandle> {
   const clock = new RunClock();
   const scene = new Scene(engine);
@@ -449,13 +463,34 @@ export async function createGameScene(
     scene.fogDensity = 0.045;
   };
   applyPerformanceTier(performanceTier);
-  const camera = new FreeCamera("camera", new Vector3(7.6, 5.2, -8.5), scene);
-  camera.setTarget(new Vector3(0, 1.05, 2.2));
+  const cameraTarget = new Vector3(
+    CAMERA_TARGET[0],
+    CAMERA_TARGET[1],
+    CAMERA_TARGET[2]
+  );
+  const cameraBasePosition = new Vector3(
+    CAMERA_BASE_POSITION[0],
+    CAMERA_BASE_POSITION[1],
+    CAMERA_BASE_POSITION[2]
+  );
+  const cameraHome = cameraBasePosition.clone();
+  const camera = new FreeCamera("camera", cameraHome.clone(), scene);
+  const updateCameraFraming = () => {
+    const frame = cameraFrameForViewport(
+      engine.getRenderWidth(),
+      engine.getRenderHeight()
+    );
+    cameraHome.set(frame.position[0], frame.position[1], frame.position[2]);
+    camera.position.copyFrom(cameraHome);
+    camera.setTarget(cameraTarget);
+    camera.fov = frame.fov;
+  };
+  updateCameraFraming();
   camera.minZ = 0.1;
   const light = new HemisphericLight(
     "moonlight",
     new Vector3(-0.2, 1, -0.4),
-    scene,
+    scene
   );
   light.intensity = 0.72;
   light.diffuse = new Color3(0.62, 0.7, 0.78);
@@ -484,7 +519,7 @@ export async function createGameScene(
     "mountain_floor",
     new Vector3(22, 0.3, 30),
     new Vector3(0, -0.15, 5),
-    materials.stone,
+    materials.stone
   );
   for (let i = 0; i < 8; i++)
     box(
@@ -492,7 +527,7 @@ export async function createGameScene(
       `stone_step_${i}`,
       new Vector3(6.4 - i * 0.15, 0.28, 1.2),
       new Vector3(0, i * 0.12, i * 1.15 - 0.6),
-      materials.stone,
+      materials.stone
     );
   for (const x of [-3.3, 3.3]) {
     box(
@@ -500,21 +535,21 @@ export async function createGameScene(
       "torii_pillar",
       new Vector3(0.38, 4.2, 0.38),
       new Vector3(x, 2.1, 9),
-      materials.wood,
+      materials.wood
     );
     box(
       scene,
       "torii_crossbeam",
       new Vector3(7.5, 0.32, 0.42),
       new Vector3(0, 4, 9),
-      materials.wood,
+      materials.wood
     );
     box(
       scene,
       "torii_upperbeam",
       new Vector3(8.2, 0.25, 0.5),
       new Vector3(0, 4.45, 9),
-      materials.vermilion,
+      materials.vermilion
     );
   }
   const player = makeProceduralPlayer(scene, materials);
@@ -522,7 +557,7 @@ export async function createGameScene(
     scene,
     "attack_area_red",
     new Color3(0.95, 0.04, 0.03),
-    0.9,
+    0.9
   );
   attackAreaMaterial.alpha = 0.24;
   const attackArea = box(
@@ -530,19 +565,19 @@ export async function createGameScene(
     "enemy_attack_area",
     new Vector3(1.65, 0.025, 2.3),
     new Vector3(0, 0.025, 2.35),
-    attackAreaMaterial,
+    attackAreaMaterial
   );
   attackArea.isVisible = false;
-  const zoneMaterials = [-1, 0, 1].map((lane) =>
-    mat(scene, `foot_zone_${lane}`, new Color3(1, 0.03, 0.02), 0.9),
+  const zoneMaterials = [-1, 0, 1].map(lane =>
+    mat(scene, `foot_zone_${lane}`, new Color3(1, 0.03, 0.02), 0.9)
   );
   const footZones = [-1, 0, 1].map((lane, index) => {
     const zone = box(
       scene,
       `player_foot_attack_zone_${lane}`,
       new Vector3(0.78, 0.03, 1.45),
-      new Vector3(lane * 0.92, 0.045, 0.02),
-      zoneMaterials[index],
+      new Vector3(laneX(lane as Lane), 0.045, 0.02),
+      zoneMaterials[index]
     );
     zone.isVisible = false;
     return zone;
@@ -550,10 +585,9 @@ export async function createGameScene(
   const updateFootZones = (visible: boolean, targetLane: number) => {
     footZones.forEach((zone, index) => {
       zone.isVisible = visible;
-      zone.position.x = player.root.position.x + (index - 1) * 0.92;
+      zone.position.x = laneX((index - 1) as Lane);
       zone.material = zoneMaterials[index];
-      const pulse =
-        0.84 + 0.16 * (0.5 + 0.5 * Math.sin(clock.nowMs * 0.035));
+      const pulse = 0.84 + 0.16 * (0.5 + 0.5 * Math.sin(clock.nowMs * 0.035));
       zoneMaterials[index].alpha = visible
         ? index - 1 === targetLane
           ? 0.78 * pulse
@@ -577,12 +611,12 @@ export async function createGameScene(
     scene,
     "enemy_guard_ring",
     new Color3(0.28, 0.72, 1),
-    0.9,
+    0.9
   );
   const guardRing = MeshBuilder.CreateTorus(
     "enemy_guard_ring",
     { diameter: 1.5, thickness: 0.06, tessellation: 24 },
-    scene,
+    scene
   );
   guardRing.position.y = 0.82;
   guardRing.rotation.x = Math.PI / 2;
@@ -594,7 +628,7 @@ export async function createGameScene(
     "attack_warning_line",
     new Vector3(1.25, 0.026, 0.07),
     new Vector3(0, 0.04, 2.4),
-    materials.vermilion,
+    materials.vermilion
   );
   warningLine.isVisible = false;
   const laneMaterials = {
@@ -602,10 +636,31 @@ export async function createGameScene(
     center: mat(scene, "lane_center", new Color3(0.95, 0.55, 0.18), 0.65),
     right: mat(scene, "lane_right", new Color3(0.76, 0.28, 0.78), 0.55),
   };
-  const cameraHome = camera.position.clone();
   let shakeUntil = 0;
   let hitStopUntil = 0;
   let dangerLane = 0;
+  const applyAttackPlan = (plan: AttackPlan) => {
+    bossAttack = plan.isWide;
+    spearAttackSide = plan.spearSide;
+    dangerLane = plan.dangerLane;
+    warningLine.material = bossAttack
+      ? laneMaterials.center
+      : dangerLane < 0
+        ? laneMaterials.left
+        : dangerLane > 0
+          ? laneMaterials.right
+          : laneMaterials.center;
+    warningLine.position.x = laneX(dangerLane as Lane);
+    warningLine.position.z = 2.4;
+    warningLine.scaling.x = 0.75;
+    attackArea.position.x = laneX(dangerLane as Lane);
+    attackArea.scaling.x = bossAttack
+      ? 1.65
+      : currentVariant.family === "モンスター型"
+        ? 1.2
+        : 1;
+    attackAreaMaterial.alpha = bossAttack ? 0.34 : 0.24;
+  };
   const triggerImpact = (direction: number, strength = 0.08) => {
     if (effectLevel === "minimal") return;
     const now = clock.nowMs;
@@ -613,7 +668,7 @@ export async function createGameScene(
     shakeUntil = now + duration;
     hitStopUntil = now + (effectLevel === "reduced" ? 35 : 75);
     window.dispatchEvent(
-      new CustomEvent("yamabushi-impact", { detail: { direction, strength } }),
+      new CustomEvent("yamabushi-impact", { detail: { direction, strength } })
     );
   };
   const showBossReward = () => {
@@ -622,22 +677,22 @@ export async function createGameScene(
       scene,
       `boss_reward_${clock.nowMs}`,
       new Color3(1, 0.78, 0.36),
-      0.92,
+      0.92
     );
-    const beams = [0, 1, 2, 3].map((index) => {
+    const beams = [0, 1, 2, 3].map(index => {
       const beam = box(
         scene,
         `boss_reward_beam_${index}`,
         new Vector3(1.6, 0.045, 0.045),
         new Vector3(enemy.root.position.x, 1.35, enemy.root.position.z - 0.9),
-        index % 2 ? rewardMaterial : materials.gaiter,
+        index % 2 ? rewardMaterial : materials.gaiter
       );
       beam.rotation.z = (index * Math.PI) / 4;
       beam.scaling.x = 0.35;
       return beam;
     });
     scheduleEffect(() => {
-      beams.forEach((beam) => beam.dispose());
+      beams.forEach(beam => beam.dispose());
       rewardMaterial.dispose();
     }, 1250);
   };
@@ -647,28 +702,28 @@ export async function createGameScene(
       scene,
       `counter_fx_${clock.nowMs}`,
       new Color3(0.42, 0.86, 1),
-      0.95,
+      0.95
     );
     const wave = box(
       scene,
       "counter_wave",
       new Vector3(1.7, 0.06, 0.06),
       new Vector3(enemy.root.position.x, 1.38, enemy.root.position.z - 0.9),
-      counterMaterial,
+      counterMaterial
     );
     const spark = box(
       scene,
       "counter_spark",
       new Vector3(0.8, 0.04, 0.04),
       new Vector3(enemy.root.position.x, 1.18, enemy.root.position.z - 0.92),
-      materials.steel,
+      materials.steel
     );
     wave.rotation.z = direction * 0.34;
     spark.rotation.z = -direction * 0.82;
     wave.scaling.x = 0.6;
     spark.scaling.x = 0.7;
     window.dispatchEvent(
-      new CustomEvent("yamabushi-counter", { detail: { direction } }),
+      new CustomEvent("yamabushi-counter", { detail: { direction } })
     );
     scheduleEffect(
       () => {
@@ -676,7 +731,7 @@ export async function createGameScene(
         spark.dispose();
         counterMaterial.dispose();
       },
-      effectLevel === "reduced" ? 140 : 260,
+      effectLevel === "reduced" ? 140 : 260
     );
   };
   const showGuardBreak = (direction: number) => {
@@ -685,21 +740,21 @@ export async function createGameScene(
       scene,
       `guard_break_${clock.nowMs}`,
       new Color3(1, 0.64, 0.18),
-      0.98,
+      0.98
     );
     const breakA = box(
       scene,
       "guard_break_a",
       new Vector3(1.9, 0.06, 0.06),
       new Vector3(enemy.root.position.x, 1.36, enemy.root.position.z - 0.82),
-      breakMaterial,
+      breakMaterial
     );
     const breakB = box(
       scene,
       "guard_break_b",
       new Vector3(1.45, 0.045, 0.045),
       new Vector3(enemy.root.position.x, 1.12, enemy.root.position.z - 0.8),
-      materials.gaiter,
+      materials.gaiter
     );
     breakA.rotation.z = direction * 0.42;
     breakB.rotation.z = -direction * 0.68;
@@ -718,21 +773,21 @@ export async function createGameScene(
       scene,
       `guard_fx_${clock.nowMs}`,
       new Color3(0.55, 0.82, 1),
-      0.95,
+      0.95
     );
     const sparkA = box(
       scene,
       "guard_spark_a",
       new Vector3(0.7, 0.04, 0.04),
       new Vector3(player.root.position.x, 1.38, player.root.position.z - 0.65),
-      guardMaterial,
+      guardMaterial
     );
     const sparkB = box(
       scene,
       "guard_spark_b",
       new Vector3(0.48, 0.03, 0.03),
       new Vector3(player.root.position.x, 1.12, player.root.position.z - 0.68),
-      materials.steel,
+      materials.steel
     );
     sparkA.rotation.z = -0.55;
     sparkB.rotation.z = 0.78;
@@ -747,7 +802,7 @@ export async function createGameScene(
     playerZ: number,
     direction: number,
     impactAngle = direction * 0.42,
-    impactScale = 1,
+    impactScale = 1
   ) => {
     triggerImpact(direction, 0.045);
     if (effectLevel === "minimal") return;
@@ -755,17 +810,17 @@ export async function createGameScene(
       scene,
       `hit_fx_${clock.nowMs}`,
       new Color3(0.95, 0.3, 0.12),
-      0.8,
+      0.8
     );
     const flash = box(
       scene,
       "enemy_hit_flash",
       new Vector3(1.25, 0.08, 0.05),
       new Vector3(enemy.root.position.x, 1.3, enemy.root.position.z - 0.75),
-      fxMaterial,
+      fxMaterial
     );
     flash.scaling.setAll(
-      Math.max(1.2, enemy.root.scaling.x * 1.8 * impactScale),
+      Math.max(1.2, enemy.root.scaling.x * 1.8 * impactScale)
     );
     flash.rotation.z = impactAngle;
     const sparkA = box(
@@ -773,14 +828,14 @@ export async function createGameScene(
       "enemy_hit_spark_a",
       new Vector3(0.55, 0.035, 0.035),
       new Vector3(enemy.root.position.x, 1.45, enemy.root.position.z - 0.82),
-      materials.gaiter,
+      materials.gaiter
     );
     const sparkB = box(
       scene,
       "enemy_hit_spark_b",
       new Vector3(0.4, 0.03, 0.03),
       new Vector3(enemy.root.position.x, 1.12, enemy.root.position.z - 0.8),
-      materials.steel,
+      materials.steel
     );
     sparkA.scaling.setAll(Math.max(1, impactScale));
     sparkB.scaling.setAll(Math.max(1, impactScale * 0.9));
@@ -789,7 +844,7 @@ export async function createGameScene(
     enemy.root.scaling = new Vector3(
       (boss ? 1.38 : 1) * 1.12,
       (boss ? 1.38 : 1) * 1.12,
-      (boss ? 1.38 : 1) * 1.12,
+      (boss ? 1.38 : 1) * 1.12
     );
     scheduleEffect(() => {
       flash.dispose();
@@ -881,7 +936,7 @@ export async function createGameScene(
   let pauseReason: PauseReason | null = "title";
   let pauseVisualAt = performance.now();
   let effectLevel = readEffectLevel(
-    safeStorage.getItem(SETTINGS_STORAGE_KEYS.effectsLevel),
+    safeStorage.getItem(SETTINGS_STORAGE_KEYS.effectsLevel)
   );
   let defeated = false;
   let transitioning = false;
@@ -896,7 +951,7 @@ export async function createGameScene(
   const loadBestScore = () => {
     try {
       const saved = JSON.parse(
-        safeStorage.getItem(bestRecordKey()) ?? "null",
+        safeStorage.getItem(bestRecordKey()) ?? "null"
       ) as { score?: number } | null;
       return Number.isFinite(saved?.score) ? Math.max(0, saved?.score ?? 0) : 0;
     } catch {
@@ -931,7 +986,7 @@ export async function createGameScene(
             bossDefeats,
             seed: runSeed,
             playTimeMs: Math.round(activePlayTimeMs),
-          }),
+          })
         );
       } catch {
         // Private browsing or a full storage quota must not stop the result screen.
@@ -1003,7 +1058,7 @@ export async function createGameScene(
     volume: number,
     type: OscillatorType = "sine",
     pan = 0,
-    category: AudioCategory = "effects",
+    category: AudioCategory = "effects"
   ) => {
     if (audioMuted) return;
     const ctx = getAudioContext();
@@ -1021,12 +1076,12 @@ export async function createGameScene(
     oscillator.frequency.setValueAtTime(frequency, start);
     oscillator.frequency.exponentialRampToValueAtTime(
       Math.max(35, endFrequency),
-      start + duration,
+      start + duration
     );
     gain.gain.setValueAtTime(0.0001, start);
     gain.gain.exponentialRampToValueAtTime(
       Math.min(0.14, scaledVolume),
-      start + 0.008,
+      start + 0.008
     );
     gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
     oscillator.connect(gain);
@@ -1041,7 +1096,7 @@ export async function createGameScene(
       92,
       0.19 + power * 0.07,
       0.035 + power * 0.035,
-      "sawtooth",
+      "sawtooth"
     );
   const playParrySound = (power = 1, direction = 1) => {
     const pan = direction < 0 ? -0.68 : 0.68;
@@ -1051,7 +1106,7 @@ export async function createGameScene(
       0.11,
       0.09 + power * 0.025,
       "triangle",
-      pan,
+      pan
     );
     scheduleEffect(
       () =>
@@ -1061,9 +1116,9 @@ export async function createGameScene(
           0.08,
           0.045 + power * 0.02,
           "square",
-          pan * 0.7,
+          pan * 0.7
         ),
-      28,
+      28
     );
   };
   const playFootstep = (power = 0.6) =>
@@ -1127,7 +1182,7 @@ export async function createGameScene(
       profile.end,
       profile.duration,
       profile.volume * intensity,
-      profile.type,
+      profile.type
     );
   };
   const playAmbientPulse = () => {
@@ -1144,7 +1199,7 @@ export async function createGameScene(
       scene,
       `flying_slash_${now}`,
       new Color3(0.95, 0.88, 0.7),
-      1,
+      1
     );
     const arcPath = Array.from({ length: 13 }, (_, index) => {
       const t = index / 12;
@@ -1155,12 +1210,12 @@ export async function createGameScene(
     slashProjectile = MeshBuilder.CreateTube(
       "flying_slash_arc",
       { path: arcPath, radius: 0.055, tessellation: 8 },
-      scene,
+      scene
     );
     slashProjectile.position = new Vector3(
       player.root.position.x,
       0.7,
-      player.root.position.z - 0.45,
+      player.root.position.z - 0.45
     );
     slashProjectile.material = slashMaterial;
     slashDirection = direction;
@@ -1171,7 +1226,7 @@ export async function createGameScene(
     slashProjectile.scaling.set(
       slashScale * 1.18,
       slashScale,
-      slashScale * 0.72,
+      slashScale * 0.72
     );
     slashImpactAt = now + attackTimingFor("normal").startup + 60;
     slashTargetX = enemy.root.position.x;
@@ -1179,14 +1234,7 @@ export async function createGameScene(
     message = "飛刃、霧を裂く。振り終わりまで動けない。";
     announce(state());
   };
-  const enemyMoveLimit = () =>
-    Math.min(
-      1.25,
-      Math.max(
-        0.7,
-        (engine.getRenderWidth() / Math.max(1, engine.getRenderHeight())) * 0.5,
-      ),
-    );
+  const enemyMoveLimit = () => COMBAT_MAX_X;
   const setEnemyVariant = (variant: EnemyVariant) => {
     enemy.body = enemy.bodies[variant.shape];
     enemy.bodies.forEach((body, index) => {
@@ -1195,10 +1243,10 @@ export async function createGameScene(
   };
   const setEnemyGlow = (isBoss: boolean) => {
     const glow = isBoss ? materials.bossGlow : materials.enemyGlow;
-    enemy.bodies.forEach((body) => {
+    enemy.bodies.forEach(body => {
       body.material = glow;
     });
-    enemy.eyes.forEach((eye) => {
+    enemy.eyes.forEach(eye => {
       eye.material = glow;
     });
   };
@@ -1326,7 +1374,7 @@ export async function createGameScene(
   bestScore = loadBestScore();
   paused = true;
   clock.pause(performance.now());
-  player.root.position.x = -0.9;
+  player.root.position.x = laneX(-1);
   dodgeFromX = player.root.position.x;
   dodgeFromZ = player.root.position.z;
   setEnemyVariant(currentVariant);
@@ -1348,14 +1396,14 @@ export async function createGameScene(
         lastBossVariantIndex = chooseNonRepeatingIndex(
           bossPoolForWave(wave),
           lastBossVariantIndex,
-          nextEncounterRandom(),
+          nextEncounterRandom()
         );
         currentVariant = BOSS_VARIANTS[lastBossVariantIndex];
       } else {
         lastNormalVariantIndex = chooseNonRepeatingIndex(
           normalEnemyPoolForWave(wave),
           lastNormalVariantIndex,
-          nextEncounterRandom(),
+          nextEncounterRandom()
         );
         currentVariant = ENEMY_VARIANTS[lastNormalVariantIndex];
       }
@@ -1403,7 +1451,7 @@ export async function createGameScene(
               ? 620
               : 480;
     warningDuration = Math.round(
-      baseWarningDuration * DIFFICULTY_CONFIG[difficulty].warningMultiplier,
+      baseWarningDuration * DIFFICULTY_CONFIG[difficulty].warningMultiplier
     );
     enemyAttackDuration = warningDuration + 260 + 470;
     warningLine.isVisible = false;
@@ -1422,9 +1470,9 @@ export async function createGameScene(
     enemy.root.rotation.y = 0;
     enemy.blade.rotation.z = -0.7;
     setSpearState(false);
-    if (tutorialIndex === 0) player.root.position.x = -0.9;
-    else if (tutorialIndex === 1) player.root.position.x = 0.9;
-    else if (tutorialIndex === 2) player.root.position.x = 0;
+    if (tutorialIndex === 0) player.root.position.x = laneX(-1);
+    else if (tutorialIndex === 1) player.root.position.x = laneX(1);
+    else if (tutorialIndex === 2) player.root.position.x = laneX(0);
     dodgeFromX = player.root.position.x;
     dodgeFromZ = player.root.position.z;
     dodgeStartAt = 0;
@@ -1471,7 +1519,7 @@ export async function createGameScene(
     if (!rewardPending || pendingDefeatWave <= 0) return;
     const kind = (event as CustomEvent<{ kind?: ChapterRewardKind }>).detail
       ?.kind;
-    if (!kind || !rewardOptions.some((option) => option.kind === kind)) return;
+    if (!kind || !rewardOptions.some(option => option.kind === kind)) return;
 
     rewardEffects = kind === "heal" ? [] : addChapterRewardEffect([], kind, 1);
     rewardEffectStartWave =
@@ -1485,7 +1533,7 @@ export async function createGameScene(
     rewardOptions = [];
     rewardChapter = 0;
     pauseEvent(
-      new CustomEvent("yamabushi-pause", { detail: { paused: false } }),
+      new CustomEvent("yamabushi-pause", { detail: { paused: false } })
     );
     transitioning = true;
     transitionRemaining = boss ? 1400 : 700;
@@ -1567,15 +1615,6 @@ export async function createGameScene(
     if (next === "high" || next === "balanced" || next === "lite")
       applyPerformanceTier(next);
   };
-  const sideLimit = () =>
-    Math.min(
-      1.55,
-      Math.max(
-        0.82,
-        (engine.getRenderWidth() / Math.max(1, engine.getRenderHeight())) *
-          0.66,
-      ),
-    );
   const prepareAction = () => {
     advanceFrame(performance.now());
     return !paused && !transitioning && !defeated && clock.acceptingInput;
@@ -1611,7 +1650,7 @@ export async function createGameScene(
   };
   const dodgeEvent = (event: Event) => {
     const direction = Number(
-      (event as CustomEvent<{ direction?: number }>).detail?.direction ?? 1,
+      (event as CustomEvent<{ direction?: number }>).detail?.direction ?? 1
     );
     performDodge(direction);
   };
@@ -1751,8 +1790,8 @@ export async function createGameScene(
       1.8,
       Math.max(
         0.65,
-        Math.abs(player.blade.rotation.z - previousBladeAngle) / 0.7,
-      ),
+        Math.abs(player.blade.rotation.z - previousBladeAngle) / 0.7
+      )
     );
     player.rightArm.rotation.z = -0.72;
     player.leftArm.rotation.z = 0.48;
@@ -1780,7 +1819,7 @@ export async function createGameScene(
       player.root.position.z,
       direction,
       direction * 0.5,
-      1.15,
+      1.15
     );
     const staggered = damageEnemyPosture("guard-break", now);
     playerPosture = recoverPosture(playerPosture, 10, playerPostureMax);
@@ -1801,7 +1840,7 @@ export async function createGameScene(
     now: number,
     direction: number,
     impactAngle = direction * 0.42,
-    impactScale = 1,
+    impactScale = 1
   ) => {
     if (enemyHp <= 0 || transitioning || defeated) return;
     sheathUntil = now + 620;
@@ -1838,7 +1877,7 @@ export async function createGameScene(
       player.root.position.z,
       direction,
       impactAngle,
-      impactScale,
+      impactScale
     );
     message = !enemyHp
       ? "敵影、断つ。"
@@ -1956,7 +1995,7 @@ export async function createGameScene(
     tutorialStep = 1;
     tutorialObjectiveMet = false;
     warningDuration = Math.round(
-      620 * DIFFICULTY_CONFIG[difficulty].warningMultiplier,
+      620 * DIFFICULTY_CONFIG[difficulty].warningMultiplier
     );
     enemyAttackDuration = warningDuration + 260 + 470;
     dodgeDirection = 1;
@@ -2006,7 +2045,7 @@ export async function createGameScene(
     attackArea.isVisible = false;
     updateFootZones(false, 0);
     guardRing.isVisible = false;
-    player.root.position.x = -0.9;
+    player.root.position.x = laneX(-1);
     player.root.position.z = 0;
     player.root.rotation.set(0, 0, 0);
     player.root.scaling.setAll(1);
@@ -2041,7 +2080,7 @@ export async function createGameScene(
     }
     const tutorialHint = !canSlashDuringTutorial(
       tutorialStep,
-      tutorialObjectiveMet,
+      tutorialObjectiveMet
     );
     const direction = player.root.position.x <= enemy.root.position.x ? -1 : 1;
 
@@ -2057,7 +2096,7 @@ export async function createGameScene(
         player.root.position.z,
         direction,
         direction * 0.58,
-        1.35,
+        1.35
       );
       const phaseChanged = refreshBossPhase(now);
       message = !enemyHp
@@ -2084,7 +2123,7 @@ export async function createGameScene(
         player.root.position.z,
         direction,
         direction * 0.42,
-        1.2,
+        1.2
       );
       message = !enemyHp
         ? "受け流しからの反撃で断った。"
@@ -2189,6 +2228,7 @@ export async function createGameScene(
   window.addEventListener("yamabushi-retire", retireEvent);
   window.addEventListener("yamabushi-restart", resetRun);
   window.addEventListener("yamabushi-start", resetRun);
+  window.addEventListener("resize", updateCameraFraming);
   const updatePlayerMotion = (now: number) => {
     let kind: PlayerMotionKind = "idle";
     let progress = 0;
@@ -2202,14 +2242,14 @@ export async function createGameScene(
         const start = playerVictoryStartedAt;
         progress = Math.min(
           1,
-          Math.max(0, (now - start) / PLAYER_VICTORY_DURATION),
+          Math.max(0, (now - start) / PLAYER_VICTORY_DURATION)
         );
       } else {
         kind = "defeat";
         const start = playerDefeatStartedAt;
         progress = Math.min(
           1,
-          Math.max(0, (now - start) / PLAYER_DEFEAT_DURATION),
+          Math.max(0, (now - start) / PLAYER_DEFEAT_DURATION)
         );
       }
     } else if (transitioning || rewardPending) {
@@ -2217,14 +2257,14 @@ export async function createGameScene(
       const start = playerVictoryStartedAt;
       progress = Math.min(
         1,
-        Math.max(0, (now - start) / PLAYER_VICTORY_DURATION),
+        Math.max(0, (now - start) / PLAYER_VICTORY_DURATION)
       );
     } else if (dodgeUntil > now) {
       kind = "dodge";
       direction = dodgeDirection < 0 ? -1 : 1;
       progress = Math.min(
         1,
-        Math.max(0, (now - dodgeStartAt) / DODGE_DURATION),
+        Math.max(0, (now - dodgeStartAt) / DODGE_DURATION)
       );
     } else if (playerAttackKind && attackUntil > now) {
       kind = "attack";
@@ -2234,8 +2274,8 @@ export async function createGameScene(
         Math.max(
           0,
           (now - playerAttackStartedAt) /
-            attackTimingFor(playerAttackKind).total,
-        ),
+            attackTimingFor(playerAttackKind).total
+        )
       );
     } else if (counterUntil > now && recoilUntil > now) {
       kind = "parry";
@@ -2252,8 +2292,8 @@ export async function createGameScene(
         Math.max(
           0,
           (now - playerHitStartedAt) /
-            Math.max(1, playerHitUntil - playerHitStartedAt),
-        ),
+            Math.max(1, playerHitUntil - playerHitStartedAt)
+        )
       );
     } else if (sheathUntil > now) {
       kind = "sheath";
@@ -2262,14 +2302,14 @@ export async function createGameScene(
         Math.max(
           0,
           (now - playerSheathStartedAt) /
-            Math.max(1, sheathUntil - playerSheathStartedAt),
-        ),
+            Math.max(1, sheathUntil - playerSheathStartedAt)
+        )
       );
     } else if (playerSpawnUntil > now) {
       kind = "spawn";
       progress = Math.min(
         1,
-        Math.max(0, 1 - (playerSpawnUntil - now) / PLAYER_SPAWN_DURATION),
+        Math.max(0, 1 - (playerSpawnUntil - now) / PLAYER_SPAWN_DURATION)
       );
     }
 
@@ -2313,13 +2353,13 @@ export async function createGameScene(
     const bladeDelta = Math.abs(player.blade.rotation.z - previousBladeAngle);
     const bladeAngularSpeed = Math.min(
       1.8,
-      bladeDelta / Math.max(0.001, dt) / 5.5,
+      bladeDelta / Math.max(0.001, dt) / 5.5
     );
     previousBladeAngle = player.blade.rotation.z;
     if (attackUntil > now)
       slashPower = Math.max(
         slashPower,
-        Math.min(1.8, 0.65 + bladeAngularSpeed),
+        Math.min(1.8, 0.65 + bladeAngularSpeed)
       );
     if (paused || now < hitStopUntil) {
       if (paused && rewardPending) updatePlayerMotion(now);
@@ -2376,9 +2416,9 @@ export async function createGameScene(
           : 1 - Math.pow(-2 * progress + 2, 2) / 2;
       const arc = Math.sin(progress * Math.PI);
       const direction = dodgeDirection;
-      player.root.position.x = Math.max(
-        -sideLimit(),
-        Math.min(sideLimit(), dodgeFromX + direction * 0.85 * eased),
+      const dodgeTarget = dodgeTargetX(direction);
+      player.root.position.x = clampCombatX(
+        dodgeFromX + (dodgeTarget - dodgeFromX) * eased
       );
       player.root.position.z = dodgeFromZ - arc * 0.28;
       player.root.rotation.y = direction * (0.22 + arc * 0.18);
@@ -2391,6 +2431,7 @@ export async function createGameScene(
       player.torso.rotation.z = -direction * arc * 0.1;
       player.blade.rotation.z = -0.65 + direction * 0.5 + arc * 0.25;
     } else if (dodgeUntil > 0 && dodgeUntil <= now) {
+      player.root.position.x = dodgeTargetX(dodgeDirection);
       player.root.position.z = dodgeFromZ;
       player.root.rotation.z = 0;
       player.root.scaling.y = 1;
@@ -2407,7 +2448,7 @@ export async function createGameScene(
       const travelDuration = attackTimingFor("normal").startup + 60;
       const progress = Math.min(
         1,
-        Math.max(0, (now - (slashImpactAt - travelDuration)) / travelDuration),
+        Math.max(0, (now - (slashImpactAt - travelDuration)) / travelDuration)
       );
       const travelProgress = 1 - Math.pow(1 - progress, 3);
       slashProjectile.position.x =
@@ -2426,7 +2467,7 @@ export async function createGameScene(
       slashProjectile.scaling.set(
         travelScale * 1.18,
         travelScale,
-        travelScale * 0.72,
+        travelScale * 0.72
       );
     } else if (slashProjectile && now >= slashImpactAt) {
       const projectile = slashProjectile;
@@ -2458,7 +2499,7 @@ export async function createGameScene(
                 currentVariant.role,
                 enemyAttackCount,
                 player.root.position.x,
-                tutorialStep,
+                tutorialStep
               )
             : {
                 dangerLane: forcedLane,
@@ -2475,9 +2516,7 @@ export async function createGameScene(
           attackPlan.dangerLane = enemyTargetX < 0 ? -1 : 1;
           attackPlan.spearSide = attackPlan.dangerLane;
         }
-        bossAttack = attackPlan.isWide;
-        spearAttackSide = attackPlan.spearSide;
-        dangerLane = attackPlan.dangerLane;
+        applyAttackPlan(attackPlan);
         lastTelegraphedLane = dangerLane as Lane;
         feintApplied = false;
         if (forcedLane === null || forcedLane === undefined) {
@@ -2485,7 +2524,7 @@ export async function createGameScene(
             currentVariant.role,
             currentVariant.family,
             dangerLane as Lane,
-            bossPhase,
+            bossPhase
           );
         }
         feintLane =
@@ -2494,25 +2533,8 @@ export async function createGameScene(
               ? 1
               : -1
             : -dangerLane;
-        warningLine.material = bossAttack
-          ? laneMaterials.center
-          : dangerLane < 0
-            ? laneMaterials.left
-            : dangerLane > 0
-              ? laneMaterials.right
-              : laneMaterials.center;
         warningLine.isVisible = true;
-        warningLine.position.x = dangerLane * 0.9;
-        warningLine.position.z = 2.4;
-        warningLine.scaling.x = 0.75;
         attackArea.isVisible = true;
-        attackArea.position.x = dangerLane * 0.9;
-        attackArea.scaling.x = bossAttack
-          ? 1.65
-          : currentVariant.family === "モンスター型"
-            ? 1.2
-            : 1;
-        attackAreaMaterial.alpha = bossAttack ? 0.34 : 0.24;
         const familyCue =
           currentVariant.family === "獣型"
             ? "獣影が距離を詰める。"
@@ -2574,11 +2596,11 @@ export async function createGameScene(
         const windup = Math.min(1, attackElapsed / warningDuration);
         const strike = Math.max(
           0,
-          Math.min(1, (attackElapsed - warningDuration) / 260),
+          Math.min(1, (attackElapsed - warningDuration) / 260)
         );
         const recover = Math.max(
           0,
-          Math.min(1, (attackElapsed - warningDuration - 260) / 470),
+          Math.min(1, (attackElapsed - warningDuration - 260) / 470)
         );
         if (attackElapsed < warningDuration) {
           if (
@@ -2588,19 +2610,10 @@ export async function createGameScene(
             const trackedPlan = enemyAttackPlanFor(
               "tracking",
               enemyAttackCount,
-              player.root.position.x,
+              player.root.position.x
             );
             const trackedLane = trackedPlan.dangerLane;
-            dangerLane = trackedPlan.dangerLane;
-            spearAttackSide = trackedPlan.spearSide;
-            warningLine.position.x = dangerLane * 0.9;
-            attackArea.position.x = dangerLane * 0.9;
-            warningLine.material =
-              dangerLane < 0
-                ? laneMaterials.left
-                : dangerLane > 0
-                  ? laneMaterials.right
-                  : laneMaterials.center;
+            applyAttackPlan(trackedPlan);
             if (trackedLane !== lastTelegraphedLane) {
               lastTelegraphedLane = trackedLane;
               message = "追尾線が動いている。線が止まるまで待て。";
@@ -2614,17 +2627,12 @@ export async function createGameScene(
             !feintApplied
           ) {
             feintApplied = true;
-            dangerLane = feintLane;
-            spearAttackSide = dangerLane;
+            applyAttackPlan({
+              dangerLane: feintLane as Lane,
+              spearSide: feintLane as Lane,
+              isWide: bossAttack,
+            });
             lastTelegraphedLane = dangerLane as Lane;
-            warningLine.position.x = dangerLane * 0.9;
-            attackArea.position.x = dangerLane * 0.9;
-            warningLine.material =
-              dangerLane < 0
-                ? laneMaterials.left
-                : dangerLane > 0
-                  ? laneMaterials.right
-                  : laneMaterials.center;
             message = "予告が一度だけ返った。今見えている線が真。";
             announce(state());
           }
@@ -2635,7 +2643,7 @@ export async function createGameScene(
           setSpearState(
             blink,
             0.12 + 0.04 * (0.5 + 0.5 * Math.sin(now * 0.03)),
-            spearAttackSide,
+            spearAttackSide
           );
           attackArea.isVisible = blink || attackElapsed > 210;
           attackArea.scaling.x =
@@ -2663,7 +2671,7 @@ export async function createGameScene(
           setSpearState(
             true,
             bossAttack ? 3.25 : 3.25 * Math.min(1, strike * 1.2),
-            spearAttackSide,
+            spearAttackSide
           );
           enemy.root.position.z =
             5.2 - (currentVariant.family === "獣型" ? 1.25 : 0.65) * strike;
@@ -2699,11 +2707,10 @@ export async function createGameScene(
             player.root.position.x,
             dangerLane as -1 | 0 | 1,
             bossAttack,
-            hitWidth,
+            hitWidth
           );
           const isParryWindow =
-            guardUntil >= now &&
-            now - guardStartedAt <= parryWindow();
+            guardUntil >= now && now - guardStartedAt <= parryWindow();
           const dodgeElapsed = now - dodgeStartAt;
           const dodgeInSafety =
             dodgeUntil >= now &&
@@ -2715,7 +2722,7 @@ export async function createGameScene(
               correctDodgeForLane(
                 dodgeDirection as -1 | 1,
                 dangerLane as -1 | 0 | 1,
-                bossAttack,
+                bossAttack
               ));
 
           if (inLine && isParryWindow) {
@@ -2781,7 +2788,7 @@ export async function createGameScene(
               correctDodgeForLane(
                 dodgeDirection as -1 | 1,
                 dangerLane as -1 | 0 | 1,
-                bossAttack,
+                bossAttack
               );
             if (correctDodge) {
               correctDodges += 1;
@@ -2791,7 +2798,7 @@ export async function createGameScene(
               playerPosture = recoverPosture(
                 playerPosture,
                 10,
-                playerPostureMax,
+                playerPostureMax
               );
             }
             message = correctDodge
@@ -2955,12 +2962,14 @@ export async function createGameScene(
       updatePlayerMotion(clock.nowMs + Math.min(1050, realNow - pauseVisualAt));
     }
   };
-  const observer = scene.onBeforeRenderObservable.add(() => advanceFrame(performance.now()));
+  const observer = scene.onBeforeRenderObservable.add(() =>
+    advanceFrame(performance.now())
+  );
   return {
     scene,
     getState: state,
     dispose: () => {
-      pendingEffects.forEach((timer) => window.clearTimeout(timer));
+      pendingEffects.forEach(timer => window.clearTimeout(timer));
       pendingEffects.clear();
       if (audioContext) void audioContext.close().catch(() => {});
       scene.onBeforeRenderObservable.remove(observer);
@@ -2976,6 +2985,7 @@ export async function createGameScene(
       window.removeEventListener("yamabushi-retire", retireEvent);
       window.removeEventListener("yamabushi-restart", resetRun);
       window.removeEventListener("yamabushi-start", resetRun);
+      window.removeEventListener("resize", updateCameraFraming);
       scene.dispose();
     },
   };
