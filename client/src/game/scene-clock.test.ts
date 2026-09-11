@@ -36,6 +36,7 @@ describe("scene run clock", () => {
     h = await createSceneHarness(60_000);
     h.start();
     const first = waitForWarning();
+    const firstRunId = h.state().runId;
     h.advance(1200);
     h.dispatch("yamabushi-restart", {
       mode: "ten",
@@ -43,6 +44,7 @@ describe("scene run clock", () => {
       seed: 123,
     });
     expect(h.state().playTimeMs).toBe(0);
+    expect(h.state().runId).not.toBe(firstRunId);
     expect(waitForWarning()).toBe(first);
   });
 

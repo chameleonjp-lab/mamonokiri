@@ -16,6 +16,8 @@ import {
   correctDodgeForLane,
   counterMayBeGranted,
   crossedComboMilestones,
+  defensiveScoreAwardFor,
+  defensiveScoreLimitFor,
   defeatProgress,
   DIFFICULTY_CONFIG,
   enemyAttackPlanFor,
@@ -206,6 +208,29 @@ describe("priority B run configuration and scoring", () => {
     expect(scoreForCombo(100, 1)).toBe(100);
     expect(scoreForCombo(100, 8)).toBe(800);
     expect(scoreForCombo(100, 80)).toBe(800);
+  });
+
+  it("caps defensive score awards per enemy while keeping the action useful", () => {
+    expect(defensiveScoreLimitFor(false)).toBe(3);
+    expect(defensiveScoreLimitFor(true)).toBe(6);
+    expect(defensiveScoreAwardFor(260, 0, false)).toMatchObject({
+      awarded: true,
+      points: 260,
+      nextAwards: 1,
+    });
+    expect(defensiveScoreAwardFor(120, 2, false)).toMatchObject({
+      awarded: true,
+      capped: true,
+      points: 120,
+      nextAwards: 3,
+    });
+    expect(defensiveScoreAwardFor(260, 3, false)).toEqual({
+      awarded: false,
+      capped: true,
+      points: 0,
+      nextAwards: 3,
+    });
+    expect(defensiveScoreAwardFor(260, 5, true).awarded).toBe(true);
   });
 
   it("replays the same deterministic random sequence from a seed", () => {

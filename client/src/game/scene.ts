@@ -35,6 +35,8 @@ import {
   chooseNonRepeatingIndex,
   correctDodgeForLane,
   crossedComboMilestones,
+  defensiveScoreAwardFor,
+  defensiveScoreLimitFor,
   DIFFICULTY_CONFIG,
   defeatProgress,
   enemyAttackPlanFor,
@@ -47,6 +49,7 @@ import {
   normalizeSeed,
   postureAfterGuard,
   recoverPosture,
+  SCORE_RULES_VERSION,
   scoreForCombo,
   shouldAdvanceCombatClock,
   tutorialVariantIndex,
@@ -862,10 +865,23 @@ export async function createGameScene(
   ];
   const makeRunSeed = () =>
     normalizeSeed((Date.now() ^ Math.floor(Math.random() * 0xffffffff)) >>> 0);
+  const makeRunId = () => {
+    if (
+      typeof crypto !== "undefined" &&
+      typeof crypto.randomUUID === "function"
+    )
+      return crypto.randomUUID();
+    const random = () =>
+      Math.floor(Math.random() * 0xffffffff)
+        .toString(16)
+        .padStart(8, "0");
+    return `${random()}-${random().slice(0, 4)}-4${random().slice(0, 3)}-a${random().slice(0, 3)}-${random()}${random().slice(0, 4)}`;
+  };
   let mode: RunMode = "fifty";
   let modeLimit = modeLimitFor(mode);
   let difficulty: Difficulty = "standard";
   let runSeed = makeRunSeed();
+  let runId = makeRunId();
   let encounterRandomSeed = runSeed;
   let combatRandomSeed = normalizeSeed(runSeed ^ 0x9e3779b9);
   const nextEncounterRandom = () => {
@@ -882,6 +898,8 @@ export async function createGameScene(
   let bossDefeats = 0;
   let parrySuccesses = 0;
   let correctDodges = 0;
+  let defensiveScoreAwards = 0;
+  let defensiveScoreAwardsThisEnemy = 0;
   let hitsTaken = 0;
   let whiffs = 0;
   let activePlayTimeMs = 0;
@@ -951,7 +969,8 @@ export async function createGameScene(
   let score = 0;
   let comboExpiresAt = 0;
   let climax = 0;
-  const bestRecordKey = () => `yamabushi-best-${mode}-${difficulty}`;
+  const bestRecordKey = () =>
+    `yamabushi-best-${SCORE_RULES_VERSION}-${mode}-${difficulty}`;
   const loadBestScore = () => {
     try {
       const saved = JSON.parse(
@@ -968,6 +987,20 @@ export async function createGameScene(
     wave <= rewardEffectEndWave;
   const scoreMultiplier = () =>
     rewardEffectActive("score-multiplier") ? 1.15 : 1;
+  const awardDefensiveScore = (basePoints: number) => {
+    const award = defensiveScoreAwardFor(
+      basePoints,
+      defensiveScoreAwardsThisEnemy,
+      boss,
+      scoreMultiplier()
+    );
+    if (award.awarded) {
+      defensiveScoreAwardsThisEnemy = award.nextAwards;
+      defensiveScoreAwards += 1;
+      score += award.points;
+    }
+    return award;
+  };
   const parryWindow = () =>
     DIFFICULTY_CONFIG[difficulty].parryWindow +
     (rewardEffectActive("parry-window") ? 45 : 0);
@@ -1304,6 +1337,7 @@ export async function createGameScene(
       modeLimit,
       difficulty,
       seed: runSeed,
+      runId,
       chapter: chapterForWave(wave),
       hp,
       playerPosture,
@@ -1351,6 +1385,9 @@ export async function createGameScene(
       bossDefeats,
       parrySuccesses,
       correctDodges,
+      defensiveScoreAwards,
+      defensiveScoreAwardsThisEnemy,
+      defensiveScoreLimit: defensiveScoreLimitFor(boss),
       hitsTaken,
       whiffs,
       playTimeMs: Math.round(activePlayTimeMs),
@@ -1413,6 +1450,7 @@ export async function createGameScene(
     enemyMaxHp = boss ? 320 : 100;
     enemyHp = enemyMaxHp;
     enemyHitTaken = false;
+    defensiveScoreAwardsThisEnemy = 0;
     enemyPostureMax = boss ? 180 : 80;
     enemyPosture = enemyPostureMax;
     enemyStaggerUntil = 0;
@@ -2021,6 +2059,7 @@ export async function createGameScene(
       Number.isFinite(detail?.seed) && detail?.seed !== undefined
         ? normalizeSeed(detail.seed)
         : makeRunSeed();
+    runId = makeRunId();
     encounterRandomSeed = runSeed;
     combatRandomSeed = normalizeSeed(runSeed ^ 0x9e3779b9);
     bestScore = loadBestScore();
@@ -2042,6 +2081,8 @@ export async function createGameScene(
     bossDefeats = 0;
     parrySuccesses = 0;
     correctDodges = 0;
+    defensiveScoreAwards = 0;
+    defensiveScoreAwardsThisEnemy = 0;
     hitsTaken = 0;
     whiffs = 0;
     activePlayTimeMs = 0;
@@ -2804,13 +2845,15 @@ export async function createGameScene(
             if (tutorialStep === 3) tutorialObjectiveMet = true;
             playerPosture = recoverPosture(playerPosture, 20, playerPostureMax);
             const staggered = damageEnemyPosture("counter", now);
-            score += Math.round(260 * scoreMultiplier());
+            const defensiveAward = awardDefensiveScore(260);
             message =
               tutorialStep === 3
                 ? "成功。受け流しで隙を作った。今すぐ斬で反撃せよ。"
                 : staggered
                   ? "受け流しで敵の構えを砕いた。反撃を。"
-                  : "青白く、受け流した。反撃を。";
+                  : defensiveAward.capped
+                    ? "青白く、受け流した。守備加点はこの敵の上限に達した。"
+                    : "青白く、受け流した。反撃を。";
           } else if (inLine && guardUntil >= now) {
             counterUntil = 0;
             const pressure =
@@ -2862,11 +2905,13 @@ export async function createGameScene(
                 dangerLane as -1 | 0 | 1,
                 bossAttack
               );
+            const defensiveAward = correctDodge
+              ? awardDefensiveScore(120)
+              : null;
             if (correctDodge) {
               correctDodges += 1;
               if (tutorialStep === 1 || tutorialStep === 2)
                 tutorialObjectiveMet = true;
-              score += Math.round(120 * scoreMultiplier());
               playerPosture = recoverPosture(
                 playerPosture,
                 10,
@@ -2876,7 +2921,9 @@ export async function createGameScene(
             message = correctDodge
               ? tutorialStep === 1 || tutorialStep === 2
                 ? "成功。危険線と反対へ避けた。斬で仕留めよ。"
-                : "正しい方向へ流れた。得点と構えを得た。"
+                : defensiveAward?.capped
+                  ? "正しい方向へ流れた。守備加点はこの敵の上限に達した。"
+                  : "正しい方向へ流れた。得点と構えを得た。"
               : "危険線の外で刃を外した。";
           } else {
             hitsTaken += 1;
