@@ -131,6 +131,8 @@ export const CHAPTER_REWARD_OPTIONS: ReadonlyArray<ChapterRewardOption> = [
 
 export const COMBO_MULTIPLIER_CAP = 8;
 export const RESUME_GRACE_MS = 700;
+/** The optional practice run always teaches the first three encounters. */
+export const PRACTICE_WAVE_LIMIT = 3;
 export const SCORE_RULES_VERSION = "mamonokiri-score-v2";
 
 /**

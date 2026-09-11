@@ -27,6 +27,7 @@ export type GameState = {
   mode: RunMode;
   modeLimit: number;
   difficulty: Difficulty;
+  practice: boolean;
   seed: number;
   runId: string;
   chapter: number;
@@ -52,6 +53,8 @@ export type GameState = {
   stance: string;
   attackPhase: string;
   message: string;
+  lastFailureReason: string;
+  nextAction: string;
   defeated: boolean;
   combo: number;
   maxCombo: number;
@@ -89,6 +92,7 @@ export const INITIAL_GAME_STATE: GameState = {
   mode: "fifty",
   modeLimit: 50,
   difficulty: "standard",
+  practice: false,
   seed: 0,
   runId: "",
   chapter: 1,
@@ -114,6 +118,8 @@ export const INITIAL_GAME_STATE: GameState = {
   stance: "静止",
   attackPhase: "待機",
   message: "第1試練。左槍の予告を見て、右へ避けよ。",
+  lastFailureReason: "",
+  nextAction: "",
   defeated: false,
   combo: 0,
   maxCombo: 0,

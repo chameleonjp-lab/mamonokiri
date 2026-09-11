@@ -83,6 +83,21 @@ describe("smartphone play contract", () => {
     expect(appSource).toContain("const restartCurrentRun = () =>");
     expect(appSource).toContain("mode: state.mode");
     expect(appSource).toContain("difficulty: state.difficulty");
+    expect(appSource).toContain("直前の失敗");
+    expect(appSource).toContain("次に試す");
+  });
+
+  it("puts the short beginner path first and keeps practice out of ranking", () => {
+    expect(appSource).toContain('useState<RunMode>("ten")');
+    expect(appSource).toContain('useState<Difficulty>("apprentice")');
+    expect(appSource).toContain("稽古を試す");
+    expect(appSource).toContain("practice: true");
+    expect(appSource).toContain("if (state.practice)");
+    expect(sceneSource).toContain("PRACTICE_WAVE_LIMIT");
+    expect(sceneSource).toContain("if (!practice) hp = applyDamage");
+    expect(appSource.indexOf("result-actions result-actions-primary")).toBeLessThan(
+      appSource.indexOf('className="result-platform"')
+    );
   });
 
   it("clears transient attack direction state before a retry starts", () => {
