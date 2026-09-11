@@ -131,6 +131,53 @@ export const CHAPTER_REWARD_OPTIONS: ReadonlyArray<ChapterRewardOption> = [
 
 export const COMBO_MULTIPLIER_CAP = 8;
 export const RESUME_GRACE_MS = 700;
+export const SCORE_RULES_VERSION = "mamonokiri-score-v2";
+
+/**
+ * Defensive actions should help a player recover, but repeating a safe
+ * guard/parry loop must not become an unbounded score source. The limit is
+ * per enemy and combines successful parries and correctly timed dodges.
+ */
+export const DEFENSIVE_SCORE_AWARDS_PER_ENEMY = 3;
+export const DEFENSIVE_SCORE_AWARDS_PER_BOSS = 6;
+
+export function defensiveScoreLimitFor(isBoss: boolean): number {
+  return isBoss
+    ? DEFENSIVE_SCORE_AWARDS_PER_BOSS
+    : DEFENSIVE_SCORE_AWARDS_PER_ENEMY;
+}
+
+export type DefensiveScoreAward = {
+  awarded: boolean;
+  capped: boolean;
+  points: number;
+  nextAwards: number;
+};
+
+export function defensiveScoreAwardFor(
+  basePoints: number,
+  awardsUsed: number,
+  isBoss: boolean,
+  scoreMultiplier = 1
+): DefensiveScoreAward {
+  const limit = defensiveScoreLimitFor(isBoss);
+  const safeAwards = Math.max(0, Math.trunc(awardsUsed));
+  if (safeAwards >= limit) {
+    return {
+      awarded: false,
+      capped: true,
+      points: 0,
+      nextAwards: safeAwards,
+    };
+  }
+
+  return {
+    awarded: true,
+    capped: safeAwards + 1 >= limit,
+    points: Math.round(Math.max(0, basePoints) * Math.max(0, scoreMultiplier)),
+    nextAwards: safeAwards + 1,
+  };
+}
 
 export function modeLimitFor(mode: RunMode): number {
   return RUN_MODE_CONFIG[mode].limit;

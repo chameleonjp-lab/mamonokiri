@@ -1,4 +1,9 @@
-import type { ChapterRewardKind, Difficulty, RunMode } from "./rules";
+import {
+  DEFENSIVE_SCORE_AWARDS_PER_ENEMY,
+  type ChapterRewardKind,
+  type Difficulty,
+  type RunMode,
+} from "./rules";
 
 export type PauseReason =
   | "manual"
@@ -23,6 +28,7 @@ export type GameState = {
   modeLimit: number;
   difficulty: Difficulty;
   seed: number;
+  runId: string;
   chapter: number;
   hp: number;
   playerPosture: number;
@@ -55,6 +61,9 @@ export type GameState = {
   bossDefeats: number;
   parrySuccesses: number;
   correctDodges: number;
+  defensiveScoreAwards: number;
+  defensiveScoreAwardsThisEnemy: number;
+  defensiveScoreLimit: number;
   hitsTaken: number;
   whiffs: number;
   playTimeMs: number;
@@ -81,6 +90,7 @@ export const INITIAL_GAME_STATE: GameState = {
   modeLimit: 50,
   difficulty: "standard",
   seed: 0,
+  runId: "",
   chapter: 1,
   hp: 100,
   playerPosture: 100,
@@ -113,6 +123,9 @@ export const INITIAL_GAME_STATE: GameState = {
   bossDefeats: 0,
   parrySuccesses: 0,
   correctDodges: 0,
+  defensiveScoreAwards: 0,
+  defensiveScoreAwardsThisEnemy: 0,
+  defensiveScoreLimit: DEFENSIVE_SCORE_AWARDS_PER_ENEMY,
   hitsTaken: 0,
   whiffs: 0,
   playTimeMs: 0,

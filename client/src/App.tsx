@@ -28,13 +28,22 @@ import {
   type GameState,
   type SceneStatus,
 } from "@/game/contracts";
+import {
+  RANKING_READ_RPC,
+  RANKING_SUBMIT_RPC,
+  rankingConditionFor,
+  rankingReadPayloadFor,
+  rankingRowsFrom,
+  rankingSubmissionFor,
+  rankingSubmitPayloadFor,
+  submissionWasDuplicate,
+} from "@/game/ranking";
 import { safeStorage, STORAGE_UNAVAILABLE_MESSAGE } from "@/game/storage";
 
 const SUPABASE_URL = "https://mlpnjgezrnhdxsxolyzj.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY =
   "sb_publishable_drzcy0v97knU6FgjqSgBHw_0A9XPdFM";
-const GAME_SLUG = "mamonokiri";
-const CLIENT_VERSION = "mamonokiri-2026-08-31-platform";
+const CLIENT_VERSION = "mamonokiri-2026-09-11-ranking-v1";
 const LAB_URL = "https://chameleonjp-lab.github.io/chameleonjp_lab/";
 const PLAYER_NAME_KEY = "mamonokiri.player-name";
 
@@ -118,6 +127,8 @@ async function callRankingRpc(
   return data;
 }
 
+type RankingSubmissionStatus = "idle" | "submitting" | "succeeded" | "failed";
+
 function Bar({ value, tone }: { value: number; tone: "player" | "enemy" }) {
   return (
     <div className={`bar ${tone}`}>
@@ -192,9 +203,14 @@ export default function App() {
   const [ranking, setRanking] = useState<
     Array<{ name: string; score: number }>
   >([]);
+  const [rankingLoading, setRankingLoading] = useState(false);
   const [rankingStatus, setRankingStatus] = useState(
     "結果を送信すると上位10名を表示します。"
   );
+  const [submissionStatus, setSubmissionStatus] =
+    useState<RankingSubmissionStatus>("idle");
+  const [submissionMessage, setSubmissionMessage] = useState("");
+  const [rankingRetryNonce, setRankingRetryNonce] = useState(0);
   const [showClimax, setShowClimax] = useState(false);
   const [showBossVictory, setShowBossVictory] = useState(false);
   const [showCounter, setShowCounter] = useState(false);
@@ -249,72 +265,104 @@ export default function App() {
   const titleOpenRef = useRef(true);
   const lastMobileActionAt = useRef(0);
   const resultPlatformKey = useRef("");
+  const resultPlayerName = useRef("");
+  const rankingRequestId = useRef(0);
   exitConfirmRef.current = showExitConfirm;
   titleOpenRef.current = showTitle;
 
   useEffect(() => {
-    if (!state.defeated || !playerName) {
-      if (!state.defeated) resultPlatformKey.current = "";
+    if (!state.defeated || !playerName || !state.runId) {
+      if (!state.defeated) {
+        resultPlatformKey.current = "";
+        resultPlayerName.current = "";
+        rankingRequestId.current += 1;
+        setSubmissionStatus("idle");
+        setSubmissionMessage("");
+        setRankingLoading(false);
+      }
       return;
     }
-    const key = `${state.seed}:${state.mode}:${state.difficulty}:${state.score}:${playerName}`;
+
+    resultPlayerName.current ||= playerName;
+    const submissionName = resultPlayerName.current;
+    const key = `${state.runId}:${submissionName}:${rankingRetryNonce}`;
     if (resultPlatformKey.current === key) return;
     resultPlatformKey.current = key;
+    const requestId = ++rankingRequestId.current;
+    let active = true;
+    const isCurrent = () => active && rankingRequestId.current === requestId;
+    const submission = rankingSubmissionFor(
+      state,
+      submissionName,
+      CLIENT_VERSION
+    );
+
     setRanking([]);
-    setRankingStatus("ランキングを更新中…");
+    setSubmissionStatus("submitting");
+    setSubmissionMessage("今回のスコアを送信中…");
+    setRankingLoading(true);
+    setRankingStatus("ランキングを読み込み中…");
+
     void (async () => {
       try {
-        await callRankingRpc("submit_score", {
-          p_display_name: playerName,
-          p_game_slug: GAME_SLUG,
-          p_score: Math.trunc(state.score),
-          p_client_version: CLIENT_VERSION,
-        });
+        const data = await callRankingRpc(
+          RANKING_SUBMIT_RPC,
+          rankingSubmitPayloadFor(submission)
+        );
+        if (!isCurrent()) return;
+        const accepted = Array.isArray(data)
+          ? (data[0] as Record<string, unknown> | undefined)?.accepted
+          : (data as Record<string, unknown> | null)?.accepted;
+        if (accepted === false || accepted === "false")
+          throw new Error("score rejected");
+        setSubmissionStatus("succeeded");
+        setSubmissionMessage(
+          submissionWasDuplicate(data)
+            ? "同じ勝負IDは重複登録しません。送信済みの結果を再利用しました。"
+            : "今回のスコアを送信しました。"
+        );
       } catch {
-        setRankingStatus(
-          "今回のスコアを送信できませんでした。ランキングを表示します。"
+        if (!isCurrent()) return;
+        setSubmissionStatus("failed");
+        setSubmissionMessage(
+          "今回のスコアを送信できませんでした。再送信できます。"
         );
       }
+
       try {
-        const data = await callRankingRpc("get_best_score_ranking", {
-          p_game_slug: GAME_SLUG,
-          p_limit: 10,
-        });
-        const rows = Array.isArray(data)
-          ? data.slice(0, 10).flatMap(row => {
-              if (!row || typeof row !== "object") return [];
-              const item = row as Record<string, unknown>;
-              const rawName =
-                item.display_name ?? item.player_name ?? item.name;
-              const score = Number(item.score ?? item.best_score);
-              return [
-                {
-                  name:
-                    typeof rawName === "string" && rawName.trim()
-                      ? rawName
-                      : "ななし",
-                  score: Number.isFinite(score) ? Math.trunc(score) : 0,
-                },
-              ];
-            })
-          : [];
+        const data = await callRankingRpc(
+          RANKING_READ_RPC,
+          rankingReadPayloadFor(rankingConditionFor(state), 10)
+        );
+        if (!isCurrent()) return;
+        const rows = rankingRowsFrom(data).slice(0, 10);
         setRanking(rows);
         setRankingStatus(
           rows.length
-            ? "上位10名を表示しています。"
-            : "まだランキングがありません。"
+            ? "このモード・難易度・得点規則の上位10名を表示しています。"
+            : "この条件のランキングはまだありません。"
         );
       } catch {
+        if (!isCurrent()) return;
         setRankingStatus("ランキングを読み込めませんでした。");
+      } finally {
+        if (isCurrent()) setRankingLoading(false);
       }
     })();
+
+    return () => {
+      active = false;
+    };
   }, [
     playerName,
     state.defeated,
     state.difficulty,
     state.mode,
+    state.runId,
     state.score,
     state.seed,
+    state.wave,
+    rankingRetryNonce,
   ]);
 
   const cycleEffects = () => {
@@ -427,6 +475,11 @@ export default function App() {
       mode: state.mode,
       difficulty: state.difficulty,
     });
+
+  const retryRankingSubmission = () => {
+    if (!state.defeated || !playerName) return;
+    setRankingRetryNonce(value => value + 1);
+  };
 
   const openTitle = () => {
     setShowPause(false);
@@ -955,6 +1008,9 @@ export default function App() {
             <span>ボス撃破 {state.bossDefeats}</span>
             <span>受け流し {state.parrySuccesses}</span>
             <span>正しい回避 {state.correctDodges}</span>
+            <span>
+              守備加点 {state.defensiveScoreAwards}回（敵ごと上限あり）
+            </span>
             <span>被弾 {state.hitsTaken}</span>
             <span>空振り {state.whiffs}</span>
             <span>時間 {formatPlayTime(state.playTimeMs)}</span>
@@ -994,10 +1050,24 @@ export default function App() {
             <p className="platform-status" role="status" aria-live="polite">
               {shareStatus}
             </p>
+            <p className="platform-status" role="status" aria-live="polite">
+              {submissionMessage}
+            </p>
+            {submissionStatus === "failed" && (
+              <button
+                type="button"
+                className="result-secondary"
+                onClick={retryRankingSubmission}
+              >
+                スコアを再送信
+              </button>
+            )}
             <div className="online-ranking">
               <p className="eyebrow">TOP 10</p>
               <ol>
-                {ranking.length ? (
+                {rankingLoading ? (
+                  <li>ランキングを読み込み中…</li>
+                ) : ranking.length ? (
                   ranking.map((item, index) => (
                     <li key={`${item.name}-${index}`}>
                       <span>
@@ -1007,7 +1077,11 @@ export default function App() {
                     </li>
                   ))
                 ) : (
-                  <li>ランキングを読み込み中…</li>
+                  <li>
+                    {rankingStatus === "ランキングを読み込めませんでした。"
+                      ? "ランキングを表示できませんでした。"
+                      : "この条件のランキングはまだありません。"}
+                  </li>
                 )}
               </ol>
               <p className="platform-status" role="status" aria-live="polite">

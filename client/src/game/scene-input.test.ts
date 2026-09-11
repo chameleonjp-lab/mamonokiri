@@ -58,6 +58,33 @@ describe("scene action input", () => {
     expect(harness.state().enemyHp).toBeLessThan(before);
   });
 
+  it("keeps repeated defensive success useful but finitely scored per enemy", async () => {
+    harness = await createSceneHarness();
+    harness.start();
+    const warningDuration = 620 * 1.35;
+    const hitOffset = warningDuration + 230;
+
+    for (let count = 0; count < 5; count += 1) {
+      while (harness.state().enemyPhase !== "予備") harness.advance(1000 / 60);
+      const warningStartedAt = harness.now();
+      const previousParries = harness.state().parrySuccesses;
+      harness.advance(Math.max(0, hitOffset - 150));
+      harness.dispatch("yamabushi-guard");
+      for (
+        let frame = 0;
+        frame < 80 && harness.state().parrySuccesses === previousParries;
+        frame += 1
+      )
+        harness.advance(1000 / 60);
+      expect(harness.state().parrySuccesses).toBe(previousParries + 1);
+      expect(harness.now()).toBeGreaterThan(warningStartedAt);
+    }
+
+    expect(harness.state().defensiveScoreAwards).toBe(3);
+    expect(harness.state().score).toBe(780);
+    expect(harness.state().defensiveScoreAwardsThisEnemy).toBe(3);
+  });
+
   it("keeps hit effects visual-only and reuses the flying slash material", async () => {
     const run = async (level: "minimal" | "full") => {
       const local = await createSceneHarness();
