@@ -4,20 +4,20 @@ import { describe, expect, it } from "vitest";
 const appSource = readFileSync(new URL("./App.tsx", import.meta.url), "utf8");
 const canvasSource = readFileSync(
   new URL("./components/GameCanvas.tsx", import.meta.url),
-  "utf8",
+  "utf8"
 );
 const sceneSource = readFileSync(
   new URL("./game/scene.ts", import.meta.url),
-  "utf8",
+  "utf8"
 );
 const cssSource = readFileSync(new URL("./index.css", import.meta.url), "utf8");
 const htmlSource = readFileSync(
   new URL("../index.html", import.meta.url),
-  "utf8",
+  "utf8"
 );
 const viteConfigSource = readFileSync(
   new URL("../../vite.config.ts", import.meta.url),
-  "utf8",
+  "utf8"
 );
 
 describe("smartphone play contract", () => {
@@ -37,6 +37,13 @@ describe("smartphone play contract", () => {
     expect(appSource).not.toContain("防御崩し J");
   });
 
+  it("reserves the initiating finger for a swipe", () => {
+    expect(appSource).toContain("pointerId: number");
+    expect(appSource).toContain("start.pointerId !== event.pointerId");
+    expect(appSource).toContain("setPointerCapture");
+    expect(appSource).toContain("releasePointerCapture");
+  });
+
   it("keeps every overlay scrollable while the live battle surface stays fixed", () => {
     expect(appSource).toContain('overlayOpen ? "is-overlay-open"');
     expect(cssSource).toContain(".game-shell.is-overlay-open");
@@ -50,7 +57,9 @@ describe("smartphone play contract", () => {
     expect(canvasSource).toContain('window.addEventListener("pageshow"');
     expect(appSource).toContain("resumeGraceMs: RESUME_GRACE_MS");
     // Deadline preservation is exercised in scene-clock.test.ts.
-    expect(sceneSource).toContain("clock.resume(realNow, detail?.resumeGraceMs)");
+    expect(sceneSource).toContain(
+      "clock.resume(realNow, detail?.resumeGraceMs)"
+    );
   });
 
   it("stops continuous 3D rendering while a menu or result overlay is open", () => {
@@ -61,7 +70,7 @@ describe("smartphone play contract", () => {
 
   it("keeps tutorial guidance while allowing slash input to animate", () => {
     expect(sceneSource).toMatch(
-      /canSlashDuringTutorial\(\s*tutorialStep,\s*tutorialObjectiveMet,?\s*\)/,
+      /canSlashDuringTutorial\(\s*tutorialStep,\s*tutorialObjectiveMet,?\s*\)/
     );
     expect(sceneSource).toContain("const tutorialHint");
     expect(sceneSource).toContain('"斬撃を放つ。"');
@@ -83,27 +92,27 @@ describe("smartphone play contract", () => {
 
   it("counts posture-break damage as a hit and resets the combo", () => {
     expect(sceneSource).toMatch(
-      /hp = applyDamage\(hp, 10\)\.hp;\s+hitsTaken \+= 1;\s+enemyHitTaken = true;\s+combo = 0;\s+comboMilestone = 0;/,
+      /hp = applyDamage\(hp, 10\)\.hp;\s+hitsTaken \+= 1;\s+enemyHitTaken = true;\s+combo = 0;\s+comboMilestone = 0;/
     );
   });
 
   it("limits the R shortcut to the defeated result state", () => {
     expect(sceneSource).toMatch(
-      /if \(key === "r"\) \{\s+if \(!paused && defeated\)\s+resetRun\(/,
+      /if \(key === "r"\) \{\s+if \(!paused && defeated\)\s+resetRun\(/
     );
   });
 
   it("routes enemy hit detection through the shared danger-line rule", () => {
     expect(sceneSource).toContain("isPlayerInDangerLine(");
     expect(sceneSource).not.toContain(
-      "Math.abs(player.root.position.x - dangerLane * 0.9) < hitWidth",
+      "Math.abs(player.root.position.x - dangerLane * 0.9) < hitWidth"
     );
   });
 
   it("clears React-only milestone overlays and swipe state on retry", () => {
     const startNewRunBlock =
       appSource.match(
-        /const startNewRun = \([\s\S]*?\n  \};\n\n  const restartCurrentRun/m,
+        /const startNewRun = \([\s\S]*?\n  \};\n\n  const restartCurrentRun/m
       )?.[0] ?? "";
     expect(startNewRunBlock).toContain("setShowClimax(false)");
     expect(startNewRunBlock).toContain("setShowCounter(false)");
@@ -126,7 +135,7 @@ describe("smartphone play contract", () => {
   it("keeps time-based HUD values synchronized during an active fight", () => {
     expect(sceneSource).toContain("const UI_SYNC_INTERVAL_MS = 100;");
     expect(sceneSource).toMatch(
-      /if \(\s+!defeated &&\s+!rewardPending &&\s+now - lastUiSyncAt >= UI_SYNC_INTERVAL_MS\s+\) \{\s+lastUiSyncAt = now;\s+announce\(state\(\)\);\s+\}/,
+      /if \(\s+!defeated &&\s+!rewardPending &&\s+now - lastUiSyncAt >= UI_SYNC_INTERVAL_MS\s+\) \{\s+lastUiSyncAt = now;\s+announce\(state\(\)\);\s+\}/
     );
   });
 
@@ -136,17 +145,17 @@ describe("smartphone play contract", () => {
 
   it("keeps portrait HUD layers separated and the title surface opaque", () => {
     expect(cssSource).toContain(
-      "top: calc(clamp(128px, 17dvh, 152px) + env(safe-area-inset-top))",
+      "top: calc(clamp(128px, 17dvh, 152px) + env(safe-area-inset-top))"
     );
     expect(cssSource).toContain(
-      "background: radial-gradient(ellipse at center, #1d2226 0%, #06090b 72%)",
+      "background: radial-gradient(ellipse at center, #1d2226 0%, #06090b 72%)"
     );
   });
 
   it("does not silently discard a playable slash because of 3D depth distance", () => {
     expect(sceneSource).toContain('"斬撃を放つ。"');
     expect(sceneSource).not.toContain(
-      "Vector3.Distance(player.root.position, enemy.root.position) < 6",
+      "Vector3.Distance(player.root.position, enemy.root.position) < 6"
     );
   });
 

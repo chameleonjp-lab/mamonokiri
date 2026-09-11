@@ -23,18 +23,26 @@ import {
   type RunMode,
 } from "@/game/rules";
 
-import { INITIAL_GAME_STATE as initial, type GameState, type SceneStatus } from "@/game/contracts";
+import {
+  INITIAL_GAME_STATE as initial,
+  type GameState,
+  type SceneStatus,
+} from "@/game/contracts";
 import { safeStorage, STORAGE_UNAVAILABLE_MESSAGE } from "@/game/storage";
 
 const SUPABASE_URL = "https://mlpnjgezrnhdxsxolyzj.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_drzcy0v97knU6FgjqSgBHw_0A9XPdFM";
+const SUPABASE_PUBLISHABLE_KEY =
+  "sb_publishable_drzcy0v97knU6FgjqSgBHw_0A9XPdFM";
 const GAME_SLUG = "mamonokiri";
 const CLIENT_VERSION = "mamonokiri-2026-08-31-platform";
 const LAB_URL = "https://chameleonjp-lab.github.io/chameleonjp_lab/";
 const PLAYER_NAME_KEY = "mamonokiri.player-name";
 
 function cleanPlayerName(value: string): string {
-  return value.replace(/[\u0000-\u001f\u007f]/g, "").trim().slice(0, 20);
+  return value
+    .replace(/[\u0000-\u001f\u007f]/g, "")
+    .trim()
+    .slice(0, 20);
 }
 
 function readPlayerName(): string {
@@ -46,7 +54,10 @@ function readPlayerName(): string {
 }
 
 function currentGameUrl(): string {
-  return new URL(window.location.href).toString().split("#")[0] ?? window.location.href;
+  return (
+    new URL(window.location.href).toString().split("#")[0] ??
+    window.location.href
+  );
 }
 
 function homeShareMessage(): string {
@@ -54,11 +65,15 @@ function homeShareMessage(): string {
 }
 
 function resultShareMessage(state: GameState, playerName: string): string {
-  const resultLabel = state.enemyHp === 0 && state.wave >= state.modeLimit ? "勝利" : "挑戦終了";
+  const resultLabel =
+    state.enemyHp === 0 && state.wave >= state.modeLimit ? "勝利" : "挑戦終了";
   return `${playerName || "ななし"}さんの墨霞の剣結果：${resultLabel}、スコア${state.score}点、到達${state.wave}体目、最大連撃${state.maxCombo}、受け流し${state.parrySuccesses}回。\n${currentGameUrl()}\n#墨霞の剣 #ミニゲーム`;
 }
 
-async function shareOrCopy(text: string, setStatus: (message: string) => void): Promise<void> {
+async function shareOrCopy(
+  text: string,
+  setStatus: (message: string) => void
+): Promise<void> {
   setStatus("");
   if (navigator.share) {
     try {
@@ -70,7 +85,8 @@ async function shareOrCopy(text: string, setStatus: (message: string) => void): 
     }
   }
   try {
-    if (!navigator.clipboard?.writeText) throw new Error("clipboard unavailable");
+    if (!navigator.clipboard?.writeText)
+      throw new Error("clipboard unavailable");
     await navigator.clipboard.writeText(text);
     setStatus("シェア文をコピーしました。");
   } catch {
@@ -78,7 +94,10 @@ async function shareOrCopy(text: string, setStatus: (message: string) => void): 
   }
 }
 
-async function callRankingRpc(name: string, payload: Record<string, unknown>): Promise<unknown> {
+async function callRankingRpc(
+  name: string,
+  payload: Record<string, unknown>
+): Promise<unknown> {
   const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${name}`, {
     method: "POST",
     headers: {
@@ -118,7 +137,7 @@ function PostureMeter({
 }) {
   const percentage = Math.max(
     0,
-    Math.min(100, (value / Math.max(1, maximum)) * 100),
+    Math.min(100, (value / Math.max(1, maximum)) * 100)
   );
   return (
     <div
@@ -140,7 +159,7 @@ function dispatchGameEvent(name: string, detail: Record<string, unknown> = {}) {
 function dispatchMobileAction(
   event: React.PointerEvent<HTMLButtonElement>,
   name: string,
-  detail: Record<string, unknown> = {},
+  detail: Record<string, unknown> = {}
 ): boolean {
   if (event.pointerType === "mouse") return false;
   event.preventDefault();
@@ -163,13 +182,19 @@ function volumeLabel(value: number): string {
 
 export default function App() {
   const [state, setState] = useState(initial);
-  const [sceneStatus, setSceneStatus] = useState<SceneStatus>({ phase: "loading" });
+  const [sceneStatus, setSceneStatus] = useState<SceneStatus>({
+    phase: "loading",
+  });
   const [sceneAttempt, setSceneAttempt] = useState(0);
   const [playerName, setPlayerName] = useState(readPlayerName);
   const [nameMessage, setNameMessage] = useState("");
   const [shareStatus, setShareStatus] = useState("");
-  const [ranking, setRanking] = useState<Array<{ name: string; score: number }>>([]);
-  const [rankingStatus, setRankingStatus] = useState("結果を送信すると上位10名を表示します。");
+  const [ranking, setRanking] = useState<
+    Array<{ name: string; score: number }>
+  >([]);
+  const [rankingStatus, setRankingStatus] = useState(
+    "結果を送信すると上位10名を表示します。"
+  );
   const [showClimax, setShowClimax] = useState(false);
   const [showBossVictory, setShowBossVictory] = useState(false);
   const [showCounter, setShowCounter] = useState(false);
@@ -180,38 +205,45 @@ export default function App() {
   const [selectedDifficulty, setSelectedDifficulty] =
     useState<Difficulty>("standard");
   const [effectLevel, setEffectLevel] = useState<EffectLevel>(() =>
-    readEffectLevel(safeStorage.getItem(SETTINGS_STORAGE_KEYS.effectsLevel)),
+    readEffectLevel(safeStorage.getItem(SETTINGS_STORAGE_KEYS.effectsLevel))
   );
   const [ambientVolume, setAmbientVolume] = useState(
-    () => readAudioSettings(safeStorage).ambientVolume,
+    () => readAudioSettings(safeStorage).ambientVolume
   );
   const [masterVolume, setMasterVolume] = useState(
-    () => readAudioSettings(safeStorage).masterVolume,
+    () => readAudioSettings(safeStorage).masterVolume
   );
   const [effectsVolume, setEffectsVolume] = useState(
-    () => readAudioSettings(safeStorage).effectsVolume,
+    () => readAudioSettings(safeStorage).effectsVolume
   );
   const [audioMuted, setAudioMuted] = useState(
-    () => readAudioSettings(safeStorage).muted,
+    () => readAudioSettings(safeStorage).muted
   );
   const [handedness, setHandedness] = useState<Handedness>(() =>
-    readHandedness(safeStorage.getItem(SETTINGS_STORAGE_KEYS.handedness)),
+    readHandedness(safeStorage.getItem(SETTINGS_STORAGE_KEYS.handedness))
   );
   const [performanceTier, setPerformanceTier] = useState<PerformanceTier>(() =>
-    readPerformanceTier(
-      safeStorage.getItem(SETTINGS_STORAGE_KEYS.performance),
-    ),
+    readPerformanceTier(safeStorage.getItem(SETTINGS_STORAGE_KEYS.performance))
   );
   const storageUnavailable = useSyncExternalStore(
-    safeStorage.subscribe, safeStorage.isUnavailable, safeStorage.isUnavailable,
+    safeStorage.subscribe,
+    safeStorage.isUnavailable,
+    safeStorage.isUnavailable
   );
-  const storageNotice = storageUnavailable
-    ? <p className="storage-notice" role="status">{STORAGE_UNAVAILABLE_MESSAGE}</p>
-    : null;
+  const storageNotice = storageUnavailable ? (
+    <p className="storage-notice" role="status">
+      {STORAGE_UNAVAILABLE_MESSAGE}
+    </p>
+  ) : null;
   const previousClimax = useRef(0);
   const previousCounter = useRef(0);
   const previousBossVictory = useRef(0);
-  const swipeStart = useRef<{ x: number; y: number; at: number } | null>(null);
+  const swipeStart = useRef<{
+    pointerId: number;
+    x: number;
+    y: number;
+    at: number;
+  } | null>(null);
   const allowExit = useRef(false);
   const exitConfirmRef = useRef(false);
   const titleOpenRef = useRef(true);
@@ -239,7 +271,9 @@ export default function App() {
           p_client_version: CLIENT_VERSION,
         });
       } catch {
-        setRankingStatus("今回のスコアを送信できませんでした。ランキングを表示します。");
+        setRankingStatus(
+          "今回のスコアを送信できませんでした。ランキングを表示します。"
+        );
       }
       try {
         const data = await callRankingRpc("get_best_score_ranking", {
@@ -250,21 +284,38 @@ export default function App() {
           ? data.slice(0, 10).flatMap(row => {
               if (!row || typeof row !== "object") return [];
               const item = row as Record<string, unknown>;
-              const rawName = item.display_name ?? item.player_name ?? item.name;
+              const rawName =
+                item.display_name ?? item.player_name ?? item.name;
               const score = Number(item.score ?? item.best_score);
-              return [{
-                name: typeof rawName === "string" && rawName.trim() ? rawName : "ななし",
-                score: Number.isFinite(score) ? Math.trunc(score) : 0,
-              }];
+              return [
+                {
+                  name:
+                    typeof rawName === "string" && rawName.trim()
+                      ? rawName
+                      : "ななし",
+                  score: Number.isFinite(score) ? Math.trunc(score) : 0,
+                },
+              ];
             })
           : [];
         setRanking(rows);
-        setRankingStatus(rows.length ? "上位10名を表示しています。" : "まだランキングがありません。");
+        setRankingStatus(
+          rows.length
+            ? "上位10名を表示しています。"
+            : "まだランキングがありません。"
+        );
       } catch {
         setRankingStatus("ランキングを読み込めませんでした。");
       }
     })();
-  }, [playerName, state.defeated, state.difficulty, state.mode, state.score, state.seed]);
+  }, [
+    playerName,
+    state.defeated,
+    state.difficulty,
+    state.mode,
+    state.score,
+    state.seed,
+  ]);
 
   const cycleEffects = () => {
     const next =
@@ -292,15 +343,15 @@ export default function App() {
     setAudioMuted(next.muted);
     safeStorage.setItem(
       SETTINGS_STORAGE_KEYS.masterVolume,
-      String(next.masterVolume),
+      String(next.masterVolume)
     );
     safeStorage.setItem(
       SETTINGS_STORAGE_KEYS.effectsVolume,
-      String(next.effectsVolume),
+      String(next.effectsVolume)
     );
     safeStorage.setItem(
       SETTINGS_STORAGE_KEYS.ambientVolume,
-      String(next.ambientVolume),
+      String(next.ambientVolume)
     );
     safeStorage.setItem(SETTINGS_STORAGE_KEYS.audioMuted, String(next.muted));
     dispatchGameEvent("yamabushi-audio", next);
@@ -342,7 +393,7 @@ export default function App() {
 
   const startNewRun = (
     eventName = "yamabushi-restart",
-    options: { seed?: number; mode?: RunMode; difficulty?: Difficulty } = {},
+    options: { seed?: number; mode?: RunMode; difficulty?: Difficulty } = {}
   ) => {
     if (sceneStatus.phase !== "ready") return;
     if (!playerName) {
@@ -438,7 +489,7 @@ export default function App() {
       window.history.pushState(
         { yamabushiGame: true },
         "",
-        window.location.href,
+        window.location.href
       );
       setShowExitConfirm(true);
       setShowPause(false);
@@ -453,6 +504,8 @@ export default function App() {
   }, []);
 
   const handlePointerDown = (event: React.PointerEvent<HTMLElement>) => {
+    if (swipeStart.current && swipeStart.current.pointerId !== event.pointerId)
+      return;
     if (
       event.pointerType === "mouse" ||
       (event.target as HTMLElement).closest("button") ||
@@ -465,7 +518,12 @@ export default function App() {
       swipeStart.current = null;
       return;
     }
+    // Reserve the first finger for this swipe. A second finger must not
+    // complete or cancel the gesture owned by the first one.
+    if (swipeStart.current) return;
+    event.currentTarget.setPointerCapture?.(event.pointerId);
     swipeStart.current = {
+      pointerId: event.pointerId,
       x: event.clientX,
       y: event.clientY,
       at: performance.now(),
@@ -474,7 +532,9 @@ export default function App() {
 
   const handlePointerUp = (event: React.PointerEvent<HTMLElement>) => {
     const start = swipeStart.current;
+    if (!start || start.pointerId !== event.pointerId) return;
     swipeStart.current = null;
+    event.currentTarget.releasePointerCapture?.(event.pointerId);
     if (
       !start ||
       event.pointerType === "mouse" ||
@@ -497,14 +557,16 @@ export default function App() {
     }
   };
 
-  const handlePointerCancel = () => {
+  const handlePointerCancel = (event: React.PointerEvent<HTMLElement>) => {
+    if (swipeStart.current?.pointerId !== event.pointerId) return;
     swipeStart.current = null;
+    event.currentTarget.releasePointerCapture?.(event.pointerId);
   };
 
   const handleMobileActionPointerDown = (
     event: React.PointerEvent<HTMLButtonElement>,
     name: string,
-    detail: Record<string, unknown> = {},
+    detail: Record<string, unknown> = {}
   ) => {
     if (dispatchMobileAction(event, name, detail)) {
       lastMobileActionAt.current = performance.now();
@@ -514,7 +576,7 @@ export default function App() {
   const handleMobileActionClick = (
     event: React.MouseEvent<HTMLButtonElement>,
     name: string,
-    detail: Record<string, unknown> = {},
+    detail: Record<string, unknown> = {}
   ) => {
     // Touch browsers may synthesize a click after pointerdown. The pointer
     // path has already dispatched the action, so do not execute it twice.
@@ -768,12 +830,12 @@ export default function App() {
               type="button"
               className="gb-btn direction-btn"
               aria-label="左へ回避"
-              onPointerDown={(event) =>
+              onPointerDown={event =>
                 handleMobileActionPointerDown(event, "yamabushi-dodge", {
                   direction: -1,
                 })
               }
-              onClick={(event) =>
+              onClick={event =>
                 handleMobileActionClick(event, "yamabushi-dodge", {
                   direction: -1,
                 })
@@ -786,12 +848,12 @@ export default function App() {
               type="button"
               className="gb-btn direction-btn"
               aria-label="右へ回避"
-              onPointerDown={(event) =>
+              onPointerDown={event =>
                 handleMobileActionPointerDown(event, "yamabushi-dodge", {
                   direction: 1,
                 })
               }
-              onClick={(event) =>
+              onClick={event =>
                 handleMobileActionClick(event, "yamabushi-dodge", {
                   direction: 1,
                 })
@@ -809,10 +871,10 @@ export default function App() {
               type="button"
               className="gb-btn action-btn slash-btn"
               aria-label="斬る"
-              onPointerDown={(event) =>
+              onPointerDown={event =>
                 handleMobileActionPointerDown(event, "yamabushi-slash")
               }
-              onClick={(event) =>
+              onClick={event =>
                 handleMobileActionClick(event, "yamabushi-slash")
               }
             >
@@ -823,10 +885,10 @@ export default function App() {
               type="button"
               className="gb-btn action-btn guard-btn"
               aria-label="防御"
-              onPointerDown={(event) =>
+              onPointerDown={event =>
                 handleMobileActionPointerDown(event, "yamabushi-guard")
               }
-              onClick={(event) =>
+              onClick={event =>
                 handleMobileActionClick(event, "yamabushi-guard")
               }
             >
@@ -851,7 +913,7 @@ export default function App() {
             <span>効果は重複せず、次の章を終えると消える</span>
           </div>
           <div className="reward-options">
-            {state.rewardOptions.map((option) => (
+            {state.rewardOptions.map(option => (
               <button
                 type="button"
                 key={option.kind}
@@ -903,28 +965,63 @@ export default function App() {
           {state.isNewRecord && (
             <strong className="new-record">自己最高記録を更新</strong>
           )}
-          <section className="result-platform" aria-labelledby="result-platform-title">
-            <p className="eyebrow" id="result-platform-title">RESULT RECORD</p>
+          <section
+            className="result-platform"
+            aria-labelledby="result-platform-title"
+          >
+            <p className="eyebrow" id="result-platform-title">
+              RESULT RECORD
+            </p>
             <p className="result-player">{playerName || "ななし"}さんの結果</p>
-            <textarea readOnly rows={4} value={resultShareMessage(state, playerName)} aria-label="結果のシェア文" />
+            <textarea
+              readOnly
+              rows={4}
+              value={resultShareMessage(state, playerName)}
+              aria-label="結果のシェア文"
+            />
             <button
               type="button"
               className="result-secondary"
-              onClick={() => void shareOrCopy(resultShareMessage(state, playerName), setShareStatus)}
+              onClick={() =>
+                void shareOrCopy(
+                  resultShareMessage(state, playerName),
+                  setShareStatus
+                )
+              }
             >
               結果をシェア
             </button>
-            <p className="platform-status" role="status" aria-live="polite">{shareStatus}</p>
+            <p className="platform-status" role="status" aria-live="polite">
+              {shareStatus}
+            </p>
             <div className="online-ranking">
               <p className="eyebrow">TOP 10</p>
               <ol>
-                {ranking.length ? ranking.map((item, index) => (
-                  <li key={`${item.name}-${index}`}><span>{index + 1}位 {item.name}</span><b>{item.score}点</b></li>
-                )) : <li>ランキングを読み込み中…</li>}
+                {ranking.length ? (
+                  ranking.map((item, index) => (
+                    <li key={`${item.name}-${index}`}>
+                      <span>
+                        {index + 1}位 {item.name}
+                      </span>
+                      <b>{item.score}点</b>
+                    </li>
+                  ))
+                ) : (
+                  <li>ランキングを読み込み中…</li>
+                )}
               </ol>
-              <p className="platform-status" role="status" aria-live="polite">{rankingStatus}</p>
+              <p className="platform-status" role="status" aria-live="polite">
+                {rankingStatus}
+              </p>
             </div>
-            <a className="platform-link" href={LAB_URL} target="_blank" rel="noopener noreferrer">カメレオンJPの実験場</a>
+            <a
+              className="platform-link"
+              href={LAB_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              カメレオンJPの実験場
+            </a>
           </section>
           {storageNotice}
           <div className="result-actions">
@@ -969,9 +1066,13 @@ export default function App() {
             <p className="eyebrow">THE BLADE RESTS</p>
             <h2 id="pause-title">一時停止</h2>
             {state.pauseReason === "frame-gap" && (
-              <p role="status">画面の更新が遅れたため一時停止しました。攻撃が途中で消えないよう、停止前の状態を保っています。</p>
+              <p role="status">
+                画面の更新が遅れたため一時停止しました。攻撃が途中で消えないよう、停止前の状態を保っています。
+              </p>
             )}
-            <p>停止中は攻撃・防御・回避・連撃の時間が進みません。再開後は0.7秒待ってから続きます。</p>
+            <p>
+              停止中は攻撃・防御・回避・連撃の時間が進みません。再開後は0.7秒待ってから続きます。
+            </p>
             {storageNotice}
             <div className="pause-actions">
               <button
@@ -1085,17 +1186,34 @@ export default function App() {
             {sceneStatus.phase === "loading" && <p>ゲーム画面を準備中です…</p>}
             {sceneStatus.phase === "error" && (
               <>
-                <p>3Dのゲーム画面を準備できませんでした。描画が利用できないか、読み込みに失敗しています。</p>
-                <button type="button" className="result-secondary" onClick={() => {
-                  setSceneStatus({ phase: "loading" });
-                  setSceneAttempt((attempt) => attempt + 1);
-                }}>画面の準備をやり直す</button>
+                <p>
+                  3Dのゲーム画面を準備できませんでした。描画が利用できないか、読み込みに失敗しています。
+                </p>
+                <button
+                  type="button"
+                  className="result-secondary"
+                  onClick={() => {
+                    setSceneStatus({ phase: "loading" });
+                    setSceneAttempt(attempt => attempt + 1);
+                  }}
+                >
+                  画面の準備をやり直す
+                </button>
               </>
             )}
           </div>
           {storageNotice}
-          <section className="player-name-gate" aria-labelledby="player-name-title">
-            <label className="eyebrow" id="player-name-title" htmlFor="player-name">ランキング表示名（必須）</label>
+          <section
+            className="player-name-gate"
+            aria-labelledby="player-name-title"
+          >
+            <label
+              className="eyebrow"
+              id="player-name-title"
+              htmlFor="player-name"
+            >
+              ランキング表示名（必須）
+            </label>
             <input
               id="player-name"
               type="text"
@@ -1116,13 +1234,18 @@ export default function App() {
                 }
               }}
             />
-            <small className="platform-status">{nameMessage || (playerName ? `${playerName}さんの名前で記録します。` : "名前を入力すると開始できます。")}</small>
+            <small className="platform-status">
+              {nameMessage ||
+                (playerName
+                  ? `${playerName}さんの名前で記録します。`
+                  : "名前を入力すると開始できます。")}
+            </small>
           </section>
           <div className="title-choice-groups">
             <div className="title-choice-group">
               <span>勝負の長さ</span>
               <div className="title-choice-row mode-row">
-                {(Object.keys(RUN_MODE_CONFIG) as RunMode[]).map((mode) => (
+                {(Object.keys(RUN_MODE_CONFIG) as RunMode[]).map(mode => (
                   <button
                     type="button"
                     key={mode}
@@ -1140,7 +1263,7 @@ export default function App() {
               <span>難易度</span>
               <div className="title-choice-row difficulty-row">
                 {(Object.keys(DIFFICULTY_CONFIG) as Difficulty[]).map(
-                  (difficulty) => (
+                  difficulty => (
                     <button
                       type="button"
                       key={difficulty}
@@ -1153,7 +1276,7 @@ export default function App() {
                       <strong>{DIFFICULTY_CONFIG[difficulty].label}</strong>
                       <small>{DIFFICULTY_CONFIG[difficulty].description}</small>
                     </button>
-                  ),
+                  )
                 )}
               </div>
             </div>
@@ -1205,8 +1328,17 @@ export default function App() {
           >
             ゲームをシェア
           </button>
-          <p className="platform-status" role="status" aria-live="polite">{shareStatus}</p>
-          <a className="platform-link" href={LAB_URL} target="_blank" rel="noopener noreferrer">カメレオンJPの実験場</a>
+          <p className="platform-status" role="status" aria-live="polite">
+            {shareStatus}
+          </p>
+          <a
+            className="platform-link"
+            href={LAB_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            カメレオンJPの実験場
+          </a>
         </div>
       )}
 

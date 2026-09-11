@@ -506,6 +506,7 @@ export async function createGameScene(
     wood: mat(scene, "wood", new Color3(0.28, 0.16, 0.1)),
     steel: mat(scene, "steel", new Color3(0.68, 0.73, 0.75), 0.16),
     vermilion: mat(scene, "vermilion", VERMILION, 0.28),
+    slash: mat(scene, "flying_slash", new Color3(0.95, 0.88, 0.7), 1),
     stone: mat(scene, "stone", new Color3(0.12, 0.14, 0.16)),
     amber: mat(scene, "amber", new Color3(0.95, 0.45, 0.12), 0.8),
     iron: mat(scene, "iron", new Color3(0.22, 0.24, 0.25)),
@@ -637,7 +638,6 @@ export async function createGameScene(
     right: mat(scene, "lane_right", new Color3(0.76, 0.28, 0.78), 0.55),
   };
   let shakeUntil = 0;
-  let hitStopUntil = 0;
   let dangerLane = 0;
   const applyAttackPlan = (plan: AttackPlan) => {
     bossAttack = plan.isWide;
@@ -666,7 +666,6 @@ export async function createGameScene(
     const now = clock.nowMs;
     const duration = effectLevel === "reduced" ? 110 : 220;
     shakeUntil = now + duration;
-    hitStopUntil = now + (effectLevel === "reduced" ? 35 : 75);
     window.dispatchEvent(
       new CustomEvent("yamabushi-impact", { detail: { direction, strength } })
     );
@@ -925,6 +924,11 @@ export async function createGameScene(
   let attackUntil = 0;
   let playerAttackStartedAt = 0;
   let playerAttackKind: PlayerAttackKind | null = null;
+  let playerAttackHitAt = 0;
+  let playerAttackResolved = false;
+  let playerAttackDirection: -1 | 1 = 1;
+  let playerAttackImpactAngle = 0.42;
+  let playerAttackImpactScale = 1;
   let guardBreakImpactAt = 0;
   let guardUntil = 0;
   let guardStartedAt = 0;
@@ -1195,12 +1199,6 @@ export async function createGameScene(
   };
   const launchPlayerSlash = (now: number, direction: number) => {
     if (slashProjectile) return;
-    const slashMaterial = mat(
-      scene,
-      `flying_slash_${now}`,
-      new Color3(0.95, 0.88, 0.7),
-      1
-    );
     const arcPath = Array.from({ length: 13 }, (_, index) => {
       const t = index / 12;
       const x = (t - 0.5) * 1.7;
@@ -1217,7 +1215,9 @@ export async function createGameScene(
       0.7,
       player.root.position.z - 0.45
     );
-    slashProjectile.material = slashMaterial;
+    // A slash is short-lived, but its material is shared. Disposing a new
+    // material for every swipe made the scene's material list grow forever.
+    slashProjectile.material = materials.slash;
     slashDirection = direction;
     slashBaseAngle = player.blade.rotation.z * 0.42 + direction * 0.18;
     slashAngle = slashBaseAngle;
@@ -1228,7 +1228,7 @@ export async function createGameScene(
       slashScale,
       slashScale * 0.72
     );
-    slashImpactAt = now + attackTimingFor("normal").startup + 60;
+    slashImpactAt = playerAttackHitAt;
     slashTargetX = enemy.root.position.x;
     slashTargetZ = enemy.root.position.z;
     message = "飛刃、霧を裂く。振り終わりまで動けない。";
@@ -1430,6 +1430,11 @@ export async function createGameScene(
     attackUntil = 0;
     playerAttackStartedAt = 0;
     playerAttackKind = null;
+    playerAttackHitAt = 0;
+    playerAttackResolved = false;
+    playerAttackDirection = 1;
+    playerAttackImpactAngle = 0.42;
+    playerAttackImpactScale = 1;
     guardBreakImpactAt = 0;
     guardUntil = 0;
     guardStartedAt = 0;
@@ -1564,6 +1569,11 @@ export async function createGameScene(
     attackUntil = 0;
     playerAttackStartedAt = 0;
     playerAttackKind = null;
+    playerAttackHitAt = 0;
+    playerAttackResolved = false;
+    playerAttackDirection = 1;
+    playerAttackImpactAngle = 0.42;
+    playerAttackImpactScale = 1;
     guardBreakImpactAt = 0;
     guardUntil = 0;
     dodgeUntil = 0;
@@ -1776,11 +1786,22 @@ export async function createGameScene(
     return true;
   };
 
-  const beginPlayerAttack = (kind: PlayerAttackKind, now: number) => {
+  const beginPlayerAttack = (
+    kind: PlayerAttackKind,
+    now: number,
+    direction = 1,
+    impactAngle = direction * 0.42,
+    impactScale = 1
+  ) => {
     const timing = attackTimingFor(kind);
     playerAttackKind = kind;
     playerAttackStartedAt = now;
     attackUntil = now + timing.total;
+    playerAttackHitAt = now + timing.startup + (kind === "normal" ? 60 : 0);
+    playerAttackResolved = false;
+    playerAttackDirection = direction < 0 ? -1 : 1;
+    playerAttackImpactAngle = impactAngle;
+    playerAttackImpactScale = impactScale;
     sheathUntil = attackUntil;
     playerSheathStartedAt = now;
     guardUntil = 0;
@@ -1799,7 +1820,13 @@ export async function createGameScene(
   };
 
   const resolveGuardBreak = (now: number) => {
-    if (!guardBreakImpactAt || now < guardBreakImpactAt) return;
+    if (
+      playerAttackKind !== "guard-break" ||
+      playerAttackResolved ||
+      now < playerAttackHitAt
+    )
+      return;
+    playerAttackResolved = true;
     guardBreakImpactAt = 0;
     if (enemyHp <= 0 || transitioning || defeated) return;
     if (enemyGuardUntil <= now) {
@@ -1842,6 +1869,8 @@ export async function createGameScene(
     impactAngle = direction * 0.42,
     impactScale = 1
   ) => {
+    if (playerAttackResolved) return;
+    playerAttackResolved = true;
     if (enemyHp <= 0 || transitioning || defeated) return;
     sheathUntil = now + 620;
     playerSheathStartedAt = now;
@@ -1891,6 +1920,79 @@ export async function createGameScene(
     registerComboHit(1, now, 100);
     if (!enemyHp) resolveEnemyDefeat();
     announce(state());
+  };
+  const resolveFinisherAttack = (now: number) => {
+    if (
+      playerAttackKind !== "finisher" ||
+      playerAttackResolved ||
+      now < playerAttackHitAt
+    )
+      return;
+    playerAttackResolved = true;
+    if (enemyHp <= 0 || transitioning || defeated) return;
+
+    enemyStaggerUntil = 0;
+    enemyPosture = Math.ceil(enemyPostureMax * 0.55);
+    enemyHp = applyDamage(enemyHp, boss ? 38 : 44).hp;
+    playerPosture = recoverPosture(playerPosture, 18, playerPostureMax);
+    showCounterHit(playerAttackDirection);
+    showEnemyHit(
+      player.root.position.x,
+      player.root.position.z,
+      playerAttackDirection,
+      playerAttackImpactAngle,
+      playerAttackImpactScale
+    );
+    const phaseChanged = refreshBossPhase(now);
+    message = !enemyHp
+      ? "大崩れへ決め、敵影を断った。"
+      : phaseChanged
+        ? "崩れへ強撃。ボスが後半の型へ移る。"
+        : "大崩れへ強撃。敵の構えが戻る前に次を読め。";
+    registerComboHit(1, now, 260);
+    if (!enemyHp) resolveEnemyDefeat();
+    announce(state());
+  };
+  const resolveCounterAttack = (now: number) => {
+    if (
+      playerAttackKind !== "counter" ||
+      playerAttackResolved ||
+      now < playerAttackHitAt
+    )
+      return;
+    playerAttackResolved = true;
+    if (enemyHp <= 0 || transitioning || defeated) return;
+
+    enemyHp = applyDamage(enemyHp, boss ? 30 : 34).hp;
+    const staggered = damageEnemyPosture("counter", now);
+    playerPosture = recoverPosture(playerPosture, 20, playerPostureMax);
+    const phaseChanged = refreshBossPhase(now);
+    showCounterHit(playerAttackDirection);
+    showEnemyHit(
+      player.root.position.x,
+      player.root.position.z,
+      playerAttackDirection,
+      playerAttackImpactAngle,
+      playerAttackImpactScale
+    );
+    message = !enemyHp
+      ? "受け流しからの反撃で断った。"
+      : staggered
+        ? "反撃斬りで敵の構えを砕いた。"
+        : phaseChanged
+          ? "反撃斬り。ボスが後半の型へ移る。"
+          : "受け流しからの反撃・" + (combo + 1) + "連撃。";
+    counterPulse += 1;
+    registerComboHit(1, now, 220);
+    if (!enemyHp) resolveEnemyDefeat();
+    announce(state());
+  };
+  const resolveScheduledPlayerAttack = (now: number) => {
+    if (!playerAttackKind || playerAttackResolved || now < playerAttackHitAt)
+      return;
+    if (playerAttackKind === "guard-break") resolveGuardBreak(now);
+    else if (playerAttackKind === "counter") resolveCounterAttack(now);
+    else if (playerAttackKind === "finisher") resolveFinisherAttack(now);
   };
   const resetRun = (event: Event) => {
     clock.reset(performance.now());
@@ -1970,6 +2072,11 @@ export async function createGameScene(
     attackUntil = 0;
     playerAttackStartedAt = 0;
     playerAttackKind = null;
+    playerAttackHitAt = 0;
+    playerAttackResolved = false;
+    playerAttackDirection = 1;
+    playerAttackImpactAngle = 0.42;
+    playerAttackImpactScale = 1;
     guardBreakImpactAt = 0;
     guardUntil = 0;
     guardStartedAt = 0;
@@ -2024,7 +2131,6 @@ export async function createGameScene(
     slashTargetX = 0;
     slashTargetZ = 5.2;
     shakeUntil = 0;
-    hitStopUntil = 0;
     lastFootstepAt = 0;
     lastEnemyFootstepAt = 0;
     previousEnemyX = 0;
@@ -2085,71 +2191,35 @@ export async function createGameScene(
     const direction = player.root.position.x <= enemy.root.position.x ? -1 : 1;
 
     if (enemyStaggerUntil > now && counterUntil <= now) {
-      beginPlayerAttack("finisher", now);
-      enemyStaggerUntil = 0;
-      enemyPosture = Math.ceil(enemyPostureMax * 0.55);
-      enemyHp = applyDamage(enemyHp, boss ? 38 : 44).hp;
-      playerPosture = recoverPosture(playerPosture, 18, playerPostureMax);
-      showCounterHit(direction);
-      showEnemyHit(
-        player.root.position.x,
-        player.root.position.z,
-        direction,
-        direction * 0.58,
-        1.35
-      );
-      const phaseChanged = refreshBossPhase(now);
-      message = !enemyHp
-        ? "大崩れへ決め、敵影を断った。"
-        : phaseChanged
-          ? "崩れへ強撃。ボスが後半の型へ移る。"
-          : "大崩れへ強撃。敵の構えが戻る前に次を読め。";
-      registerComboHit(1, now, 260);
-      if (!enemyHp) resolveEnemyDefeat();
+      beginPlayerAttack("finisher", now, direction, direction * 0.58, 1.35);
+      // Keep the stagger open through startup; the damage still waits for the
+      // common hit timestamp instead of landing on button-down.
+      enemyStaggerUntil = Math.max(enemyStaggerUntil, playerAttackHitAt + 1);
+      message = "大崩れへ強撃を溜める。命中まで動けない。";
       announce(state());
       return;
     }
 
     if (counterUntil > now && enemyHp > 0) {
-      beginPlayerAttack("counter", now);
+      beginPlayerAttack("counter", now, direction);
       counterUntil = 0;
-      enemyHp = applyDamage(enemyHp, boss ? 30 : 34).hp;
-      const staggered = damageEnemyPosture("counter", now);
-      playerPosture = recoverPosture(playerPosture, 20, playerPostureMax);
-      const phaseChanged = refreshBossPhase(now);
-      showCounterHit(direction);
-      showEnemyHit(
-        player.root.position.x,
-        player.root.position.z,
-        direction,
-        direction * 0.42,
-        1.2
-      );
-      message = !enemyHp
-        ? "受け流しからの反撃で断った。"
-        : staggered
-          ? "反撃斬りで敵の構えを砕いた。"
-          : phaseChanged
-            ? "反撃斬り。ボスが後半の型へ移る。"
-            : "受け流しからの反撃・" + (combo + 1) + "連撃。";
-      counterPulse += 1;
-      registerComboHit(1, now, 220);
-      if (!enemyHp) resolveEnemyDefeat();
+      playerAttackImpactScale = 1.2;
+      message = "受け流しから反撃を溜める。命中まで動けない。";
       announce(state());
       return;
     }
 
     if (enemyGuardUntil > now) {
-      beginPlayerAttack("guard-break", now);
+      beginPlayerAttack("guard-break", now, direction, direction * 0.5, 1.15);
       counterUntil = 0;
-      guardBreakImpactAt = now + attackTimingFor("guard-break").startup;
+      guardBreakImpactAt = playerAttackHitAt;
       playSlashSound(0.9);
       message = "防御崩しを溜める。遅い振り始めは無防備。";
       announce(state());
       return;
     }
 
-    beginPlayerAttack("normal", now);
+    beginPlayerAttack("normal", now, direction);
     playFootstep(Math.min(1.2, slashPower * 0.75));
     playSlashSound(slashPower);
     message = tutorialHint
@@ -2361,7 +2431,7 @@ export async function createGameScene(
         slashPower,
         Math.min(1.8, 0.65 + bladeAngularSpeed)
       );
-    if (paused || now < hitStopUntil) {
+    if (paused) {
       if (paused && rewardPending) updatePlayerMotion(now);
       return;
     }
@@ -2372,10 +2442,12 @@ export async function createGameScene(
       updatePlayerMotion(now);
       return;
     }
-    resolveGuardBreak(now);
+    resolveScheduledPlayerAttack(now);
     if (playerAttackKind && attackUntil <= now) {
       playerAttackKind = null;
       playerAttackStartedAt = 0;
+      playerAttackHitAt = 0;
+      playerAttackResolved = false;
     }
     if (
       playerPosture < playerPostureMax &&
@@ -2822,7 +2894,10 @@ export async function createGameScene(
                     : 28
                   : 24;
             hp = applyDamage(hp, hitDamage).hp;
-            if (guardBreakImpactAt > 0) guardBreakImpactAt = 0;
+            if (guardBreakImpactAt > 0) {
+              guardBreakImpactAt = 0;
+              playerAttackResolved = true;
+            }
             combo = 0;
             comboMilestone = 0;
             message = hp ? "岩刃を受けた。" : "倒れた。再起を選べる。";
