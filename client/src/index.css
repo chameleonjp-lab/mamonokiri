@@ -698,3 +698,41 @@ body,
 .scene-status:empty { display: none; }
 .scene-status button { min-width: 44px; min-height: 44px; font-size: 14px; }
 .title-screen > .result-primary:disabled { opacity: .5; cursor: wait; }
+
+/* Stage 05: surface the safe practice path and keep result guidance ahead of
+   optional sharing/ranking content. */
+.combat-guide .guide-kicker { color: #d6a455; font-size: 8px; letter-spacing: .12em; margin-left: 0; }
+.combat-guide.is-practice { border-color: rgba(214,164,85,.66); background: rgba(46,34,18,.82); }
+.title-recommendation { display: grid; gap: 3px; width: min(560px,92vw); margin: 9px auto 0; padding: 9px 12px; border-left: 2px solid #b74732; background: rgba(112,42,31,.18); color: #eee9df; font-size: 12px; text-align: left; letter-spacing: .04em; }
+.title-recommendation strong { color: #f0cc87; font-size: 10px; letter-spacing: .14em; }
+.title-recommendation small { color: #aaa9a2; font-size: 10px; letter-spacing: .03em; }
+.title-advanced { width: min(560px,92vw); margin: 8px auto 0; text-align: left; }
+.title-advanced summary { min-height: 44px; padding: 11px 12px; border: 1px solid rgba(232,227,215,.24); background: rgba(15,18,21,.66); color: #eee9df; font-size: 11px; letter-spacing: .08em; cursor: pointer; list-style-position: inside; touch-action: manipulation; }
+.title-advanced summary::marker { color: #d6a455; }
+.title-advanced summary span { float: right; color: #aaa9a2; font-size: 10px; letter-spacing: .04em; }
+.title-advanced[open] summary { border-color: rgba(183,71,50,.72); background: rgba(112,42,31,.24); }
+.title-advanced .title-choice-groups, .title-advanced .title-settings { width: 100%; }
+.title-screen > .result-primary, .practice-start, .result-actions-primary button { min-height: 44px; font-size: 12px; }
+.practice-start { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 8px; }
+.practice-start small { color: #d6a455; font-size: 9px; font-weight: 500; }
+.result-guidance { display: grid; gap: 6px; margin: 12px auto 0; padding: 10px 12px; border-left: 2px solid #d6a455; background: rgba(214,164,85,.1); text-align: left; }
+.result-guidance p { display: grid; grid-template-columns: 5.2em 1fr; gap: 8px; margin: 0; color: #eee9df; font-size: 12px; line-height: 1.55; }
+.result-guidance strong { color: #d6a455; font-size: 10px; letter-spacing: .1em; white-space: nowrap; }
+.result-guidance span { overflow-wrap: anywhere; }
+.result-actions-primary { margin-top: 14px; }
+.practice-record-note { margin: 8px 0 0; color: #d6a455; font-size: 12px; line-height: 1.6; }
+
+@media (max-width: 560px) {
+  .title-recommendation, .title-advanced { width: 100%; }
+  .title-advanced summary { font-size: 10px; }
+  .title-advanced summary span { font-size: 9px; }
+  .result-guidance p { grid-template-columns: 4.7em 1fr; font-size: 12px; }
+}
+
+@media (max-height: 500px) and (orientation: landscape) {
+  .title-recommendation, .title-advanced { width: min(760px,94vw); }
+  .title-recommendation { grid-template-columns: auto 1fr; column-gap: 6px; }
+  .title-recommendation small { grid-column: 2; }
+  .title-screen > .result-primary, .practice-start, .result-actions-primary button { min-height: 44px; font-size: 12px; }
+  .practice-start { margin-top: 4px; padding: 6px 14px; }
+}

@@ -29,6 +29,7 @@ import {
   modeLimitFor,
   nextSeed,
   postureAfterGuard,
+  PRACTICE_WAVE_LIMIT,
   recoverPosture,
   scoreForCombo,
   shiftActiveTimer,
@@ -54,6 +55,13 @@ describe("priority S combat rules", () => {
     expect(tutorialVariantIndex(2)).toBe(1);
     expect(tutorialVariantIndex(3)).toBe(2);
     expect(tutorialVariantIndex(4)).toBeNull();
+  });
+
+  it("keeps practice scoped to the first three encounters", () => {
+    expect(PRACTICE_WAVE_LIMIT).toBe(3);
+    expect(
+      chapterRewardForDefeat(PRACTICE_WAVE_LIMIT, PRACTICE_WAVE_LIMIT)
+    ).toBeNull();
   });
 
   it("uses the configured left and right attack lanes", () => {

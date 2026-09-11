@@ -74,6 +74,8 @@ function homeShareMessage(): string {
 }
 
 function resultShareMessage(state: GameState, playerName: string): string {
+  if (state.practice)
+    return `${playerName || "ななし"}さんの墨霞の剣・安全稽古：3手順を確認しました（記録なし）。\n${currentGameUrl()}\n#墨霞の剣 #ミニゲーム`;
   const resultLabel =
     state.enemyHp === 0 && state.wave >= state.modeLimit ? "勝利" : "挑戦終了";
   return `${playerName || "ななし"}さんの墨霞の剣結果：${resultLabel}、スコア${state.score}点、到達${state.wave}体目、最大連撃${state.maxCombo}、受け流し${state.parrySuccesses}回。\n${currentGameUrl()}\n#墨霞の剣 #ミニゲーム`;
@@ -217,9 +219,9 @@ export default function App() {
   const [showPause, setShowPause] = useState(false);
   const [showTitle, setShowTitle] = useState(true);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
-  const [selectedMode, setSelectedMode] = useState<RunMode>("fifty");
+  const [selectedMode, setSelectedMode] = useState<RunMode>("ten");
   const [selectedDifficulty, setSelectedDifficulty] =
-    useState<Difficulty>("standard");
+    useState<Difficulty>("apprentice");
   const [effectLevel, setEffectLevel] = useState<EffectLevel>(() =>
     readEffectLevel(safeStorage.getItem(SETTINGS_STORAGE_KEYS.effectsLevel))
   );
@@ -271,6 +273,15 @@ export default function App() {
   titleOpenRef.current = showTitle;
 
   useEffect(() => {
+    if (state.practice) {
+      rankingRequestId.current += 1;
+      setRanking([]);
+      setRankingLoading(false);
+      setSubmissionStatus("idle");
+      setSubmissionMessage("");
+      setRankingStatus("");
+      return;
+    }
     if (!state.defeated || !playerName || !state.runId) {
       if (!state.defeated) {
         resultPlatformKey.current = "";
@@ -441,7 +452,12 @@ export default function App() {
 
   const startNewRun = (
     eventName = "yamabushi-restart",
-    options: { seed?: number; mode?: RunMode; difficulty?: Difficulty } = {}
+    options: {
+      seed?: number;
+      mode?: RunMode;
+      difficulty?: Difficulty;
+      practice?: boolean;
+    } = {}
   ) => {
     if (sceneStatus.phase !== "ready") return;
     if (!playerName) {
@@ -466,6 +482,7 @@ export default function App() {
     dispatchGameEvent(eventName, {
       mode,
       difficulty,
+      practice: options.practice ?? false,
       ...(options.seed === undefined ? {} : { seed: options.seed }),
     });
   };
@@ -474,6 +491,14 @@ export default function App() {
     startNewRun("yamabushi-restart", {
       mode: state.mode,
       difficulty: state.difficulty,
+      practice: state.practice,
+    });
+
+  const startPractice = () =>
+    startNewRun("yamabushi-practice", {
+      mode: "ten",
+      difficulty: "apprentice",
+      practice: true,
     });
 
   const retryRankingSubmission = () => {
@@ -822,7 +847,15 @@ export default function App() {
         )}
       </section>
       {state.tutorialStep > 0 && !state.defeated && (
-        <aside className="combat-guide" aria-label="序盤の操作ガイド">
+        <aside
+          className={`combat-guide ${state.practice ? "is-practice" : ""}`}
+          aria-label="序盤の操作ガイド"
+        >
+          <small className="guide-kicker">
+            {state.practice
+              ? `安全稽古 ${state.wave} / 3・記録なし`
+              : `序盤の型 ${state.wave} / 3`}
+          </small>
           <b>
             {state.tutorialObjectiveMet
               ? "成功"
@@ -990,10 +1023,17 @@ export default function App() {
           aria-labelledby="result-title"
         >
           <p className="eyebrow">THE MOUNTAIN REMAINS</p>
-          <h2 id="result-title">{victory ? "敵影、断つ" : "霧に沈む"}</h2>
+          <h2 id="result-title">
+            {state.practice
+              ? "稽古、整う"
+              : victory
+                ? "敵影、断つ"
+                : "霧に沈む"}
+          </h2>
           <p>
-            {RUN_MODE_CONFIG[state.mode].label}・
-            {DIFFICULTY_CONFIG[state.difficulty].label}
+            {state.practice
+              ? "安全稽古（3手順・記録なし）"
+              : `${RUN_MODE_CONFIG[state.mode].label}・${DIFFICULTY_CONFIG[state.difficulty].label}`}
             <br />
             到達 {state.wave}体目　／　撃破 {state.defeatedCount}体
           </p>
@@ -1001,8 +1041,14 @@ export default function App() {
             スコア {state.score}　／　最大連撃 {state.maxCombo}
           </p>
           <p className="result-record">
-            自己最高 {state.bestScore}点
-            {state.isNewRecord ? "（今回更新）" : "（モード・難易度別）"}
+            {state.practice ? (
+              "稽古の結果は記録・ランキングに残りません。"
+            ) : (
+              <>
+                自己最高 {state.bestScore}点
+                {state.isNewRecord ? "（今回更新）" : "（モード・難易度別）"}
+              </>
+            )}
           </p>
           <div className="result-stats">
             <span>ボス撃破 {state.bossDefeats}</span>
@@ -1021,6 +1067,64 @@ export default function App() {
           {state.isNewRecord && (
             <strong className="new-record">自己最高記録を更新</strong>
           )}
+          <section className="result-guidance" aria-label="次の一手">
+            <p>
+              <strong>直前の失敗</strong>
+              <span>{state.lastFailureReason || "なし"}</span>
+            </p>
+            <p>
+              <strong>次に試す</strong>
+              <span>
+                {state.nextAction || "予告を見て、左右・防・斬を一つ選ぶ。"}
+              </span>
+            </p>
+          </section>
+          <div className="result-actions result-actions-primary">
+            <button
+              type="button"
+              className="result-primary"
+              onClick={restartCurrentRun}
+            >
+              {state.practice ? "稽古をもう一度" : "もう一度遊ぶ"}
+            </button>
+            {state.practice ? (
+              <button
+                type="button"
+                className="result-secondary"
+                onClick={() =>
+                  startNewRun("yamabushi-start", {
+                    mode: "ten",
+                    difficulty: "apprentice",
+                    practice: false,
+                  })
+                }
+              >
+                正式な勝負へ
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="result-secondary"
+                onClick={() =>
+                  startNewRun("yamabushi-restart", {
+                    seed: state.seed,
+                    mode: state.mode,
+                    difficulty: state.difficulty,
+                    practice: false,
+                  })
+                }
+              >
+                同じ敵順で再挑戦
+              </button>
+            )}
+            <button
+              type="button"
+              className="result-secondary"
+              onClick={openTitle}
+            >
+              最初の画面へ戻る
+            </button>
+          </div>
           <section
             className="result-platform"
             aria-labelledby="result-platform-title"
@@ -1062,32 +1166,38 @@ export default function App() {
                 スコアを再送信
               </button>
             )}
-            <div className="online-ranking">
-              <p className="eyebrow">TOP 10</p>
-              <ol>
-                {rankingLoading ? (
-                  <li>ランキングを読み込み中…</li>
-                ) : ranking.length ? (
-                  ranking.map((item, index) => (
-                    <li key={`${item.name}-${index}`}>
-                      <span>
-                        {index + 1}位 {item.name}
-                      </span>
-                      <b>{item.score}点</b>
-                    </li>
-                  ))
-                ) : (
-                  <li>
-                    {rankingStatus === "ランキングを読み込めませんでした。"
-                      ? "ランキングを表示できませんでした。"
-                      : "この条件のランキングはまだありません。"}
-                  </li>
-                )}
-              </ol>
-              <p className="platform-status" role="status" aria-live="polite">
-                {rankingStatus}
+            {state.practice ? (
+              <p className="practice-record-note" role="status">
+                この稽古の結果はオンラインランキングへ送信しません。
               </p>
-            </div>
+            ) : (
+              <div className="online-ranking">
+                <p className="eyebrow">TOP 10</p>
+                <ol>
+                  {rankingLoading ? (
+                    <li>ランキングを読み込み中…</li>
+                  ) : ranking.length ? (
+                    ranking.map((item, index) => (
+                      <li key={`${item.name}-${index}`}>
+                        <span>
+                          {index + 1}位 {item.name}
+                        </span>
+                        <b>{item.score}点</b>
+                      </li>
+                    ))
+                  ) : (
+                    <li>
+                      {rankingStatus === "ランキングを読み込めませんでした。"
+                        ? "ランキングを表示できませんでした。"
+                        : "この条件のランキングはまだありません。"}
+                    </li>
+                  )}
+                </ol>
+                <p className="platform-status" role="status" aria-live="polite">
+                  {rankingStatus}
+                </p>
+              </div>
+            )}
             <a
               className="platform-link"
               href={LAB_URL}
@@ -1098,35 +1208,6 @@ export default function App() {
             </a>
           </section>
           {storageNotice}
-          <div className="result-actions">
-            <button
-              type="button"
-              className="result-primary"
-              onClick={restartCurrentRun}
-            >
-              もう一度遊ぶ
-            </button>
-            <button
-              type="button"
-              className="result-secondary"
-              onClick={() =>
-                startNewRun("yamabushi-restart", {
-                  seed: state.seed,
-                  mode: state.mode,
-                  difficulty: state.difficulty,
-                })
-              }
-            >
-              同じ敵順で再挑戦
-            </button>
-            <button
-              type="button"
-              className="result-secondary"
-              onClick={openTitle}
-            >
-              最初の画面へ戻る
-            </button>
-          </div>
         </div>
       )}
       {showPause && !state.defeated && !state.rewardPending && !showTitle && (
@@ -1251,11 +1332,9 @@ export default function App() {
               <span className="code-figure-spear code-figure-spear-left" />
               <span className="code-figure-spear code-figure-spear-right" />
             </div>
-            <span className="title-visual-caption">
-              CODE MOTION / NO TEXTURE
-            </span>
+            <span className="title-visual-caption">予告を読む / 4つの操作</span>
           </div>
-          <p>敵の予告を読み、防御・回避・斬撃を選ぶ。</p>
+          <p>敵の予告を見て、左右・防・斬で一体ずつ倒す。</p>
           <div className="scene-status" role="status" aria-live="polite">
             {sceneStatus.phase === "loading" && <p>ゲーム画面を準備中です…</p>}
             {sceneStatus.phase === "error" && (
@@ -1315,78 +1394,93 @@ export default function App() {
                   : "名前を入力すると開始できます。")}
             </small>
           </section>
-          <div className="title-choice-groups">
-            <div className="title-choice-group">
-              <span>勝負の長さ</span>
-              <div className="title-choice-row mode-row">
-                {(Object.keys(RUN_MODE_CONFIG) as RunMode[]).map(mode => (
-                  <button
-                    type="button"
-                    key={mode}
-                    className={selectedMode === mode ? "is-selected" : ""}
-                    aria-pressed={selectedMode === mode}
-                    onClick={() => setSelectedMode(mode)}
-                  >
-                    <strong>{RUN_MODE_CONFIG[mode].label}</strong>
-                    <small>{RUN_MODE_CONFIG[mode].description}</small>
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="title-choice-group">
-              <span>難易度</span>
-              <div className="title-choice-row difficulty-row">
-                {(Object.keys(DIFFICULTY_CONFIG) as Difficulty[]).map(
-                  difficulty => (
+          <p className="title-recommendation">
+            <strong>おすすめ</strong> 十番勝負・見習い
+            <small>まずは短い勝負で4つの操作を覚えます。</small>
+          </p>
+          <details className="title-advanced">
+            <summary>
+              追加設定
+              <span>
+                {RUN_MODE_CONFIG[selectedMode].label}・
+                {DIFFICULTY_CONFIG[selectedDifficulty].label}
+              </span>
+            </summary>
+            <div className="title-choice-groups">
+              <div className="title-choice-group">
+                <span>勝負の長さ</span>
+                <div className="title-choice-row mode-row">
+                  {(Object.keys(RUN_MODE_CONFIG) as RunMode[]).map(mode => (
                     <button
                       type="button"
-                      key={difficulty}
-                      className={
-                        selectedDifficulty === difficulty ? "is-selected" : ""
-                      }
-                      aria-pressed={selectedDifficulty === difficulty}
-                      onClick={() => setSelectedDifficulty(difficulty)}
+                      key={mode}
+                      className={selectedMode === mode ? "is-selected" : ""}
+                      aria-pressed={selectedMode === mode}
+                      onClick={() => setSelectedMode(mode)}
                     >
-                      <strong>{DIFFICULTY_CONFIG[difficulty].label}</strong>
-                      <small>{DIFFICULTY_CONFIG[difficulty].description}</small>
+                      <strong>{RUN_MODE_CONFIG[mode].label}</strong>
+                      <small>{RUN_MODE_CONFIG[mode].description}</small>
                     </button>
-                  )
-                )}
+                  ))}
+                </div>
+              </div>
+              <div className="title-choice-group">
+                <span>難易度</span>
+                <div className="title-choice-row difficulty-row">
+                  {(Object.keys(DIFFICULTY_CONFIG) as Difficulty[]).map(
+                    difficulty => (
+                      <button
+                        type="button"
+                        key={difficulty}
+                        className={
+                          selectedDifficulty === difficulty ? "is-selected" : ""
+                        }
+                        aria-pressed={selectedDifficulty === difficulty}
+                        onClick={() => setSelectedDifficulty(difficulty)}
+                      >
+                        <strong>{DIFFICULTY_CONFIG[difficulty].label}</strong>
+                        <small>
+                          {DIFFICULTY_CONFIG[difficulty].description}
+                        </small>
+                      </button>
+                    )
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-          <div className="title-settings" aria-label="端末設定">
-            <button type="button" onClick={toggleHandedness}>
-              操作配置：{handedness === "left" ? "左利き" : "右利き"}
-            </button>
-            <button
-              type="button"
-              onClick={toggleAudioMute}
-              aria-pressed={audioMuted}
-            >
-              全消音：{audioMuted ? "入" : "切"}
-            </button>
-            <button type="button" onClick={cycleMasterVolume}>
-              主音量：{volumeLabel(masterVolume)}
-            </button>
-            <button type="button" onClick={cycleEffectsVolume}>
-              効果音：{volumeLabel(effectsVolume)}
-            </button>
-            <button type="button" onClick={cycleAmbient}>
-              環境音：{volumeLabel(ambientVolume)}
-            </button>
-            <button type="button" onClick={cycleEffects}>
-              演出：
-              {effectLevel === "full"
-                ? "標準"
-                : effectLevel === "reduced"
-                  ? "軽量"
-                  : "最小"}
-            </button>
-            <button type="button" onClick={cyclePerformance}>
-              描画：{PERFORMANCE_CONFIG[performanceTier].label}
-            </button>
-          </div>
+            <div className="title-settings" aria-label="端末設定">
+              <button type="button" onClick={toggleHandedness}>
+                操作配置：{handedness === "left" ? "左利き" : "右利き"}
+              </button>
+              <button
+                type="button"
+                onClick={toggleAudioMute}
+                aria-pressed={audioMuted}
+              >
+                全消音：{audioMuted ? "入" : "切"}
+              </button>
+              <button type="button" onClick={cycleMasterVolume}>
+                主音量：{volumeLabel(masterVolume)}
+              </button>
+              <button type="button" onClick={cycleEffectsVolume}>
+                効果音：{volumeLabel(effectsVolume)}
+              </button>
+              <button type="button" onClick={cycleAmbient}>
+                環境音：{volumeLabel(ambientVolume)}
+              </button>
+              <button type="button" onClick={cycleEffects}>
+                演出：
+                {effectLevel === "full"
+                  ? "標準"
+                  : effectLevel === "reduced"
+                    ? "軽量"
+                    : "最小"}
+              </button>
+              <button type="button" onClick={cyclePerformance}>
+                描画：{PERFORMANCE_CONFIG[performanceTier].label}
+              </button>
+            </div>
+          </details>
           <button
             type="button"
             className="result-primary"
@@ -1394,6 +1488,14 @@ export default function App() {
             onClick={() => startNewRun("yamabushi-start")}
           >
             新しく始める
+          </button>
+          <button
+            type="button"
+            className="result-secondary practice-start"
+            disabled={sceneStatus.phase !== "ready"}
+            onClick={startPractice}
+          >
+            稽古を試す <small>記録なし・3手順</small>
           </button>
           <button
             type="button"

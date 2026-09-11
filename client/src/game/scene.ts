@@ -48,6 +48,7 @@ import {
   normalEnemyPoolForWave,
   normalizeSeed,
   postureAfterGuard,
+  PRACTICE_WAVE_LIMIT,
   recoverPosture,
   SCORE_RULES_VERSION,
   scoreForCombo,
@@ -880,6 +881,7 @@ export async function createGameScene(
   let mode: RunMode = "fifty";
   let modeLimit = modeLimitFor(mode);
   let difficulty: Difficulty = "standard";
+  let practice = false;
   let runSeed = makeRunSeed();
   let runId = makeRunId();
   let encounterRandomSeed = runSeed;
@@ -907,6 +909,8 @@ export async function createGameScene(
   let bestScore = 0;
   let isNewRecord = false;
   let recordSaved = false;
+  let lastFailureReason = "";
+  let nextAction = "";
   let rewardPending = false;
   let rewardChapter = 0;
   let rewardOptions: ReadonlyArray<{
@@ -1008,6 +1012,12 @@ export async function createGameScene(
     currentVariant.cooldown * DIFFICULTY_CONFIG[difficulty].cooldownMultiplier;
   const saveBestRecord = () => {
     if (recordSaved) return;
+    if (practice) {
+      bestScore = 0;
+      isNewRecord = false;
+      recordSaved = true;
+      return;
+    }
     const previousBest = loadBestScore();
     bestScore = previousBest;
     isNewRecord = score > previousBest;
@@ -1336,6 +1346,7 @@ export async function createGameScene(
       mode,
       modeLimit,
       difficulty,
+      practice,
       seed: runSeed,
       runId,
       chapter: chapterForWave(wave),
@@ -1374,6 +1385,8 @@ export async function createGameScene(
               : "静止",
       attackPhase,
       message,
+      lastFailureReason,
+      nextAction,
       defeated,
       combo,
       maxCombo,
@@ -1526,11 +1539,11 @@ export async function createGameScene(
     playerDefeatStartedAt = 0;
     playerSheathStartedAt = 0;
     if (tutorialIndex === 0)
-      message = "第1試練。左槍の予告を見て、右へ避けよ。";
+      message = `${practice ? "稽古" : "第"}1${practice ? "。左槍の予告を見て、右へ避けよ。" : "試練。左槍の予告を見て、右へ避けよ。"}`;
     else if (tutorialIndex === 1)
-      message = "第2試練。右槍の予告を見て、左へ避けよ。";
+      message = `${practice ? "稽古" : "第"}2${practice ? "。右槍の予告を見て、左へ避けよ。" : "試練。右槍の予告を見て、左へ避けよ。"}`;
     else if (tutorialIndex === 2)
-      message = "第3試練。直前に防御して受け流し、斬で反撃せよ。";
+      message = `${practice ? "稽古" : "第"}3${practice ? "。直前に防御して受け流し、斬で反撃せよ。" : "試練。直前に防御して受け流し、斬で反撃せよ。"}`;
     else
       message = boss
         ? `${currentVariant.name}、来たる。構えの変化を見よ。`
@@ -1594,6 +1607,12 @@ export async function createGameScene(
   };
   const retireEvent = () => {
     if (defeated) return;
+    lastFailureReason = practice
+      ? "稽古を途中で離れた。"
+      : "勝負を途中で離れた。";
+    nextAction = practice
+      ? "稽古をもう一度開き、最初の予告を見て左右へ避ける。"
+      : "十番勝負をもう一度開き、最初の予告を見て行動する。";
     const retireNow = clock.nowMs;
     transitioning = false;
     transitionRemaining = 0;
@@ -1769,6 +1788,14 @@ export async function createGameScene(
       }
       defeated = true;
       saveBestRecord();
+      if (!lastFailureReason) {
+        lastFailureReason = practice
+          ? "なし。3手順を安全に確認できた。"
+          : "なし。被弾せずに勝負を終えた。";
+        nextAction = practice
+          ? "正式な十番勝負・見習いで、同じ操作を試す。"
+          : "次は受け流しからの反撃で連撃を伸ばす。";
+      }
       message =
         rewardMessages.length > 0
           ? modeLimit + "体、すべて断つ。" + rewardMessages.join("。") + "。"
@@ -1868,6 +1895,8 @@ export async function createGameScene(
     guardBreakImpactAt = 0;
     if (enemyHp <= 0 || transitioning || defeated) return;
     if (enemyGuardUntil <= now) {
+      lastFailureReason = "敵の防御が終わってから、防御崩しを振った。";
+      nextAction = "青い輪が出ている間に斬を押し、防御崩しを狙う。";
       message = "防御崩しが空を切った。振り終わりは動けない。";
       announce(state());
       return;
@@ -1915,6 +1944,8 @@ export async function createGameScene(
 
     if (Math.abs(enemy.root.position.x - slashTargetX) > 0.72) {
       whiffs += 1;
+      lastFailureReason = "斬撃が敵に届かず、空振りになった。";
+      nextAction = "敵が復帰している間に、距離を見て斬を押す。";
       message = "空を斬った。残心を保て。";
       counterUntil = 0;
       announce(state());
@@ -2039,22 +2070,33 @@ export async function createGameScene(
         mode?: RunMode;
         difficulty?: Difficulty;
         seed?: number;
+        practice?: boolean;
       }>
     ).detail;
-    if (
-      detail?.mode === "ten" ||
-      detail?.mode === "twenty-five" ||
-      detail?.mode === "fifty"
-    ) {
-      mode = detail.mode;
+    practice = detail?.practice === true;
+    if (practice) {
+      // Practice is deliberately predictable: it always covers the first
+      // three lessons and is never a ranked ten-match result.
+      mode = "ten";
+      modeLimit = PRACTICE_WAVE_LIMIT;
+      difficulty = "apprentice";
+    } else {
+      if (
+        detail?.mode === "ten" ||
+        detail?.mode === "twenty-five" ||
+        detail?.mode === "fifty"
+      ) {
+        mode = detail.mode;
+        modeLimit = modeLimitFor(mode);
+      }
+      if (
+        detail?.difficulty === "apprentice" ||
+        detail?.difficulty === "standard" ||
+        detail?.difficulty === "dark"
+      )
+        difficulty = detail.difficulty;
       modeLimit = modeLimitFor(mode);
     }
-    if (
-      detail?.difficulty === "apprentice" ||
-      detail?.difficulty === "standard" ||
-      detail?.difficulty === "dark"
-    )
-      difficulty = detail.difficulty;
     runSeed =
       Number.isFinite(detail?.seed) && detail?.seed !== undefined
         ? normalizeSeed(detail.seed)
@@ -2062,9 +2104,13 @@ export async function createGameScene(
     runId = makeRunId();
     encounterRandomSeed = runSeed;
     combatRandomSeed = normalizeSeed(runSeed ^ 0x9e3779b9);
-    bestScore = loadBestScore();
+    bestScore = practice ? 0 : loadBestScore();
     isNewRecord = false;
     recordSaved = false;
+    lastFailureReason = "";
+    nextAction = practice
+      ? "赤い危険線と反対側の左右ボタンを一度押す。"
+      : "赤い危険線を見て、左右・防・斬を一つ選ぶ。";
     getAudioContext();
     if (slashProjectile) {
       slashProjectile.dispose();
@@ -2201,7 +2247,9 @@ export async function createGameScene(
     player.leftArm.rotation.z = 0.16;
     player.torso.rotation.z = 0;
     dodgeFromX = player.root.position.x;
-    message = "第1試練。左槍の予告を見て、右へ避けよ。";
+    message = practice
+      ? "稽古1。左槍の予告を見て、右へ避けよ。"
+      : "第1試練。左槍の予告を見て、右へ避けよ。";
     announce(state());
   };
 
@@ -2312,7 +2360,12 @@ export async function createGameScene(
     const key = event.key.toLowerCase();
     if (event.repeat) return;
     if (key === "r") {
-      if (!paused && defeated) resetRun(new CustomEvent("yamabushi-restart"));
+      if (!paused && defeated)
+        resetRun(
+          new CustomEvent("yamabushi-restart", {
+            detail: { practice },
+          })
+        );
       return;
     }
     if (key === "j") {
@@ -2339,6 +2392,7 @@ export async function createGameScene(
   window.addEventListener("yamabushi-retire", retireEvent);
   window.addEventListener("yamabushi-restart", resetRun);
   window.addEventListener("yamabushi-start", resetRun);
+  window.addEventListener("yamabushi-practice", resetRun);
   window.addEventListener("resize", updateCameraFraming);
   const updatePlayerMotion = (now: number) => {
     let kind: PlayerMotionKind = "idle";
@@ -2843,6 +2897,7 @@ export async function createGameScene(
             counterUntil = now + 900;
             parrySuccesses += 1;
             if (tutorialStep === 3) tutorialObjectiveMet = true;
+            nextAction = "受け流しでできた隙に、斬を押して反撃する。";
             playerPosture = recoverPosture(playerPosture, 20, playerPostureMax);
             const staggered = damageEnemyPosture("counter", now);
             const defensiveAward = awardDefensiveScore(260);
@@ -2868,20 +2923,29 @@ export async function createGameScene(
             playerPosture = guarded.posture;
             if (guarded.broken) {
               guardUntil = 0;
-              playerGuardBrokenUntil = now + 900;
-              playerHitStartedAt = now;
-              playerHitUntil = now + 900;
+              playerGuardBrokenUntil = practice ? 0 : now + 900;
+              playerHitStartedAt = practice ? 0 : now;
+              playerHitUntil = practice ? 0 : now + 900;
               playerHitDirection = dangerLane < 0 ? -1 : 1;
-              recoilUntil = Math.max(recoilUntil, now + 900);
+              recoilUntil = practice ? 0 : Math.max(recoilUntil, now + 900);
               triggerImpact(dangerLane || 1, 0.1);
-              hp = applyDamage(hp, 10).hp;
+              lastFailureReason = "防御の構えが先に尽き、直撃を受けた。";
+              nextAction = "攻撃直前だけ防を押し、受け流しを狙う。";
+              if (!practice) hp = applyDamage(hp, 10).hp;
               hitsTaken += 1;
               enemyHitTaken = true;
               combo = 0;
               comboMilestone = 0;
-              message = hp
-                ? "構えを砕かれた。短い間、防御も回避もできない。"
-                : "防御を崩され、倒れた。";
+              if (practice) {
+                playerPosture = playerPostureMax;
+                hp = 100;
+                message =
+                  "稽古では体力を失わない。構えを戻した。もう一度防を試せる。";
+              } else {
+                message = hp
+                  ? "構えを砕かれた。短い間、防御も回避もできない。"
+                  : "防御を崩され、倒れた。";
+              }
               if (!hp) {
                 defeated = true;
                 playerDefeatStartedAt = now;
@@ -2912,6 +2976,7 @@ export async function createGameScene(
               correctDodges += 1;
               if (tutorialStep === 1 || tutorialStep === 2)
                 tutorialObjectiveMet = true;
+              nextAction = "避けた直後に、斬を押して敵を仕留める。";
               playerPosture = recoverPosture(
                 playerPosture,
                 10,
@@ -2925,11 +2990,15 @@ export async function createGameScene(
                   ? "正しい方向へ流れた。守備加点はこの敵の上限に達した。"
                   : "正しい方向へ流れた。得点と構えを得た。"
               : "危険線の外で刃を外した。";
+            if (inLine && !correctDodge) {
+              lastFailureReason = "回避方向が危険線と同じだった。";
+              nextAction = "赤い危険線と反対側の左右ボタンを押す。";
+            }
           } else {
             hitsTaken += 1;
             enemyHitTaken = true;
             playerHitStartedAt = now;
-            playerHitUntil = now + 520;
+            playerHitUntil = practice ? 0 : now + 520;
             playerHitDirection = dangerLane < 0 ? -1 : 1;
             triggerImpact(dangerLane || 1, 0.12);
             const hitDamage =
@@ -2940,14 +3009,23 @@ export async function createGameScene(
                     ? 30
                     : 28
                   : 24;
-            hp = applyDamage(hp, hitDamage).hp;
+            lastFailureReason = "危険線に残り、岩刃を受けた。";
+            nextAction = "赤い危険線と反対側の左右ボタンを一度押す。";
+            if (!practice) hp = applyDamage(hp, hitDamage).hp;
             if (guardBreakImpactAt > 0) {
               guardBreakImpactAt = 0;
               playerAttackResolved = true;
             }
             combo = 0;
             comboMilestone = 0;
-            message = hp ? "岩刃を受けた。" : "倒れた。再起を選べる。";
+            if (practice) {
+              hp = 100;
+              playerPosture = playerPostureMax;
+              message =
+                "稽古では体力を失わない。危険線の反対へ、もう一度試せる。";
+            } else {
+              message = hp ? "岩刃を受けた。" : "倒れた。再起を選べる。";
+            }
             if (!hp) {
               defeated = true;
               playerDefeatStartedAt = now;
@@ -3107,6 +3185,7 @@ export async function createGameScene(
       window.removeEventListener("yamabushi-retire", retireEvent);
       window.removeEventListener("yamabushi-restart", resetRun);
       window.removeEventListener("yamabushi-start", resetRun);
+      window.removeEventListener("yamabushi-practice", resetRun);
       window.removeEventListener("resize", updateCameraFraming);
       scene.dispose();
     },

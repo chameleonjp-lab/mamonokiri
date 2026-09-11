@@ -26,6 +26,49 @@ describe("scene action input", () => {
     expect(harness.state().enemyHp).toBeLessThan(100);
   });
 
+  it("keeps the optional practice safe after an incorrect guard", async () => {
+    harness = await createSceneHarness();
+    harness.dispatch("yamabushi-practice", {
+      mode: "ten",
+      difficulty: "apprentice",
+      seed: 123,
+      practice: true,
+    });
+    expect(harness.state()).toMatchObject({
+      practice: true,
+      mode: "ten",
+      modeLimit: 3,
+      difficulty: "apprentice",
+      hp: 100,
+    });
+
+    while (harness.state().enemyPhase !== "予備") harness.advance(1000 / 60);
+    const warningDuration = 620 * 1.35;
+    harness.advance(warningDuration + 230);
+    for (let frame = 0; frame < 8 && harness.state().hitsTaken === 0; frame++)
+      harness.advance(1000 / 60);
+
+    expect(harness.state().hitsTaken).toBe(1);
+    expect(harness.state().hp).toBe(100);
+    expect(harness.state().lastFailureReason).toContain("危険線");
+    expect(harness.state().nextAction).toContain("反対側");
+    expect(harness.state().message).toContain("稽古では体力を失わない");
+
+    harness.dispatch("yamabushi-start", {
+      mode: "twenty-five",
+      difficulty: "dark",
+      seed: 789,
+      practice: false,
+    });
+    expect(harness.state()).toMatchObject({
+      practice: false,
+      mode: "twenty-five",
+      modeLimit: 25,
+      difficulty: "dark",
+      hp: 100,
+    });
+  });
+
   it("resolves a parry counter at its hit time, not on button-down", async () => {
     harness = await createSceneHarness();
     harness.start();

@@ -120,6 +120,44 @@ describe("title and 3D startup", () => {
     expect(button("新しく始める").disabled).toBe(false);
   });
 
+  it("starts with the short beginner run and keeps practice unranked", async () => {
+    safeStorage.setItem("mamonokiri.player-name", "稽古確認");
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    await act(async () => root.render(createElement(App)));
+    expect(button("十番勝負").classList.contains("is-selected")).toBe(true);
+    expect(button("見習い").classList.contains("is-selected")).toBe(true);
+    await act(async () => button("稽古を試す").click());
+
+    const result = {
+      ...INITIAL_GAME_STATE,
+      practice: true,
+      mode: "ten" as const,
+      modeLimit: 3,
+      difficulty: "apprentice" as const,
+      runId: "33333333-3333-4333-8333-333333333333",
+      seed: 456,
+      wave: 3,
+      enemyHp: 0,
+      defeated: true,
+      lastFailureReason: "危険線に残り、岩刃を受けた。",
+      nextAction: "赤い危険線と反対側の左右ボタンを一度押す。",
+    };
+    await act(async () => {
+      window.dispatchEvent(
+        new CustomEvent("yamabushi-state", { detail: result })
+      );
+      await new Promise(resolve => setTimeout(resolve, 0));
+    });
+
+    expect(container.textContent).toContain("安全稽古（3手順・記録なし）");
+    expect(container.textContent).toContain("直前の失敗");
+    expect(container.textContent).toContain("次に試す");
+    expect(container.textContent).toContain("正式な勝負へ");
+    expect(container.querySelector(".online-ranking")).toBeNull();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it("keeps submission failure visible while ranking reads succeed and retries the same run idempotently", async () => {
     safeStorage.setItem("mamonokiri.player-name", "通信確認");
     const responses = [
