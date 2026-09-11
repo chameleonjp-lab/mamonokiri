@@ -35,6 +35,7 @@ export async function createSceneHarness(realStart = 0) {
   return {
     handle,
     state: handle.getState,
+    now: () => realNow,
     dispatch,
     start: () =>
       dispatch("yamabushi-start", {
