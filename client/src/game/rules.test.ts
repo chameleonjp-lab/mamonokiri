@@ -35,6 +35,7 @@ import {
   shiftActiveTimer,
   shouldAdvanceAfterDefeat,
   shouldAdvanceCombatClock,
+  tenRunEncounterFor,
   tutorialVariantIndex,
 } from "./rules";
 
@@ -62,6 +63,37 @@ describe("priority S combat rules", () => {
     expect(
       chapterRewardForDefeat(PRACTICE_WAVE_LIMIT, PRACTICE_WAVE_LIMIT)
     ).toBeNull();
+  });
+
+  it("keeps the ten-match route readable and covers both beast bosses", () => {
+    const encounters = Array.from({ length: 10 }, (_, index) =>
+      tenRunEncounterFor(index + 1)
+    );
+    expect(encounters.every(Boolean)).toBe(true);
+    expect(
+      encounters.filter(
+        (encounter): encounter is NonNullable<typeof encounter> =>
+          Boolean(encounter) && !encounter.boss
+      )
+    ).toHaveLength(8);
+    expect(
+      encounters
+        .filter(
+          (encounter): encounter is NonNullable<typeof encounter> =>
+            Boolean(encounter) && encounter.boss
+        )
+        .map(encounter => encounter.variantIndex)
+    ).toEqual([0, 1]);
+    expect(
+      encounters
+        .filter(
+          (encounter): encounter is NonNullable<typeof encounter> =>
+            Boolean(encounter) && !encounter.boss
+        )
+        .map(encounter => encounter.variantIndex)
+    ).toEqual([0, 1, 2, 0, 1, 2, 0, 1]);
+    expect(tenRunEncounterFor(0)).toBeNull();
+    expect(tenRunEncounterFor(11)).toBeNull();
   });
 
   it("uses the configured left and right attack lanes", () => {

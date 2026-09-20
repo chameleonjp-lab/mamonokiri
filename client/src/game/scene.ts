@@ -53,6 +53,7 @@ import {
   SCORE_RULES_VERSION,
   scoreForCombo,
   shouldAdvanceCombatClock,
+  tenRunEncounterFor,
   tutorialVariantIndex,
   type ChapterRewardKind,
   type AttackPlan,
@@ -118,6 +119,7 @@ type EnemyVariant = {
   attackSide: EnemyAttackSide;
   cooldown: number;
   notice: string;
+  beastStyle?: "fang" | "bear";
   boss?: boolean;
 };
 const ENEMY_VARIANTS: EnemyVariant[] = [
@@ -202,6 +204,7 @@ const BOSS_VARIANTS: EnemyVariant[] = [
     attackSide: "target",
     cooldown: 3200,
     notice: "低く距離を詰め、逆側へ牙を返す。",
+    beastStyle: "fang",
     boss: true,
   },
   {
@@ -213,6 +216,7 @@ const BOSS_VARIANTS: EnemyVariant[] = [
     attackSide: "target",
     cooldown: 4200,
     notice: "重い突進の後にも牙が返る。",
+    beastStyle: "bear",
     boss: true,
   },
   {
@@ -426,6 +430,47 @@ function makeEnemy(
   const spearTipR = spearTipL.clone("wraith_spear_tip_r")!;
   spearTipR.position.x = 0.72;
   spearTipR.parent = root;
+  const beastFangL = MeshBuilder.CreateCylinder(
+    "beast_fang_l",
+    { height: 0.5, diameterTop: 0.02, diameterBottom: 0.16, tessellation: 6 },
+    scene
+  );
+  beastFangL.position = new Vector3(-0.28, 0.7, -0.72);
+  beastFangL.rotation.z = -0.32;
+  beastFangL.material = materials.cream;
+  beastFangL.parent = root;
+  const beastFangR = beastFangL.clone("beast_fang_r")!;
+  beastFangR.position.x = 0.28;
+  beastFangR.rotation.z = 0.32;
+  beastFangR.parent = root;
+  const bearShoulderL = box(
+    scene,
+    "beast_bear_shoulder_l",
+    new Vector3(0.46, 0.5, 0.62),
+    new Vector3(-0.55, 1.15, 0.02),
+    materials.iron
+  );
+  bearShoulderL.rotation.z = -0.18;
+  bearShoulderL.parent = root;
+  const bearShoulderR = bearShoulderL.clone("beast_bear_shoulder_r")!;
+  bearShoulderR.position.x = 0.55;
+  bearShoulderR.rotation.z = 0.18;
+  bearShoulderR.parent = root;
+  const bearEarL = MeshBuilder.CreateSphere(
+    "beast_bear_ear_l",
+    { diameter: 0.38, segments: 6 },
+    scene
+  );
+  bearEarL.position = new Vector3(-0.48, 1.62, 0.02);
+  bearEarL.material = materials.iron;
+  bearEarL.parent = root;
+  const bearEarR = bearEarL.clone("beast_bear_ear_r")!;
+  bearEarR.position.x = 0.48;
+  bearEarR.parent = root;
+  const beastFeatures = {
+    fang: [beastFangL, beastFangR],
+    bear: [bearShoulderL, bearShoulderR, bearEarL, bearEarR],
+  };
   return {
     root,
     body,
@@ -434,6 +479,7 @@ function makeEnemy(
     blade,
     spears: [spearL, spearR],
     spearTips: [spearTipL, spearTipR],
+    beastFeatures,
   };
 }
 function announce(state: GameState) {
@@ -1283,6 +1329,12 @@ export async function createGameScene(
     enemy.bodies.forEach((body, index) => {
       body.isVisible = index === variant.shape;
     });
+    enemy.beastFeatures.fang.forEach(feature => {
+      feature.isVisible = variant.beastStyle === "fang";
+    });
+    enemy.beastFeatures.bear.forEach(feature => {
+      feature.isVisible = variant.beastStyle === "bear";
+    });
   };
   const setEnemyGlow = (isBoss: boolean) => {
     const glow = isBoss ? materials.bossGlow : materials.enemyGlow;
@@ -1291,6 +1343,12 @@ export async function createGameScene(
     });
     enemy.eyes.forEach(eye => {
       eye.material = glow;
+    });
+    enemy.beastFeatures.fang.forEach(feature => {
+      feature.material = glow;
+    });
+    enemy.beastFeatures.bear.forEach(feature => {
+      feature.material = glow;
     });
   };
   const setSpearState = (ready: boolean, extension = 0, activeSide = 0) => {
@@ -1433,7 +1491,9 @@ export async function createGameScene(
   const spawnNextEnemy = () => {
     const spawnNow = clock.nowMs;
     wave += 1;
-    boss = wave % 5 === 0;
+    const plannedTenEncounter =
+      mode === "ten" && wave <= modeLimit ? tenRunEncounterFor(wave) : null;
+    boss = plannedTenEncounter?.boss ?? wave % 5 === 0;
     const tutorialIndex = tutorialVariantIndex(wave);
     tutorialStep = tutorialIndex === null ? 0 : wave;
     tutorialObjectiveMet = false;
@@ -1441,6 +1501,14 @@ export async function createGameScene(
     if (tutorialIndex !== null) {
       currentVariant = ENEMY_VARIANTS[tutorialIndex];
       lastNormalVariantIndex = tutorialIndex;
+    } else if (plannedTenEncounter) {
+      if (plannedTenEncounter.boss) {
+        lastBossVariantIndex = plannedTenEncounter.variantIndex;
+        currentVariant = BOSS_VARIANTS[plannedTenEncounter.variantIndex];
+      } else {
+        lastNormalVariantIndex = plannedTenEncounter.variantIndex;
+        currentVariant = ENEMY_VARIANTS[plannedTenEncounter.variantIndex];
+      }
     } else {
       if (boss) {
         lastBossVariantIndex = chooseNonRepeatingIndex(

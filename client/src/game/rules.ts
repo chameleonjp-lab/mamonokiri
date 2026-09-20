@@ -76,6 +76,40 @@ export const RUN_MODE_CONFIG: Readonly<
   },
 };
 
+/** The first chapter intentionally teaches only three readable normal enemies. */
+export const FIRST_CHAPTER_NORMAL_VARIANTS = [0, 1, 2] as const;
+
+/** The ten-match uses two beast bosses before the later chapters expand the cast. */
+export const FIRST_CHAPTER_BOSS_VARIANTS = [0, 1] as const;
+
+export type TenRunEncounter = {
+  boss: boolean;
+  variantIndex: number;
+};
+
+/**
+ * The short formal run is a learnable route, not a random catalogue preview.
+ * The first three encounters teach the three normal types, wave 5 is the first
+ * beast boss, and wave 10 is the second. Longer modes keep their seeded pools.
+ */
+const TEN_RUN_ENCOUNTERS: ReadonlyArray<TenRunEncounter> = [
+  { boss: false, variantIndex: 0 },
+  { boss: false, variantIndex: 1 },
+  { boss: false, variantIndex: 2 },
+  { boss: false, variantIndex: 0 },
+  { boss: true, variantIndex: FIRST_CHAPTER_BOSS_VARIANTS[0] },
+  { boss: false, variantIndex: 1 },
+  { boss: false, variantIndex: 2 },
+  { boss: false, variantIndex: 0 },
+  { boss: false, variantIndex: 1 },
+  { boss: true, variantIndex: FIRST_CHAPTER_BOSS_VARIANTS[1] },
+];
+
+export function tenRunEncounterFor(wave: number): TenRunEncounter | null {
+  const encounter = TEN_RUN_ENCOUNTERS[Math.trunc(wave) - 1];
+  return encounter ? { ...encounter } : null;
+}
+
 export const DIFFICULTY_CONFIG: Readonly<
   Record<
     Difficulty,
@@ -381,7 +415,7 @@ export function chapterForWave(wave: number): number {
 }
 
 const NORMAL_CHAPTER_POOLS: ReadonlyArray<ReadonlyArray<number>> = [
-  [0, 1, 2],
+  FIRST_CHAPTER_NORMAL_VARIANTS,
   [2, 3, 6],
   [2, 3, 4],
   [4, 5, 6],
