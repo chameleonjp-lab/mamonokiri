@@ -50,6 +50,7 @@ import {
   postureAfterGuard,
   PRACTICE_WAVE_LIMIT,
   recoverPosture,
+  RESUME_GRACE_MS,
   SCORE_RULES_VERSION,
   scoreForCombo,
   shouldAdvanceCombatClock,
@@ -68,6 +69,14 @@ import {
 import type { GameState, PauseReason, PauseRequest } from "./contracts";
 import { RunClock } from "./clock";
 import { safeStorage } from "./storage";
+import {
+  clearRunCheckpoint,
+  parseRunCheckpoint,
+  readRunCheckpoint,
+  RUN_CHECKPOINT_VERSION,
+  type RunCheckpoint,
+  writeRunCheckpoint,
+} from "./checkpoint";
 import {
   CAMERA_BASE_POSITION,
   CAMERA_TARGET,
@@ -626,6 +635,11 @@ function makeEnemy(
 }
 function announce(state: GameState) {
   window.dispatchEvent(new CustomEvent("yamabushi-state", { detail: state }));
+}
+function announceCheckpoint(available: boolean) {
+  window.dispatchEvent(
+    new CustomEvent("yamabushi-checkpoint", { detail: { available } })
+  );
 }
 export async function createGameScene(
   engine: Engine,
@@ -1645,6 +1659,74 @@ export async function createGameScene(
     };
   };
 
+  const checkpointIsSafe = () => {
+    const now = clock.nowMs;
+    return (
+      !defeated &&
+      !transitioning &&
+      !enemyAttackAt &&
+      !playerAttackKind &&
+      !slashProjectile &&
+      dodgeUntil <= now &&
+      guardUntil <= now &&
+      enemyGuardUntil <= now
+    );
+  };
+  const persistCheckpoint = () => {
+    if (!checkpointIsSafe()) return false;
+    const variantIndex = (boss ? BOSS_VARIANTS : ENEMY_VARIANTS).indexOf(
+      currentVariant
+    );
+    if (variantIndex < 0) return false;
+    const checkpoint: RunCheckpoint = {
+      version: RUN_CHECKPOINT_VERSION,
+      scoreRulesVersion: SCORE_RULES_VERSION,
+      mode,
+      difficulty,
+      practice,
+      seed: runSeed,
+      runId,
+      wave,
+      boss,
+      bossPhase,
+      variantIndex,
+      hp,
+      playerPosture,
+      enemyHp,
+      enemyMaxHp,
+      enemyPosture,
+      enemyPostureMax,
+      defeatedCount,
+      bossDefeats,
+      parrySuccesses,
+      correctDodges,
+      defensiveScoreAwards,
+      defensiveScoreAwardsThisEnemy,
+      hitsTaken,
+      whiffs,
+      activePlayTimeMs,
+      score,
+      combo,
+      maxCombo,
+      encounterRandomSeed,
+      combatRandomSeed,
+      lastNormalVariantIndex,
+      lastBossVariantIndex,
+      rewardEffects: [...rewardEffects],
+      rewardEffectStartWave,
+      rewardEffectEndWave,
+      rewardPending,
+      rewardChapter,
+      rewardOptions: rewardOptions.map(option => ({ ...option })),
+      pendingDefeatWave,
+      tutorialStep,
+      tutorialObjectiveMet,
+    };
+    const saved = writeRunCheckpoint(checkpoint);
+    announceCheckpoint(saved);
+    return saved;
+  };
+
   bestScore = loadBestScore();
   paused = true;
   clock.pause(performance.now());
@@ -1805,6 +1887,7 @@ export async function createGameScene(
       message = boss
         ? `${currentVariant.name}、来たる。構えの変化を見よ。`
         : currentVariant.notice;
+    persistCheckpoint();
     announce(state());
   };
   const pauseEvent = (event: Event) => {
@@ -1907,6 +1990,8 @@ export async function createGameScene(
     rewardPending = false;
     rewardOptions = [];
     rewardChapter = 0;
+    clearRunCheckpoint();
+    announceCheckpoint(false);
     saveBestRecord();
     message = "修行を離れた。再起を選べる。";
     announce(state());
@@ -2000,6 +2085,26 @@ export async function createGameScene(
 
     enemyAttackAt = 0;
     enemyAttackHit = false;
+    // A defeated enemy is a safe checkpoint boundary. Clear the attack that
+    // delivered the final hit so a chapter reward can be resumed without
+    // restoring an in-flight strike or projectile.
+    attackUntil = 0;
+    playerAttackStartedAt = 0;
+    playerAttackKind = null;
+    playerAttackHitAt = 0;
+    playerAttackResolved = false;
+    playerAttackDirection = 1;
+    playerAttackImpactAngle = 0.42;
+    playerAttackImpactScale = 1;
+    guardBreakImpactAt = 0;
+    guardUntil = 0;
+    dodgeUntil = 0;
+    recoilUntil = 0;
+    counterUntil = 0;
+    if (slashProjectile) {
+      slashProjectile.dispose();
+      slashProjectile = null;
+    }
     playerVictoryStartedAt = defeatNow;
     playerDefeatStartedAt = 0;
     enemyGuardUntil = 0;
@@ -2024,6 +2129,7 @@ export async function createGameScene(
         pauseReason = null;
       }
       message = "第" + rewardChapter + "章を越えた。次の章の修験を一つ選べ。";
+      persistCheckpoint();
       announce(state());
       return;
     }
@@ -2044,6 +2150,8 @@ export async function createGameScene(
         rewardMessages.push("空振りなし加算");
       }
       defeated = true;
+      clearRunCheckpoint();
+      announceCheckpoint(false);
       saveBestRecord();
       if (!lastFailureReason) {
         lastFailureReason = practice
@@ -2321,6 +2429,8 @@ export async function createGameScene(
     else if (playerAttackKind === "finisher") resolveFinisherAttack(now);
   };
   const resetRun = (event: Event) => {
+    clearRunCheckpoint();
+    announceCheckpoint(false);
     clock.reset(performance.now());
     const detail = (
       event as CustomEvent<{
@@ -2507,7 +2617,192 @@ export async function createGameScene(
     message = practice
       ? "稽古1。左槍の予告を見て、右へ避けよ。"
       : "第1試練。左槍の予告を見て、右へ避けよ。";
+    persistCheckpoint();
     announce(state());
+  };
+
+  const restoreCheckpoint = (checkpoint: RunCheckpoint) => {
+    const variants = checkpoint.boss ? BOSS_VARIANTS : ENEMY_VARIANTS;
+    const restoredVariant = variants[checkpoint.variantIndex];
+    if (!restoredVariant) {
+      clearRunCheckpoint();
+      announceCheckpoint(false);
+      return false;
+    }
+
+    mode = checkpoint.mode;
+    modeLimit = modeLimitFor(mode);
+    difficulty = checkpoint.difficulty;
+    practice = checkpoint.practice;
+    runSeed = checkpoint.seed;
+    runId = checkpoint.runId;
+    encounterRandomSeed = checkpoint.encounterRandomSeed;
+    combatRandomSeed = checkpoint.combatRandomSeed;
+    lastNormalVariantIndex = checkpoint.lastNormalVariantIndex;
+    lastBossVariantIndex = checkpoint.lastBossVariantIndex;
+    wave = checkpoint.wave;
+    boss = checkpoint.boss;
+    bossPhase = checkpoint.bossPhase;
+    currentVariant = restoredVariant;
+    hp = checkpoint.hp;
+    playerPosture = checkpoint.playerPosture;
+    enemyHp = checkpoint.enemyHp;
+    enemyMaxHp = checkpoint.enemyMaxHp;
+    enemyPosture = checkpoint.enemyPosture;
+    enemyPostureMax = checkpoint.enemyPostureMax;
+    defeatedCount = checkpoint.defeatedCount;
+    bossDefeats = checkpoint.bossDefeats;
+    parrySuccesses = checkpoint.parrySuccesses;
+    correctDodges = checkpoint.correctDodges;
+    defensiveScoreAwards = checkpoint.defensiveScoreAwards;
+    defensiveScoreAwardsThisEnemy = checkpoint.defensiveScoreAwardsThisEnemy;
+    hitsTaken = checkpoint.hitsTaken;
+    whiffs = checkpoint.whiffs;
+    activePlayTimeMs = checkpoint.activePlayTimeMs;
+    score = checkpoint.score;
+    combo = checkpoint.combo;
+    maxCombo = checkpoint.maxCombo;
+    comboMilestone = 0;
+    rewardEffects = [...checkpoint.rewardEffects];
+    rewardEffectStartWave = checkpoint.rewardEffectStartWave;
+    rewardEffectEndWave = checkpoint.rewardEffectEndWave;
+    rewardPending = checkpoint.rewardPending;
+    rewardChapter = checkpoint.rewardChapter;
+    rewardOptions = checkpoint.rewardOptions.map(option => ({ ...option }));
+    pendingDefeatWave = checkpoint.pendingDefeatWave;
+    tutorialStep = checkpoint.tutorialStep;
+    tutorialObjectiveMet = checkpoint.tutorialObjectiveMet;
+    defeated = false;
+    transitioning = false;
+    transitionRemaining = 0;
+    recordSaved = false;
+    bestScore = practice ? 0 : loadBestScore();
+    isNewRecord = false;
+    lastFailureReason = "";
+    nextAction = practice
+      ? "赤い危険線と反対側の左右ボタンを一度押す。"
+      : "赤い危険線を見て、左右・防・斬を一つ選ぶ。";
+
+    clock.reset(performance.now());
+    warningDuration = Math.round(
+      620 * DIFFICULTY_CONFIG[difficulty].warningMultiplier
+    );
+    enemyAttackDuration = warningDuration + 260 + 470;
+    playerSpawnUntil = clock.nowMs + PLAYER_SPAWN_DURATION;
+    enemyMoveAt = clock.nowMs + 800;
+    lastEnemyStrike = clock.nowMs;
+    nextGuardAt = clock.nowMs + 2600;
+    comboExpiresAt = combo > 0 ? clock.nowMs + COMBO_WINDOW : 0;
+    bossAttack = false;
+    enemyTargetX = 0;
+    spearAttackSide = 0;
+    dangerLane = 0;
+    feintLane = 0;
+    feintApplied = false;
+    lastTelegraphedLane = 0;
+    enemyAttackCount = 0;
+    attackUntil = 0;
+    playerAttackStartedAt = 0;
+    playerAttackKind = null;
+    playerAttackHitAt = 0;
+    playerAttackResolved = false;
+    guardBreakImpactAt = 0;
+    guardUntil = 0;
+    guardStartedAt = 0;
+    counterUntil = 0;
+    dodgeUntil = 0;
+    enemyAttackAt = 0;
+    enemyAttackHit = false;
+    enemyGuardUntil = 0;
+    queuedAttackLanes = [];
+    forcedAttackReadyAt = 0;
+    sheathUntil = 0;
+    recoilUntil = 0;
+    recoilDirection = 1;
+    playerHitStartedAt = 0;
+    playerHitUntil = 0;
+    playerHitDirection = 1;
+    playerVictoryStartedAt = 0;
+    playerDefeatStartedAt = 0;
+    playerSheathStartedAt = 0;
+    counterPulse = 0;
+    bossDefeatPulse = 0;
+    climax = 0;
+    enemyHitTaken = false;
+    enemyStaggerUntil = 0;
+    playerGuardBrokenUntil = 0;
+    lastUiSyncAt = 0;
+    nextAmbientAt = clock.nowMs + 1600;
+    currentVariant = restoredVariant;
+    setEnemyVariant(currentVariant);
+    setEnemyGlow(boss);
+    enemy.root.scaling.setAll(boss ? 1.38 : 1);
+    enemy.root.position.set(0, 0.2, 5.2);
+    enemy.root.rotation.set(0, 0, 0);
+    enemy.blade.rotation.z = -0.7;
+    player.root.position.set(laneX(-1), 0, 0);
+    player.root.rotation.set(0, 0, 0);
+    player.root.scaling.setAll(1);
+    player.blade.rotation.z = -0.65;
+    player.rightArm.rotation.z = -0.16;
+    player.leftArm.rotation.z = 0.16;
+    player.torso.rotation.z = 0;
+    dodgeFromX = player.root.position.x;
+    dodgeFromZ = player.root.position.z;
+    slashImpactAt = 0;
+    slashDirection = 1;
+    slashAngle = 0;
+    slashBaseAngle = 0;
+    slashPower = 1;
+    slashScale = 1;
+    previousBladeAngle = -0.65;
+    slashTargetX = 0;
+    slashTargetZ = 5.2;
+    shakeUntil = 0;
+    warningLine.isVisible = false;
+    attackArea.isVisible = false;
+    updateFootZones(false, 0);
+    guardRing.isVisible = false;
+    setSpearState(false);
+    if (slashProjectile) {
+      slashProjectile.dispose();
+      slashProjectile = null;
+    }
+    if (rewardPending) {
+      paused = true;
+      pauseReason = null;
+      pauseVisualAt = performance.now();
+      clock.pause(pauseVisualAt);
+      message = `第${rewardChapter}章を越えた。次の章の修験を一つ選べ。`;
+    } else {
+      paused = false;
+      pauseReason = null;
+      clock.resume(performance.now(), RESUME_GRACE_MS);
+      message = "続きから再開した。次の予告を読む。";
+    }
+    persistCheckpoint();
+    announce(state());
+    return true;
+  };
+  const resumeRun = (event: Event) => {
+    const raw = (event as CustomEvent<unknown>).detail;
+    const checkpoint = parseRunCheckpoint(raw) ?? readRunCheckpoint();
+    if (!checkpoint) {
+      clearRunCheckpoint();
+      announceCheckpoint(false);
+      return;
+    }
+    resetRun(
+      new CustomEvent("yamabushi-resume", {
+        detail: {
+          mode: checkpoint.mode,
+          difficulty: checkpoint.difficulty,
+          practice: checkpoint.practice,
+          seed: checkpoint.seed,
+        },
+      })
+    );
+    restoreCheckpoint(checkpoint);
   };
 
   const performSlash = () => {
@@ -2650,6 +2945,7 @@ export async function createGameScene(
   window.addEventListener("yamabushi-restart", resetRun);
   window.addEventListener("yamabushi-start", resetRun);
   window.addEventListener("yamabushi-practice", resetRun);
+  window.addEventListener("yamabushi-resume", resumeRun);
   window.addEventListener("resize", updateCameraFraming);
   const updatePlayerMotion = (now: number) => {
     let kind: PlayerMotionKind = "idle";
@@ -3223,6 +3519,8 @@ export async function createGameScene(
                 defeated = true;
                 playerDefeatStartedAt = now;
                 playerVictoryStartedAt = 0;
+                clearRunCheckpoint();
+                announceCheckpoint(false);
                 saveBestRecord();
                 queuedAttackLanes = [];
                 clearEnemyAttackVisuals();
@@ -3303,6 +3601,8 @@ export async function createGameScene(
               defeated = true;
               playerDefeatStartedAt = now;
               playerVictoryStartedAt = 0;
+              clearRunCheckpoint();
+              announceCheckpoint(false);
               saveBestRecord();
               queuedAttackLanes = [];
               clearEnemyAttackVisuals();
@@ -3459,6 +3759,7 @@ export async function createGameScene(
       window.removeEventListener("yamabushi-restart", resetRun);
       window.removeEventListener("yamabushi-start", resetRun);
       window.removeEventListener("yamabushi-practice", resetRun);
+      window.removeEventListener("yamabushi-resume", resumeRun);
       window.removeEventListener("resize", updateCameraFraming);
       scene.dispose();
     },
