@@ -85,6 +85,9 @@ describe("smartphone play contract", () => {
     expect(appSource).toContain("difficulty: state.difficulty");
     expect(appSource).toContain("直前の失敗");
     expect(appSource).toContain("次に試す");
+    expect(appSource).toContain('"yamabushi-resume"');
+    expect(appSource).toContain("続きから再開");
+    expect(sceneSource).toContain("persistCheckpoint");
   });
 
   it("puts the short beginner path first and keeps practice out of ranking", () => {

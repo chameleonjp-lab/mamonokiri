@@ -712,9 +712,11 @@ body,
 .title-advanced summary span { float: right; color: #aaa9a2; font-size: 10px; letter-spacing: .04em; }
 .title-advanced[open] summary { border-color: rgba(183,71,50,.72); background: rgba(112,42,31,.24); }
 .title-advanced .title-choice-groups, .title-advanced .title-settings { width: 100%; }
-.title-screen > .result-primary, .practice-start, .result-actions-primary button { min-height: 44px; font-size: 12px; }
+.title-screen > .result-primary, .practice-start, .resume-saved-run, .result-actions-primary button { min-height: 44px; font-size: 12px; }
 .practice-start { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 8px; }
 .practice-start small { color: #d6a455; font-size: 9px; font-weight: 500; }
+.resume-saved-run { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 8px; }
+.resume-saved-run small { color: #9fc9d7; font-size: 9px; font-weight: 500; }
 .result-guidance { display: grid; gap: 6px; margin: 12px auto 0; padding: 10px 12px; border-left: 2px solid #d6a455; background: rgba(214,164,85,.1); text-align: left; }
 .result-guidance p { display: grid; grid-template-columns: 5.2em 1fr; gap: 8px; margin: 0; color: #eee9df; font-size: 12px; line-height: 1.55; }
 .result-guidance strong { color: #d6a455; font-size: 10px; letter-spacing: .1em; white-space: nowrap; }
@@ -733,6 +735,6 @@ body,
   .title-recommendation, .title-advanced { width: min(760px,94vw); }
   .title-recommendation { grid-template-columns: auto 1fr; column-gap: 6px; }
   .title-recommendation small { grid-column: 2; }
-  .title-screen > .result-primary, .practice-start, .result-actions-primary button { min-height: 44px; font-size: 12px; }
+  .title-screen > .result-primary, .practice-start, .resume-saved-run, .result-actions-primary button { min-height: 44px; font-size: 12px; }
   .practice-start { margin-top: 4px; padding: 6px 14px; }
 }

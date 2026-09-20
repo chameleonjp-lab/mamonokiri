@@ -29,6 +29,11 @@ import {
   type SceneStatus,
 } from "@/game/contracts";
 import {
+  clearRunCheckpoint,
+  readRunCheckpoint,
+  type RunCheckpoint,
+} from "@/game/checkpoint";
+import {
   RANKING_READ_RPC,
   RANKING_SUBMIT_RPC,
   rankingConditionFor,
@@ -200,6 +205,9 @@ export default function App() {
   });
   const [sceneAttempt, setSceneAttempt] = useState(0);
   const [playerName, setPlayerName] = useState(readPlayerName);
+  const [savedRun, setSavedRun] = useState<RunCheckpoint | null>(() =>
+    readRunCheckpoint()
+  );
   const [nameMessage, setNameMessage] = useState("");
   const [shareStatus, setShareStatus] = useState("");
   const [ranking, setRanking] = useState<
@@ -479,6 +487,8 @@ export default function App() {
     previousBossVictory.current = 0;
     swipeStart.current = null;
     titleOpenRef.current = false;
+    clearRunCheckpoint();
+    setSavedRun(null);
     dispatchGameEvent(eventName, {
       mode,
       difficulty,
@@ -500,6 +510,28 @@ export default function App() {
       difficulty: "apprentice",
       practice: true,
     });
+
+  const resumeSavedRun = () => {
+    if (!savedRun || sceneStatus.phase !== "ready") return;
+    if (!playerName) {
+      setNameMessage("プレイヤー名を入力してから再開してください。");
+      setShowTitle(true);
+      titleOpenRef.current = true;
+      return;
+    }
+    setShowPause(false);
+    setShowTitle(false);
+    setShowExitConfirm(false);
+    setShowClimax(false);
+    setShowCounter(false);
+    setShowBossVictory(false);
+    previousClimax.current = 0;
+    previousCounter.current = 0;
+    previousBossVictory.current = 0;
+    swipeStart.current = null;
+    titleOpenRef.current = false;
+    dispatchGameEvent("yamabushi-resume", savedRun);
+  };
 
   const retryRankingSubmission = () => {
     if (!state.defeated || !playerName) return;
@@ -554,8 +586,13 @@ export default function App() {
         window.setTimeout(() => setShowBossVictory(false), 2600);
       }
     };
+    const onCheckpoint = () => setSavedRun(readRunCheckpoint());
     window.addEventListener("yamabushi-state", onState);
-    return () => window.removeEventListener("yamabushi-state", onState);
+    window.addEventListener("yamabushi-checkpoint", onCheckpoint);
+    return () => {
+      window.removeEventListener("yamabushi-state", onState);
+      window.removeEventListener("yamabushi-checkpoint", onCheckpoint);
+    };
   }, []);
 
   useEffect(() => {
@@ -1489,6 +1526,19 @@ export default function App() {
           >
             新しく始める
           </button>
+          {savedRun && (
+            <button
+              type="button"
+              className="result-secondary resume-saved-run"
+              disabled={sceneStatus.phase !== "ready"}
+              onClick={resumeSavedRun}
+            >
+              続きから再開
+              <small>
+                {RUN_MODE_CONFIG[savedRun.mode].label}・{savedRun.wave}体目
+              </small>
+            </button>
+          )}
           <button
             type="button"
             className="result-secondary practice-start"
