@@ -227,4 +227,87 @@ describe("title and 3D startup", () => {
     );
     expect(container.textContent).toContain("1位 上位");
   });
+
+  it("ignores a delayed ranking response after a newer run result", async () => {
+    safeStorage.setItem("mamonokiri.player-name", "遅延応答確認");
+    let resolveStale!: (value: {
+      ok: boolean;
+      status: number;
+      text: () => Promise<string>;
+    }) => void;
+    const staleSubmit = new Promise<{
+      ok: boolean;
+      status: number;
+      text: () => Promise<string>;
+    }>(resolve => {
+      resolveStale = resolve;
+    });
+    const response = (body: string) => ({
+      ok: true,
+      status: 200,
+      text: async () => body,
+    });
+    const fetchMock = vi
+      .fn()
+      .mockImplementationOnce(() => staleSubmit)
+      .mockResolvedValueOnce(response(JSON.stringify([{ accepted: true }])))
+      .mockResolvedValueOnce(
+        response(JSON.stringify([{ display_name: "新結果", best_score: 222 }]))
+      );
+    vi.stubGlobal("fetch", fetchMock);
+
+    await act(async () => root.render(createElement(App)));
+    const oldResult = {
+      ...INITIAL_GAME_STATE,
+      mode: "ten" as const,
+      modeLimit: 10,
+      runId: "11111111-1111-4111-8111-111111111111",
+      seed: 111,
+      score: 111,
+      wave: 10,
+      enemyHp: 0,
+      defeated: true,
+    };
+    const newResult = {
+      ...oldResult,
+      runId: "22222222-2222-4222-8222-222222222222",
+      seed: 222,
+      score: 222,
+    };
+
+    await act(async () => {
+      window.dispatchEvent(
+        new CustomEvent("yamabushi-state", { detail: oldResult })
+      );
+      await new Promise(resolve => setTimeout(resolve, 0));
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      window.dispatchEvent(
+        new CustomEvent("yamabushi-state", {
+          detail: { ...INITIAL_GAME_STATE, runId: "active-new-run" },
+        })
+      );
+      await new Promise(resolve => setTimeout(resolve, 0));
+    });
+    expect(container.textContent).not.toContain("旧結果");
+
+    await act(async () => {
+      resolveStale(response(JSON.stringify([{ accepted: true }])));
+      await new Promise(resolve => setTimeout(resolve, 0));
+    });
+
+    await act(async () => {
+      window.dispatchEvent(
+        new CustomEvent("yamabushi-state", { detail: newResult })
+      );
+      await new Promise(resolve => setTimeout(resolve, 0));
+      await new Promise(resolve => setTimeout(resolve, 0));
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    expect(container.textContent).toContain("1位 新結果");
+    expect(container.textContent).not.toContain("旧結果");
+  });
 });

@@ -80,6 +80,16 @@ describe("run checkpoint persistence", () => {
   it("keeps a chapter reward choice resumable without accepting an empty reward", () => {
     const storage = memoryStorage();
     const saved = checkpoint({
+      wave: 10,
+      boss: true,
+      variantIndex: 1,
+      enemyHp: 0,
+      enemyMaxHp: 320,
+      enemyPostureMax: 180,
+      defeatedCount: 10,
+      rewardEffects: [],
+      rewardEffectStartWave: 0,
+      rewardEffectEndWave: 0,
       rewardPending: true,
       rewardChapter: 1,
       pendingDefeatWave: 10,
@@ -129,6 +139,60 @@ describe("run checkpoint persistence", () => {
       parseRunCheckpoint(checkpoint({ practice: true, mode: "fifty" }))
     ).toBeNull();
     expect(parseRunCheckpoint(checkpoint({ variantIndex: 99 }))).toBeNull();
+  });
+
+  it("rejects impossible safe-boundary combinations before resume", () => {
+    expect(
+      parseRunCheckpoint(
+        checkpoint({
+          defeatedCount: 9,
+          rewardEffects: [],
+          rewardEffectStartWave: 0,
+          rewardEffectEndWave: 0,
+        })
+      )
+    ).toBeNull();
+    expect(
+      parseRunCheckpoint(
+        checkpoint({
+          enemyMaxHp: 320,
+          enemyPostureMax: 180,
+        })
+      )
+    ).toBeNull();
+    expect(
+      parseRunCheckpoint(
+        checkpoint({
+          rewardEffects: ["heal", "heal"],
+        })
+      )
+    ).toBeNull();
+    expect(
+      parseRunCheckpoint(
+        checkpoint({
+          wave: 10,
+          boss: true,
+          variantIndex: 1,
+          enemyHp: 0,
+          enemyMaxHp: 320,
+          enemyPostureMax: 180,
+          defeatedCount: 10,
+          rewardPending: true,
+          rewardChapter: 2,
+          pendingDefeatWave: 9,
+          rewardOptions: [
+            {
+              kind: "heal",
+              label: "生命を整える",
+              description: "体力を30回復する",
+            },
+          ],
+          rewardEffects: [],
+          rewardEffectStartWave: 0,
+          rewardEffectEndWave: 0,
+        })
+      )
+    ).toBeNull();
   });
 
   it("clears a completed run without touching unrelated saved values", () => {
