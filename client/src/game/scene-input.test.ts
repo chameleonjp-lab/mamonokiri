@@ -69,6 +69,34 @@ describe("scene action input", () => {
     });
   });
 
+  it("keeps the fifty-match seed visible for a dark-mode replay", async () => {
+    harness = await createSceneHarness();
+    harness.dispatch("yamabushi-start", {
+      mode: "fifty",
+      difficulty: "dark",
+      seed: 0x12345678,
+    });
+    expect(harness.state()).toMatchObject({
+      mode: "fifty",
+      modeLimit: 50,
+      difficulty: "dark",
+      seed: 0x12345678,
+      remainingEnemies: 50,
+    });
+    const firstRunId = harness.state().runId;
+    harness.dispatch("yamabushi-restart", {
+      mode: "fifty",
+      difficulty: "dark",
+      seed: 0x12345678,
+    });
+    expect(harness.state()).toMatchObject({
+      mode: "fifty",
+      difficulty: "dark",
+      seed: 0x12345678,
+    });
+    expect(harness.state().runId).not.toBe(firstRunId);
+  });
+
   it("resolves a parry counter at its hit time, not on button-down", async () => {
     harness = await createSceneHarness();
     harness.start();
