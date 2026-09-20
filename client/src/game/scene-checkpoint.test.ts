@@ -78,8 +78,13 @@ describe("scene run checkpoint", () => {
     expect(
       writeRunCheckpoint({
         ...initial,
+        mode: "fifty",
         wave: 10,
+        boss: true,
+        variantIndex: 1,
         enemyHp: 0,
+        enemyMaxHp: 320,
+        enemyPostureMax: 180,
         defeatedCount: 10,
         rewardPending: true,
         rewardChapter: 1,

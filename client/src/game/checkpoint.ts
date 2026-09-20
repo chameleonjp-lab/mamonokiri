@@ -1,9 +1,13 @@
 import {
   DIFFICULTY_CONFIG,
+  defensiveScoreLimitFor,
   modeLimitFor,
   PRACTICE_WAVE_LIMIT,
   RUN_MODE_CONFIG,
   SCORE_RULES_VERSION,
+  structuredChapterEncounterFor,
+  tenRunEncounterFor,
+  tutorialVariantIndex,
   type ChapterRewardKind,
   type Difficulty,
   type RunMode,
@@ -99,6 +103,17 @@ function validRewardOption(value: unknown): value is CheckpointRewardOption {
   );
 }
 
+function expectedEncounterFor(
+  checkpoint: Pick<RunCheckpoint, "mode" | "practice" | "wave">
+): { boss: boolean; variantIndex: number } | null {
+  const tutorialIndex = tutorialVariantIndex(checkpoint.wave);
+  if (tutorialIndex !== null)
+    return { boss: false, variantIndex: tutorialIndex };
+  if (checkpoint.practice) return null;
+  if (checkpoint.mode === "ten") return tenRunEncounterFor(checkpoint.wave);
+  return structuredChapterEncounterFor(checkpoint.wave);
+}
+
 function validCheckpoint(value: unknown): value is RunCheckpoint {
   if (!value || typeof value !== "object") return false;
   const checkpoint = value as Partial<RunCheckpoint>;
@@ -117,6 +132,10 @@ function validCheckpoint(value: unknown): value is RunCheckpoint {
 
   const limit = modeLimitFor(checkpoint.mode);
   const variantLimit = checkpoint.boss ? 10 : 7;
+  const expectedEncounter = expectedEncounterFor(checkpoint as RunCheckpoint);
+  const bossDefeats = checkpoint.bossDefeats ?? Number.POSITIVE_INFINITY;
+  const defensiveAwardsThisEnemy =
+    checkpoint.defensiveScoreAwardsThisEnemy ?? Number.POSITIVE_INFINITY;
   if (
     !isFiniteInteger(checkpoint.seed) ||
     checkpoint.seed < 0 ||
@@ -144,7 +163,17 @@ function validCheckpoint(value: unknown): value is RunCheckpoint {
     checkpoint.enemyPosture < 0 ||
     !isFiniteNumber(checkpoint.enemyPostureMax) ||
     checkpoint.enemyPostureMax <= 0 ||
-    checkpoint.enemyPosture > checkpoint.enemyPostureMax
+    checkpoint.enemyPosture > checkpoint.enemyPostureMax ||
+    checkpoint.enemyMaxHp !== (checkpoint.boss ? 320 : 100) ||
+    checkpoint.enemyPostureMax !== (checkpoint.boss ? 180 : 80) ||
+    checkpoint.defeatedCount !==
+      (checkpoint.rewardPending ? checkpoint.wave : checkpoint.wave - 1) ||
+    bossDefeats > checkpoint.defeatedCount ||
+    defensiveAwardsThisEnemy > defensiveScoreLimitFor(checkpoint.boss) ||
+    checkpoint.boss !== (checkpoint.wave % 5 === 0) ||
+    (expectedEncounter !== null &&
+      (checkpoint.boss !== expectedEncounter.boss ||
+        checkpoint.variantIndex !== expectedEncounter.variantIndex))
   )
     return false;
 
@@ -174,8 +203,14 @@ function validCheckpoint(value: unknown): value is RunCheckpoint {
   const pendingDefeatWave = checkpoint.pendingDefeatWave;
   if (
     counters.some(value => !isFiniteNumber(value) || value < 0) ||
+    !isFiniteInteger(checkpoint.rewardEffectStartWave) ||
+    !isFiniteInteger(checkpoint.rewardEffectEndWave) ||
     !isFiniteInteger(checkpoint.lastBossVariantIndex) ||
     checkpoint.lastBossVariantIndex < -1 ||
+    checkpoint.lastBossVariantIndex >= 10 ||
+    !isFiniteInteger(checkpoint.lastNormalVariantIndex) ||
+    checkpoint.lastNormalVariantIndex < 0 ||
+    checkpoint.lastNormalVariantIndex >= 7 ||
     !Array.isArray(checkpoint.rewardEffects) ||
     !checkpoint.rewardEffects.every(isRewardKind) ||
     !Array.isArray(checkpoint.rewardOptions) ||
@@ -191,7 +226,14 @@ function validCheckpoint(value: unknown): value is RunCheckpoint {
       rewardChapter <= 0 ||
       !isFiniteInteger(pendingDefeatWave) ||
       pendingDefeatWave <= 0 ||
-      checkpoint.rewardOptions.length === 0
+      checkpoint.rewardOptions.length === 0 ||
+      checkpoint.practice ||
+      checkpoint.wave % 10 !== 0 ||
+      checkpoint.wave >= limit ||
+      pendingDefeatWave !== checkpoint.wave ||
+      rewardChapter !== checkpoint.wave / 10 ||
+      checkpoint.enemyHp !== 0 ||
+      checkpoint.rewardEffects.length !== 0
     )
       return false;
   } else if (
@@ -200,6 +242,30 @@ function validCheckpoint(value: unknown): value is RunCheckpoint {
     checkpoint.rewardOptions.length !== 0
   )
     return false;
+
+  const rewardOptionKinds = checkpoint.rewardOptions.map(option => option.kind);
+  if (new Set(rewardOptionKinds).size !== rewardOptionKinds.length)
+    return false;
+  if (checkpoint.rewardEffects.length > 2) return false;
+  if (
+    new Set(checkpoint.rewardEffects).size !== checkpoint.rewardEffects.length
+  )
+    return false;
+  if (checkpoint.rewardEffects.length === 0) {
+    if (
+      checkpoint.rewardEffectStartWave !== 0 ||
+      checkpoint.rewardEffectEndWave !== 0
+    )
+      return false;
+  } else if (
+    (checkpoint.rewardEffectStartWave ?? -1) < 1 ||
+    (checkpoint.rewardEffectStartWave ?? -1) > checkpoint.wave ||
+    (checkpoint.rewardEffectEndWave ?? -1) <
+      (checkpoint.rewardEffectStartWave ?? -1) ||
+    (checkpoint.rewardEffectEndWave ?? -1) > limit
+  ) {
+    return false;
+  }
 
   return true;
 }
