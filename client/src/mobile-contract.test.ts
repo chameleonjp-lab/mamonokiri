@@ -95,9 +95,17 @@ describe("smartphone play contract", () => {
     expect(appSource).toContain("if (state.practice)");
     expect(sceneSource).toContain("PRACTICE_WAVE_LIMIT");
     expect(sceneSource).toContain("if (!practice) hp = applyDamage");
-    expect(appSource.indexOf("result-actions result-actions-primary")).toBeLessThan(
-      appSource.indexOf('className="result-platform"')
-    );
+    expect(
+      appSource.indexOf("result-actions result-actions-primary")
+    ).toBeLessThan(appSource.indexOf('className="result-platform"'));
+  });
+
+  it("keeps the formal ten-match route on its three normals and two beast bosses", () => {
+    expect(sceneSource).toContain("tenRunEncounterFor");
+    expect(sceneSource).toContain('beastStyle: "fang"');
+    expect(sceneSource).toContain('beastStyle: "bear"');
+    expect(sceneSource).toContain('variant.beastStyle === "fang"');
+    expect(sceneSource).toContain('variant.beastStyle === "bear"');
   });
 
   it("clears transient attack direction state before a retry starts", () => {

@@ -1396,7 +1396,7 @@ export default function App() {
           </section>
           <p className="title-recommendation">
             <strong>おすすめ</strong> 十番勝負・見習い
-            <small>まずは短い勝負で4つの操作を覚えます。</small>
+            <small>通常3種と獣ボス2体を、短い勝負で覚えます。</small>
           </p>
           <details className="title-advanced">
             <summary>
