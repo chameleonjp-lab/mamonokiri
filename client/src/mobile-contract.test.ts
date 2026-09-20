@@ -108,6 +108,16 @@ describe("smartphone play contract", () => {
     expect(sceneSource).toContain('variant.beastStyle === "bear"');
   });
 
+  it("keeps chapter two and three encounters structured and visually distinct", () => {
+    expect(sceneSource).toContain("structuredChapterEncounterFor");
+    expect(sceneSource).toContain('familyStyle: "monster"');
+    expect(sceneSource).toContain('familyStyle: "human"');
+    expect(sceneSource).toContain("enemy.familyFeatures.monster");
+    expect(sceneSource).toContain("enemy.familyFeatures.human");
+    expect(sceneSource).toContain("第2章。交互、三手、重圧の順に型を読む。");
+    expect(sceneSource).toContain("第3章。交互、三手、追尾の返しを見よ。");
+  });
+
   it("clears transient attack direction state before a retry starts", () => {
     expect(sceneSource).toMatch(/spearAttackSide = 0;\s+dangerLane = 0;/);
     expect(sceneSource).toMatch(/recoilUntil = 0;\s+recoilDirection = 1;/);

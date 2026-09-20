@@ -87,10 +87,15 @@ export type TenRunEncounter = {
   variantIndex: number;
 };
 
+export type StructuredChapterEncounter = TenRunEncounter & {
+  chapter: 2 | 3;
+};
+
 /**
  * The short formal run is a learnable route, not a random catalogue preview.
  * The first three encounters teach the three normal types, wave 5 is the first
- * beast boss, and wave 10 is the second. Longer modes keep their seeded pools.
+ * beast boss, and wave 10 is the second. Longer modes use the structured
+ * chapter-two/three route below before returning to seeded pools.
  */
 const TEN_RUN_ENCOUNTERS: ReadonlyArray<TenRunEncounter> = [
   { boss: false, variantIndex: 0 },
@@ -107,6 +112,43 @@ const TEN_RUN_ENCOUNTERS: ReadonlyArray<TenRunEncounter> = [
 
 export function tenRunEncounterFor(wave: number): TenRunEncounter | null {
   const encounter = TEN_RUN_ENCOUNTERS[Math.trunc(wave) - 1];
+  return encounter ? { ...encounter } : null;
+}
+
+/**
+ * Chapters two and three use a short, repeatable lesson route in the longer
+ * modes. Each chapter introduces its normal families before the chapter boss,
+ * then repeats the first lessons so a player can read the route under stress.
+ * Chapter four and five remain seeded pools until their dedicated stage.
+ */
+const STRUCTURED_CHAPTER_ENCOUNTERS: ReadonlyArray<StructuredChapterEncounter> =
+  [
+    { chapter: 2, boss: false, variantIndex: 2 },
+    { chapter: 2, boss: false, variantIndex: 3 },
+    { chapter: 2, boss: false, variantIndex: 6 },
+    { chapter: 2, boss: false, variantIndex: 2 },
+    { chapter: 2, boss: true, variantIndex: 2 },
+    { chapter: 2, boss: false, variantIndex: 3 },
+    { chapter: 2, boss: false, variantIndex: 6 },
+    { chapter: 2, boss: false, variantIndex: 2 },
+    { chapter: 2, boss: false, variantIndex: 3 },
+    { chapter: 2, boss: true, variantIndex: 3 },
+    { chapter: 3, boss: false, variantIndex: 2 },
+    { chapter: 3, boss: false, variantIndex: 3 },
+    { chapter: 3, boss: false, variantIndex: 4 },
+    { chapter: 3, boss: false, variantIndex: 2 },
+    { chapter: 3, boss: true, variantIndex: 4 },
+    { chapter: 3, boss: false, variantIndex: 3 },
+    { chapter: 3, boss: false, variantIndex: 4 },
+    { chapter: 3, boss: false, variantIndex: 2 },
+    { chapter: 3, boss: false, variantIndex: 3 },
+    { chapter: 3, boss: true, variantIndex: 5 },
+  ];
+
+export function structuredChapterEncounterFor(
+  wave: number
+): StructuredChapterEncounter | null {
+  const encounter = STRUCTURED_CHAPTER_ENCOUNTERS[Math.trunc(wave) - 11];
   return encounter ? { ...encounter } : null;
 }
 

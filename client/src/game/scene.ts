@@ -53,6 +53,7 @@ import {
   SCORE_RULES_VERSION,
   scoreForCombo,
   shouldAdvanceCombatClock,
+  structuredChapterEncounterFor,
   tenRunEncounterFor,
   tutorialVariantIndex,
   type ChapterRewardKind,
@@ -120,6 +121,7 @@ type EnemyVariant = {
   cooldown: number;
   notice: string;
   beastStyle?: "fang" | "bear";
+  familyStyle?: "monster" | "human";
   boss?: boolean;
 };
 const ENEMY_VARIANTS: EnemyVariant[] = [
@@ -228,6 +230,7 @@ const BOSS_VARIANTS: EnemyVariant[] = [
     attackSide: "alternate",
     cooldown: 3000,
     notice: "危険域が外へ膨らむ。早く動きすぎるな。",
+    familyStyle: "monster",
     boss: true,
   },
   {
@@ -239,6 +242,7 @@ const BOSS_VARIANTS: EnemyVariant[] = [
     attackSide: "target",
     cooldown: 3300,
     notice: "広がる眼光が狙いを追う。止まる瞬間を見よ。",
+    familyStyle: "monster",
     boss: true,
   },
   {
@@ -250,6 +254,7 @@ const BOSS_VARIANTS: EnemyVariant[] = [
     attackSide: "left",
     cooldown: 3100,
     notice: "予告を一度返す。返した線が真である。",
+    familyStyle: "human",
     boss: true,
   },
   {
@@ -261,6 +266,7 @@ const BOSS_VARIANTS: EnemyVariant[] = [
     attackSide: "right",
     cooldown: 2900,
     notice: "静かなフェイント後の線を読め。",
+    familyStyle: "human",
     boss: true,
   },
   {
@@ -471,6 +477,63 @@ function makeEnemy(
     fang: [beastFangL, beastFangR],
     bear: [bearShoulderL, bearShoulderR, bearEarL, bearEarR],
   };
+  const monsterEyeL = MeshBuilder.CreateSphere(
+    "monster_eye_l",
+    { diameter: 0.16, segments: 6 },
+    scene
+  );
+  monsterEyeL.position = new Vector3(-0.34, 1.55, -0.68);
+  monsterEyeL.material = materials.amber;
+  monsterEyeL.parent = root;
+  const monsterEyeR = monsterEyeL.clone("monster_eye_r")!;
+  monsterEyeR.position.x = 0.34;
+  monsterEyeR.parent = root;
+  const monsterEyeTop = monsterEyeL.clone("monster_eye_top")!;
+  monsterEyeTop.position = new Vector3(0, 1.82, -0.56);
+  monsterEyeTop.scaling.setAll(0.78);
+  monsterEyeTop.parent = root;
+  const monsterEyeRing = MeshBuilder.CreateTorus(
+    "monster_eye_ring",
+    { diameter: 0.94, thickness: 0.055, tessellation: 12 },
+    scene
+  );
+  monsterEyeRing.position = new Vector3(0, 1.49, -0.62);
+  monsterEyeRing.material = materials.amber;
+  monsterEyeRing.parent = root;
+  const humanCrest = box(
+    scene,
+    "human_crest",
+    new Vector3(0.16, 0.48, 0.12),
+    new Vector3(0, 1.93, -0.34),
+    materials.gold
+  );
+  humanCrest.parent = root;
+  const humanShoulderL = box(
+    scene,
+    "human_shoulder_l",
+    new Vector3(0.46, 0.18, 0.34),
+    new Vector3(-0.5, 1.48, -0.03),
+    materials.iron
+  );
+  humanShoulderL.rotation.z = -0.12;
+  humanShoulderL.parent = root;
+  const humanShoulderR = humanShoulderL.clone("human_shoulder_r")!;
+  humanShoulderR.position.x = 0.5;
+  humanShoulderR.rotation.z = 0.12;
+  humanShoulderR.parent = root;
+  const humanSash = box(
+    scene,
+    "human_sash",
+    new Vector3(0.86, 0.1, 0.14),
+    new Vector3(0, 0.68, -0.67),
+    materials.cream
+  );
+  humanSash.rotation.z = -0.12;
+  humanSash.parent = root;
+  const familyFeatures = {
+    monster: [monsterEyeL, monsterEyeR, monsterEyeTop, monsterEyeRing],
+    human: [humanCrest, humanShoulderL, humanShoulderR, humanSash],
+  };
   return {
     root,
     body,
@@ -480,6 +543,7 @@ function makeEnemy(
     spears: [spearL, spearR],
     spearTips: [spearTipL, spearTipR],
     beastFeatures,
+    familyFeatures,
   };
 }
 function announce(state: GameState) {
@@ -1335,6 +1399,12 @@ export async function createGameScene(
     enemy.beastFeatures.bear.forEach(feature => {
       feature.isVisible = variant.beastStyle === "bear";
     });
+    enemy.familyFeatures.monster.forEach(feature => {
+      feature.isVisible = variant.familyStyle === "monster";
+    });
+    enemy.familyFeatures.human.forEach(feature => {
+      feature.isVisible = variant.familyStyle === "human";
+    });
   };
   const setEnemyGlow = (isBoss: boolean) => {
     const glow = isBoss ? materials.bossGlow : materials.enemyGlow;
@@ -1348,6 +1418,12 @@ export async function createGameScene(
       feature.material = glow;
     });
     enemy.beastFeatures.bear.forEach(feature => {
+      feature.material = glow;
+    });
+    enemy.familyFeatures.monster.forEach(feature => {
+      feature.material = glow;
+    });
+    enemy.familyFeatures.human.forEach(feature => {
       feature.material = glow;
     });
   };
@@ -1493,7 +1569,14 @@ export async function createGameScene(
     wave += 1;
     const plannedTenEncounter =
       mode === "ten" && wave <= modeLimit ? tenRunEncounterFor(wave) : null;
-    boss = plannedTenEncounter?.boss ?? wave % 5 === 0;
+    const plannedChapterEncounter =
+      mode !== "ten" && wave <= modeLimit
+        ? structuredChapterEncounterFor(wave)
+        : null;
+    boss =
+      plannedTenEncounter?.boss ??
+      plannedChapterEncounter?.boss ??
+      wave % 5 === 0;
     const tutorialIndex = tutorialVariantIndex(wave);
     tutorialStep = tutorialIndex === null ? 0 : wave;
     tutorialObjectiveMet = false;
@@ -1508,6 +1591,14 @@ export async function createGameScene(
       } else {
         lastNormalVariantIndex = plannedTenEncounter.variantIndex;
         currentVariant = ENEMY_VARIANTS[plannedTenEncounter.variantIndex];
+      }
+    } else if (plannedChapterEncounter) {
+      if (plannedChapterEncounter.boss) {
+        lastBossVariantIndex = plannedChapterEncounter.variantIndex;
+        currentVariant = BOSS_VARIANTS[plannedChapterEncounter.variantIndex];
+      } else {
+        lastNormalVariantIndex = plannedChapterEncounter.variantIndex;
+        currentVariant = ENEMY_VARIANTS[plannedChapterEncounter.variantIndex];
       }
     } else {
       if (boss) {
@@ -1612,6 +1703,10 @@ export async function createGameScene(
       message = `${practice ? "稽古" : "第"}2${practice ? "。右槍の予告を見て、左へ避けよ。" : "試練。右槍の予告を見て、左へ避けよ。"}`;
     else if (tutorialIndex === 2)
       message = `${practice ? "稽古" : "第"}3${practice ? "。直前に防御して受け流し、斬で反撃せよ。" : "試練。直前に防御して受け流し、斬で反撃せよ。"}`;
+    else if (wave === 11)
+      message = `第2章。交互、三手、重圧の順に型を読む。${boss ? ` ${currentVariant.name}、来たる。` : ` ${currentVariant.notice}`}`;
+    else if (wave === 21)
+      message = `第3章。交互、三手、追尾の返しを見よ。${boss ? ` ${currentVariant.name}、来たる。` : ` ${currentVariant.notice}`}`;
     else
       message = boss
         ? `${currentVariant.name}、来たる。構えの変化を見よ。`

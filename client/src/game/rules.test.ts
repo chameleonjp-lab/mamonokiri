@@ -35,6 +35,7 @@ import {
   shiftActiveTimer,
   shouldAdvanceAfterDefeat,
   shouldAdvanceCombatClock,
+  structuredChapterEncounterFor,
   tenRunEncounterFor,
   tutorialVariantIndex,
 } from "./rules";
@@ -94,6 +95,45 @@ describe("priority S combat rules", () => {
     ).toEqual([0, 1, 2, 0, 1, 2, 0, 1]);
     expect(tenRunEncounterFor(0)).toBeNull();
     expect(tenRunEncounterFor(11)).toBeNull();
+  });
+
+  it("keeps chapters two and three on a readable normal and boss route", () => {
+    const encounters = Array.from({ length: 20 }, (_, index) =>
+      structuredChapterEncounterFor(index + 11)
+    );
+    expect(encounters.every(Boolean)).toBe(true);
+    expect(
+      encounters.slice(0, 10).map(encounter => encounter?.chapter)
+    ).toEqual(Array(10).fill(2));
+    expect(encounters.slice(10).map(encounter => encounter?.chapter)).toEqual(
+      Array(10).fill(3)
+    );
+    expect(
+      encounters
+        .slice(0, 10)
+        .filter(encounter => encounter && !encounter.boss)
+        .map(encounter => encounter?.variantIndex)
+    ).toEqual([2, 3, 6, 2, 3, 6, 2, 3]);
+    expect(
+      encounters
+        .slice(0, 10)
+        .filter(encounter => encounter?.boss)
+        .map(encounter => encounter?.variantIndex)
+    ).toEqual([2, 3]);
+    expect(
+      encounters
+        .slice(10)
+        .filter(encounter => encounter && !encounter.boss)
+        .map(encounter => encounter?.variantIndex)
+    ).toEqual([2, 3, 4, 2, 3, 4, 2, 3]);
+    expect(
+      encounters
+        .slice(10)
+        .filter(encounter => encounter?.boss)
+        .map(encounter => encounter?.variantIndex)
+    ).toEqual([4, 5]);
+    expect(structuredChapterEncounterFor(10)).toBeNull();
+    expect(structuredChapterEncounterFor(31)).toBeNull();
   });
 
   it("uses the configured left and right attack lanes", () => {
