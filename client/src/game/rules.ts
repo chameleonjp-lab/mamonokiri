@@ -88,7 +88,7 @@ export type TenRunEncounter = {
 };
 
 export type StructuredChapterEncounter = TenRunEncounter & {
-  chapter: 2 | 3;
+  chapter: 2 | 3 | 4 | 5;
 };
 
 /**
@@ -119,7 +119,8 @@ export function tenRunEncounterFor(wave: number): TenRunEncounter | null {
  * Chapters two and three use a short, repeatable lesson route in the longer
  * modes. Each chapter introduces its normal families before the chapter boss,
  * then repeats the first lessons so a player can read the route under stress.
- * Chapter four and five remain seeded pools until their dedicated stage.
+ * The chapter-four bird route and chapter-five monument route are included so
+ * a fifty-match run exposes every late-game lesson and both boss candidates.
  */
 const STRUCTURED_CHAPTER_ENCOUNTERS: ReadonlyArray<StructuredChapterEncounter> =
   [
@@ -143,6 +144,26 @@ const STRUCTURED_CHAPTER_ENCOUNTERS: ReadonlyArray<StructuredChapterEncounter> =
     { chapter: 3, boss: false, variantIndex: 2 },
     { chapter: 3, boss: false, variantIndex: 3 },
     { chapter: 3, boss: true, variantIndex: 5 },
+    { chapter: 4, boss: false, variantIndex: 4 },
+    { chapter: 4, boss: false, variantIndex: 5 },
+    { chapter: 4, boss: false, variantIndex: 6 },
+    { chapter: 4, boss: false, variantIndex: 4 },
+    { chapter: 4, boss: true, variantIndex: 6 },
+    { chapter: 4, boss: false, variantIndex: 5 },
+    { chapter: 4, boss: false, variantIndex: 6 },
+    { chapter: 4, boss: false, variantIndex: 4 },
+    { chapter: 4, boss: false, variantIndex: 5 },
+    { chapter: 4, boss: true, variantIndex: 7 },
+    { chapter: 5, boss: false, variantIndex: 0 },
+    { chapter: 5, boss: false, variantIndex: 1 },
+    { chapter: 5, boss: false, variantIndex: 2 },
+    { chapter: 5, boss: false, variantIndex: 3 },
+    { chapter: 5, boss: true, variantIndex: 8 },
+    { chapter: 5, boss: false, variantIndex: 4 },
+    { chapter: 5, boss: false, variantIndex: 5 },
+    { chapter: 5, boss: false, variantIndex: 6 },
+    { chapter: 5, boss: false, variantIndex: 0 },
+    { chapter: 5, boss: true, variantIndex: 9 },
   ];
 
 export function structuredChapterEncounterFor(

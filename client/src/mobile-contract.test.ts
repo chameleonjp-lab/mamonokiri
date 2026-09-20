@@ -108,14 +108,26 @@ describe("smartphone play contract", () => {
     expect(sceneSource).toContain('variant.beastStyle === "bear"');
   });
 
-  it("keeps chapter two and three encounters structured and visually distinct", () => {
+  it("keeps every long-run chapter structured and visually distinct", () => {
     expect(sceneSource).toContain("structuredChapterEncounterFor");
     expect(sceneSource).toContain('familyStyle: "monster"');
     expect(sceneSource).toContain('familyStyle: "human"');
+    expect(sceneSource).toContain('familyStyle: "bird"');
+    expect(sceneSource).toContain('familyStyle: "monument"');
     expect(sceneSource).toContain("enemy.familyFeatures.monster");
     expect(sceneSource).toContain("enemy.familyFeatures.human");
+    expect(sceneSource).toContain("enemy.familyFeatures.bird");
+    expect(sceneSource).toContain("enemy.familyFeatures.monument");
     expect(sceneSource).toContain("第2章。交互、三手、重圧の順に型を読む。");
     expect(sceneSource).toContain("第3章。交互、三手、追尾の返しを見よ。");
+    expect(sceneSource).toContain("第4章。翼の移動先と急降下を見よ。");
+    expect(sceneSource).toContain("第5章。石門の全域攻撃は左右へ退け。");
+    expect(sceneSource).toContain("全域攻撃、左右へ退け。");
+    expect(sceneSource).toContain("monumentPhaseAttack");
+    expect(sceneSource).toContain(
+      "attackPlan = { dangerLane: 0, spearSide: 0, isWide: true }"
+    );
+    expect(sceneSource).toContain("急降下、着地点を外せ。");
   });
 
   it("clears transient attack direction state before a retry starts", () => {

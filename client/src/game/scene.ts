@@ -121,7 +121,7 @@ type EnemyVariant = {
   cooldown: number;
   notice: string;
   beastStyle?: "fang" | "bear";
-  familyStyle?: "monster" | "human";
+  familyStyle?: "monster" | "human" | "bird" | "monument";
   boss?: boolean;
 };
 const ENEMY_VARIANTS: EnemyVariant[] = [
@@ -278,6 +278,7 @@ const BOSS_VARIANTS: EnemyVariant[] = [
     attackSide: "alternate",
     cooldown: 3000,
     notice: "横へ舞った位置から急降下する。",
+    familyStyle: "bird",
     boss: true,
   },
   {
@@ -289,6 +290,7 @@ const BOSS_VARIANTS: EnemyVariant[] = [
     attackSide: "target",
     cooldown: 3400,
     notice: "白羽の移動先を見て、降下線を外せ。",
+    familyStyle: "bird",
     boss: true,
   },
   {
@@ -300,6 +302,7 @@ const BOSS_VARIANTS: EnemyVariant[] = [
     attackSide: "target",
     cooldown: 4500,
     notice: "動かず、地面を順に打つ。次の線を読め。",
+    familyStyle: "monument",
     boss: true,
   },
   {
@@ -311,6 +314,7 @@ const BOSS_VARIANTS: EnemyVariant[] = [
     attackSide: "target",
     cooldown: 5000,
     notice: "座したまま地を順に砕く。",
+    familyStyle: "monument",
     boss: true,
   },
 ];
@@ -530,9 +534,83 @@ function makeEnemy(
   );
   humanSash.rotation.z = -0.12;
   humanSash.parent = root;
+  const birdWingL = box(
+    scene,
+    "bird_wing_l",
+    new Vector3(0.18, 0.78, 0.12),
+    new Vector3(-0.72, 1.35, -0.04),
+    materials.cream
+  );
+  birdWingL.rotation.z = -0.42;
+  birdWingL.parent = root;
+  const birdWingR = birdWingL.clone("bird_wing_r")!;
+  birdWingR.position.x = 0.72;
+  birdWingR.rotation.z = 0.42;
+  birdWingR.parent = root;
+  const birdBeak = MeshBuilder.CreateCylinder(
+    "bird_beak",
+    { height: 0.42, diameterTop: 0, diameterBottom: 0.2, tessellation: 4 },
+    scene
+  );
+  birdBeak.rotation.x = Math.PI / 2;
+  birdBeak.position = new Vector3(0, 1.48, -0.84);
+  birdBeak.material = materials.gold;
+  birdBeak.parent = root;
+  const birdTail = box(
+    scene,
+    "bird_tail",
+    new Vector3(0.16, 0.52, 0.12),
+    new Vector3(0, 0.58, 0.22),
+    materials.cream
+  );
+  birdTail.rotation.x = -0.26;
+  birdTail.parent = root;
+  const monumentBase = box(
+    scene,
+    "monument_base",
+    new Vector3(1.7, 0.22, 0.72),
+    new Vector3(0, 0.2, 0.02),
+    materials.stone
+  );
+  monumentBase.parent = root;
+  const monumentPillarL = box(
+    scene,
+    "monument_pillar_l",
+    new Vector3(0.22, 1.36, 0.34),
+    new Vector3(-0.65, 1.05, 0.04),
+    materials.stone
+  );
+  monumentPillarL.parent = root;
+  const monumentPillarR = monumentPillarL.clone("monument_pillar_r")!;
+  monumentPillarR.position.x = 0.65;
+  monumentPillarR.parent = root;
+  const monumentBeam = box(
+    scene,
+    "monument_beam",
+    new Vector3(1.72, 0.2, 0.4),
+    new Vector3(0, 1.78, 0.04),
+    materials.stone
+  );
+  monumentBeam.parent = root;
+  const monumentGlyph = MeshBuilder.CreateTorus(
+    "monument_glyph",
+    { diameter: 0.78, thickness: 0.07, tessellation: 10 },
+    scene
+  );
+  monumentGlyph.position = new Vector3(0, 1.2, -0.28);
+  monumentGlyph.material = materials.gold;
+  monumentGlyph.parent = root;
   const familyFeatures = {
     monster: [monsterEyeL, monsterEyeR, monsterEyeTop, monsterEyeRing],
     human: [humanCrest, humanShoulderL, humanShoulderR, humanSash],
+    bird: [birdWingL, birdWingR, birdBeak, birdTail],
+    monument: [
+      monumentBase,
+      monumentPillarL,
+      monumentPillarR,
+      monumentBeam,
+      monumentGlyph,
+    ],
   };
   return {
     root,
@@ -1405,6 +1483,12 @@ export async function createGameScene(
     enemy.familyFeatures.human.forEach(feature => {
       feature.isVisible = variant.familyStyle === "human";
     });
+    enemy.familyFeatures.bird.forEach(feature => {
+      feature.isVisible = variant.familyStyle === "bird";
+    });
+    enemy.familyFeatures.monument.forEach(feature => {
+      feature.isVisible = variant.familyStyle === "monument";
+    });
   };
   const setEnemyGlow = (isBoss: boolean) => {
     const glow = isBoss ? materials.bossGlow : materials.enemyGlow;
@@ -1424,6 +1508,12 @@ export async function createGameScene(
       feature.material = glow;
     });
     enemy.familyFeatures.human.forEach(feature => {
+      feature.material = glow;
+    });
+    enemy.familyFeatures.bird.forEach(feature => {
+      feature.material = glow;
+    });
+    enemy.familyFeatures.monument.forEach(feature => {
       feature.material = glow;
     });
   };
@@ -1707,6 +1797,10 @@ export async function createGameScene(
       message = `第2章。交互、三手、重圧の順に型を読む。${boss ? ` ${currentVariant.name}、来たる。` : ` ${currentVariant.notice}`}`;
     else if (wave === 21)
       message = `第3章。交互、三手、追尾の返しを見よ。${boss ? ` ${currentVariant.name}、来たる。` : ` ${currentVariant.notice}`}`;
+    else if (wave === 31)
+      message = `第4章。翼の移動先と急降下を見よ。${boss ? ` ${currentVariant.name}、来たる。` : ` ${currentVariant.notice}`}`;
+    else if (wave === 41)
+      message = `第5章。石門の全域攻撃は左右へ退け。${boss ? ` ${currentVariant.name}、来たる。` : ` ${currentVariant.notice}`}`;
     else
       message = boss
         ? `${currentVariant.name}、来たる。構えの変化を見よ。`
@@ -2823,7 +2917,7 @@ export async function createGameScene(
         enemyAttackHit = false;
         enemyAttackCount += 1;
         const forcedLane = hasQueuedAttack ? queuedAttackLanes.shift() : null;
-        const attackPlan =
+        let attackPlan =
           forcedLane === null || forcedLane === undefined
             ? enemyAttackPlanFor(
                 currentVariant.role,
@@ -2836,6 +2930,14 @@ export async function createGameScene(
                 spearSide: forcedLane,
                 isWide: false,
               };
+        const monumentPhaseAttack =
+          boss &&
+          currentVariant.family === "モニュメント型" &&
+          bossPhase === 2 &&
+          (forcedLane === null || forcedLane === undefined);
+        if (monumentPhaseAttack) {
+          attackPlan = { dangerLane: 0, spearSide: 0, isWide: true };
+        }
         if (boss && currentVariant.family === "鳥型") {
           enemyTargetX =
             forcedLane !== null && forcedLane !== undefined
@@ -2880,9 +2982,11 @@ export async function createGameScene(
         message =
           forcedLane !== null && forcedLane !== undefined
             ? "追撃の予告。先ほどと別の危険線を見よ。"
-            : boss
-              ? `${familyCue} ${currentVariant.notice}`
-              : currentVariant.notice;
+            : monumentPhaseAttack
+              ? "石門が地を覆う。全域攻撃、左右へ退け。"
+              : boss
+                ? `${familyCue} ${currentVariant.notice}`
+                : currentVariant.notice;
         announce(state());
       }
       if (!enemyAttackAt || attackElapsed > enemyAttackDuration) {
@@ -3010,8 +3114,14 @@ export async function createGameScene(
           }
           enemy.root.rotation.y = -0.18 + 0.5 * strike;
           enemy.blade.rotation.z = -1.25 + 2.35 * strike;
-          if (attackElapsed > 460 && message !== "岩刃、振り抜く。") {
-            message = "岩刃、振り抜く。";
+          const strikeMessage =
+            currentVariant.family === "鳥型"
+              ? "急降下、着地点を外せ。"
+              : currentVariant.family === "モニュメント型"
+                ? "石門、地を砕く。"
+                : "岩刃、振り抜く。";
+          if (attackElapsed > 460 && message !== strikeMessage) {
+            message = strikeMessage;
             announce(state());
           }
         } else {
