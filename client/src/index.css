@@ -738,3 +738,143 @@ body,
   .title-screen > .result-primary, .practice-start, .resume-saved-run, .result-actions-primary button { min-height: 44px; font-size: 12px; }
   .practice-start { margin-top: 4px; padding: 6px 14px; }
 }
+
+/* Stage 11: keep the two input surfaces exclusive and stack live guidance in
+   one reserved region so it cannot collide with the controls below. */
+.desktop-controls {
+  display: flex;
+}
+
+.battle-copy {
+  position: fixed;
+  z-index: 4;
+  left: 50%;
+  bottom: calc(126px + env(safe-area-inset-bottom));
+  width: min(760px, 94vw);
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.battle-copy .combat-guide,
+.battle-copy .stance,
+.battle-copy .message {
+  position: static;
+  inset: auto;
+  left: auto;
+  right: auto;
+  top: auto;
+  bottom: auto;
+  transform: none;
+  pointer-events: none;
+}
+
+.battle-copy .combat-guide {
+  order: 1;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.battle-copy .message {
+  order: 2;
+  width: min(100%, 560px);
+  max-width: 100%;
+  white-space: normal;
+  text-align: center;
+}
+
+.message-line {
+  display: block;
+  max-width: 100%;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.battle-copy .stance {
+  order: 3;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (min-width: 561px) {
+  .desktop-controls {
+    display: flex;
+  }
+
+  .gameboy-controls {
+    display: none !important;
+  }
+}
+
+@media (max-width: 560px) {
+  .desktop-controls {
+    display: none !important;
+  }
+
+  .gameboy-controls {
+    display: flex;
+  }
+
+  .battle-copy {
+    bottom: calc(108px + env(safe-area-inset-bottom));
+    width: min(94vw, 560px);
+    gap: 6px;
+  }
+
+  .battle-copy .combat-guide {
+    max-width: 100%;
+    font-size: 9px;
+  }
+
+  .battle-copy .message {
+    width: 100%;
+    padding: 6px 12px 5px;
+    font-size: 12px;
+  }
+
+  .battle-copy .stance {
+    max-width: calc(100vw - 24px);
+    font-size: 10px;
+  }
+}
+
+@media (max-height: 500px) and (orientation: landscape) {
+  .battle-copy {
+    bottom: calc(78px + env(safe-area-inset-bottom));
+    width: min(480px, calc(100vw - 330px));
+    gap: 4px;
+  }
+
+  .battle-copy .combat-guide {
+    display: none;
+  }
+
+  .battle-copy .message {
+    width: 100%;
+    padding: 5px 10px 4px;
+    font-size: 11px;
+  }
+
+  .battle-copy .stance {
+    max-width: 100%;
+    font-size: 10px;
+  }
+}
+
+/* iPhone landscape is wider than 560px, so coarse-pointer devices still use
+   the touch surface while a narrow desktop window keeps its keyboard surface. */
+@media (max-height: 500px) and (orientation: landscape) and (pointer: coarse) {
+  .desktop-controls {
+    display: none !important;
+  }
+
+  .gameboy-controls {
+    display: flex !important;
+  }
+}
