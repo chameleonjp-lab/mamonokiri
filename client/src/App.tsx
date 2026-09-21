@@ -736,7 +736,7 @@ export default function App() {
           <span className="burst burst-a" />
           <span className="burst burst-b" />
           <div className="climax-copy">
-            <small>修験成就 / COMBO MILESTONE</small>
+            <small>修験成就 / 連撃の節目</small>
             <strong>{state.combo >= 20 ? state.combo : "十連"}</strong>
             <em>刃、迷いなし。</em>
           </div>
@@ -745,10 +745,10 @@ export default function App() {
       {showCounter && (
         <div className="counter-fx" aria-live="assertive">
           <span className="counter-ring" />
-          <small>COUNTER SUCCESS</small>
+          <small>受け流し成功</small>
           <strong>
             {state.combo}
-            <em> CHAIN</em>
+            <em> 連撃</em>
           </strong>
           <span>受け流し・反撃加算</span>
         </div>
@@ -756,7 +756,7 @@ export default function App() {
       {showBossVictory && (
         <div className="boss-victory-fx" aria-live="assertive">
           <span className="victory-rays" />
-          <small>THE MOUNTAIN LORD FALLS</small>
+          <small>峠の主を撃破</small>
           <strong>峠の主、断つ</strong>
           <em>撃破。次の敵影を読め</em>
           <b>ボス撃破 {state.bossDefeats}</b>
@@ -770,7 +770,7 @@ export default function App() {
           <i />
         </div>
         <div>
-          <p className="eyebrow">修験の刃 / PROLOGUE</p>
+          <p className="eyebrow">修験の刃 / 序章</p>
           <h1>
             墨霞<span>の</span>剣
           </h1>
@@ -795,9 +795,9 @@ export default function App() {
         <div className="hud-card-head">
           <div className="hud-label">
             <span>山伏</span>
-            <small>YAMABUSHI</small>
+            <small>プレイヤー</small>
           </div>
-          <span className="hud-kicker">PLAYER</span>
+          <span className="hud-kicker">操作役</span>
         </div>
         <Bar value={state.hp} tone="player" />
         <div className="stat-line">
@@ -817,7 +817,7 @@ export default function App() {
             <span>{state.enemyName}</span>
             <small>
               {state.boss
-                ? `${state.enemyFamily} / BOSS ${state.wave}`
+                ? `${state.enemyFamily}・第${state.wave}体目のボス`
                 : `${state.enemyFamily}・${state.enemyEpithet} / ${state.wave}体目`}
             </small>
           </div>
@@ -864,7 +864,7 @@ export default function App() {
       </section>
 
       <section className={`score-hud ${state.combo ? "is-combo" : ""}`}>
-        <div className="score-label">SCORE / CHAIN</div>
+        <div className="score-label">得点・連撃</div>
         <strong>{String(state.score).padStart(6, "0")}</strong>
         <small className="run-meta">
           {RUN_MODE_CONFIG[state.mode].label} /{" "}
@@ -907,34 +907,37 @@ export default function App() {
               ? "今すぐ斬で反撃"
               : "斬で仕留める"
             : state.tutorialStep === 3
-              ? "攻撃直前に押し、受け流したら斬"
-              : "赤い危険線と反対側へ回避"}
+              ? "攻撃直前に防御し、受け流したら斬る"
+              : "赤い危険線の反対側へ移動"}
         </aside>
       )}
-      <div className="stance">
-        <span className="dot" />
-        構え <strong>{state.stance}</strong>
-        {state.counterReady && (
-          <small className="counter-ready">反撃受付 / 斬</small>
-        )}
-        {state.enemyPhase === "防御" && (
-          <small className="guard-break-ready">
-            青い輪・防御中 / 斬で防御崩し
-          </small>
-        )}
-        {state.attackPhase !== "待機" && (
-          <small className="attack-phase">斬・{state.attackPhase}</small>
-        )}
-        {state.combo > 0 && <small>連撃継続中</small>}
-      </div>
-      <div className="message">
-        <span className="message-caption">CURRENT EXCHANGE</span>
-        <span className="message-mark">「</span>
-        {state.message}
-        <span className="message-mark">」</span>
+      <div className="battle-copy">
+        <div className="stance">
+          <span className="dot" />
+          構え <strong>{state.stance}</strong>
+          {state.counterReady && (
+            <small className="counter-ready">反撃受付中・斬</small>
+          )}
+          {state.enemyPhase === "防御" && (
+            <small className="guard-break-ready">
+              青い輪は防御中。斬で崩す。
+            </small>
+          )}
+          {state.attackPhase !== "待機" && (
+            <small className="attack-phase">斬・{state.attackPhase}</small>
+          )}
+          {state.combo > 0 && <small>連撃継続中</small>}
+        </div>
+        <div className="message" role="status" aria-live="polite">
+          <span className="message-caption">現在の読み合い</span>
+          <span className="message-line">「{state.message}」</span>
+        </div>
       </div>
 
-      <section className="controls">
+      <section
+        className="controls desktop-controls"
+        aria-label="キーボード操作"
+      >
         <span className="control-key">J</span>
         <span>斬る</span>
         <span className="control-key">K</span>
@@ -947,7 +950,7 @@ export default function App() {
         aria-label="タッチ操作"
       >
         <div className="move-controls gameboy-dpad">
-          <span className="mobile-group-label">MOVE</span>
+          <span className="mobile-group-label">移動</span>
           <div className="dpad-row">
             <button
               type="button"
@@ -965,7 +968,7 @@ export default function App() {
               }
             >
               <b>◀</b>
-              <small>LEFT</small>
+              <small>左</small>
             </button>
             <button
               type="button"
@@ -983,12 +986,12 @@ export default function App() {
               }
             >
               <b>▶</b>
-              <small>RIGHT</small>
+              <small>右</small>
             </button>
           </div>
         </div>
         <div className="combat-controls gameboy-actions">
-          <span className="mobile-group-label">ACTION</span>
+          <span className="mobile-group-label">攻撃</span>
           <div className="action-row">
             <button
               type="button"
@@ -1002,7 +1005,7 @@ export default function App() {
               }
             >
               <b>斬</b>
-              <small>SLASH</small>
+              <small>斬撃</small>
             </button>
             <button
               type="button"
@@ -1016,7 +1019,7 @@ export default function App() {
               }
             >
               <b>防</b>
-              <small>GUARD</small>
+              <small>防御</small>
             </button>
           </div>
         </div>
@@ -1029,11 +1032,11 @@ export default function App() {
           aria-modal="true"
           aria-labelledby="reward-title"
         >
-          <p className="eyebrow">CHAPTER CLEARED</p>
+          <p className="eyebrow">章を突破</p>
           <h2 id="reward-title">第{state.rewardChapter}章を越えた</h2>
-          <p>次の章だけ有効な修験を一つ選ぶ。</p>
+          <p>次の章で使う修験を一つ選ぶ。</p>
           <div className="reward-owned">
-            <span>効果は重複せず、次の章を終えると消える</span>
+            <span>効果は重ならず、次の章を終えると消えます</span>
           </div>
           <div className="reward-options">
             {state.rewardOptions.map(option => (
@@ -1059,23 +1062,19 @@ export default function App() {
           aria-modal="true"
           aria-labelledby="result-title"
         >
-          <p className="eyebrow">THE MOUNTAIN REMAINS</p>
+          <p className="eyebrow">峠はまだ続く</p>
           <h2 id="result-title">
-            {state.practice
-              ? "稽古、整う"
-              : victory
-                ? "敵影、断つ"
-                : "霧に沈む"}
+            {state.practice ? "稽古完了" : victory ? "敵影、断つ" : "霧に沈む"}
           </h2>
           <p>
             {state.practice
               ? "安全稽古（3手順・記録なし）"
               : `${RUN_MODE_CONFIG[state.mode].label}・${DIFFICULTY_CONFIG[state.difficulty].label}`}
             <br />
-            到達 {state.wave}体目　／　撃破 {state.defeatedCount}体
+            到達：{state.wave}体目　／　撃破：{state.defeatedCount}体
           </p>
           <p>
-            スコア {state.score}　／　最大連撃 {state.maxCombo}
+            得点：{state.score}　／　最大連撃：{state.maxCombo}
           </p>
           <p className="result-record">
             {state.practice ? (
@@ -1167,7 +1166,7 @@ export default function App() {
             aria-labelledby="result-platform-title"
           >
             <p className="eyebrow" id="result-platform-title">
-              RESULT RECORD
+              結果の記録
             </p>
             <p className="result-player">{playerName || "ななし"}さんの結果</p>
             <textarea
@@ -1186,7 +1185,7 @@ export default function App() {
                 )
               }
             >
-              結果をシェア
+              結果を共有
             </button>
             <p className="platform-status" role="status" aria-live="polite">
               {shareStatus}
@@ -1209,7 +1208,7 @@ export default function App() {
               </p>
             ) : (
               <div className="online-ranking">
-                <p className="eyebrow">TOP 10</p>
+                <p className="eyebrow">上位10名</p>
                 <ol>
                   {rankingLoading ? (
                     <li>ランキングを読み込み中…</li>
@@ -1255,7 +1254,7 @@ export default function App() {
           aria-labelledby="pause-title"
         >
           <div className="pause-panel">
-            <p className="eyebrow">THE BLADE RESTS</p>
+            <p className="eyebrow">刃を休める</p>
             <h2 id="pause-title">一時停止</h2>
             {state.pauseReason === "frame-gap" && (
               <p role="status">
@@ -1341,7 +1340,7 @@ export default function App() {
           aria-modal="true"
           aria-labelledby="title-heading"
         >
-          <p className="eyebrow">修験の刃 / PROLOGUE</p>
+          <p className="eyebrow">修験の刃 / 序章</p>
           <h2 id="title-heading">
             墨霞<span>の</span>剣
           </h2>
@@ -1371,7 +1370,7 @@ export default function App() {
             </div>
             <span className="title-visual-caption">予告を読む / 4つの操作</span>
           </div>
-          <p>敵の予告を見て、左右・防・斬で一体ずつ倒す。</p>
+          <p>敵の予告を見て、左・右へ避けるか、防御してから斬る。</p>
           <div className="scene-status" role="status" aria-live="polite">
             {sceneStatus.phase === "loading" && <p>ゲーム画面を準備中です…</p>}
             {sceneStatus.phase === "error" && (
@@ -1552,7 +1551,7 @@ export default function App() {
             className="result-secondary platform-share-button"
             onClick={() => void shareOrCopy(homeShareMessage(), setShareStatus)}
           >
-            ゲームをシェア
+            ゲームを共有
           </button>
           <p className="platform-status" role="status" aria-live="polite">
             {shareStatus}
@@ -1576,7 +1575,7 @@ export default function App() {
           aria-labelledby="exit-title"
         >
           <div className="exit-panel">
-            <p className="eyebrow">THE MOUNTAIN REMAINS</p>
+            <p className="eyebrow">峠はまだ続く</p>
             <h2 id="exit-title">ゲームを終了しますか？</h2>
             <p>この対決を離れると、現在の連撃とスコアは失われます。</p>
             <div className="exit-actions">
