@@ -878,3 +878,184 @@ body,
     display: flex !important;
   }
 }
+
+/* Stage 12: keep touch layouts bounded by the viewport even when a device
+   reports a wider layout viewport. The touch surface owns one finite region. */
+html,
+body,
+#root {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.game-shell {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.battle-copy,
+.battle-copy > * {
+  min-width: 0;
+}
+
+.battle-copy .combat-guide,
+.battle-copy .message,
+.battle-copy .stance {
+  width: 100%;
+  max-width: 100%;
+}
+
+.battle-copy .combat-guide {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  text-align: center;
+}
+
+@media (pointer: coarse) and (hover: none) {
+  .desktop-controls {
+    display: none !important;
+  }
+
+  .gameboy-controls {
+    display: flex !important;
+    position: fixed;
+    z-index: 6;
+    left: max(12px, env(safe-area-inset-left));
+    right: max(12px, env(safe-area-inset-right));
+    bottom: max(14px, env(safe-area-inset-bottom));
+    width: auto;
+    max-width: none;
+    transform: none;
+    align-items: end;
+    justify-content: space-between;
+    gap: clamp(6px, 2vw, 12px);
+    pointer-events: none;
+  }
+
+  .gameboy-dpad,
+  .gameboy-actions {
+    flex: 1 1 0;
+    width: auto;
+    min-width: 0;
+    pointer-events: auto;
+  }
+
+  .dpad-row,
+  .action-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(5px, 1.5vw, 8px);
+  }
+
+  .gameboy-controls .gb-btn {
+    width: 100%;
+    min-width: 0;
+    min-height: 52px;
+  }
+
+  .brand-lockup {
+    display: none;
+  }
+
+  .player-hud,
+  .enemy-hud {
+    top: calc(10px + env(safe-area-inset-top));
+    width: calc(50vw - 48px);
+    min-width: 108px;
+    max-width: calc(50vw - 48px);
+  }
+
+  .player-hud {
+    left: max(10px, env(safe-area-inset-left));
+  }
+
+  .enemy-hud {
+    right: max(10px, env(safe-area-inset-right));
+  }
+
+  .score-hud {
+    top: calc(clamp(128px, 17dvh, 152px) + env(safe-area-inset-top));
+    right: 50%;
+    left: auto;
+    transform: translateX(50%);
+  }
+
+  .score-hud.is-combo {
+    transform: translateX(50%) scale(1.04);
+  }
+
+  .pause-button {
+    top: calc(10px + env(safe-area-inset-top));
+    right: auto;
+    left: 50%;
+    min-width: 64px;
+    min-height: 44px;
+    transform: translateX(-50%);
+  }
+
+  .battle-copy {
+    left: max(12px, env(safe-area-inset-left));
+    right: max(12px, env(safe-area-inset-right));
+    bottom: calc(108px + env(safe-area-inset-bottom));
+    width: auto;
+    max-width: none;
+    transform: none;
+  }
+
+  .battle-copy .combat-guide {
+    font-size: clamp(9px, 2.6vw, 11px);
+  }
+
+  .battle-copy .message {
+    font-size: clamp(12px, 3vw, 16px);
+  }
+
+  .battle-copy .stance {
+    font-size: clamp(10px, 2.4vw, 12px);
+  }
+}
+
+@media (pointer: coarse) and (hover: none) and (orientation: landscape) and (max-height: 500px) {
+  .gameboy-controls {
+    left: max(14px, env(safe-area-inset-left));
+    right: max(14px, env(safe-area-inset-right));
+    bottom: calc(9px + env(safe-area-inset-bottom));
+    gap: 18px;
+  }
+
+  .gameboy-dpad,
+  .gameboy-actions {
+    flex: 0 1 clamp(142px, 22vw, 180px);
+    width: clamp(142px, 22vw, 180px);
+  }
+
+  .gameboy-controls .gb-btn {
+    min-height: 48px;
+    height: 48px;
+  }
+
+  .score-hud {
+    top: calc(8px + env(safe-area-inset-top));
+  }
+
+  .battle-copy {
+    left: 50%;
+    right: auto;
+    bottom: calc(78px + env(safe-area-inset-bottom));
+    width: min(480px, calc(100vw - 330px));
+    transform: translateX(-50%);
+  }
+
+  .battle-copy .combat-guide {
+    display: none;
+  }
+
+  .battle-copy .message {
+    font-size: 11px;
+  }
+
+  .battle-copy .stance {
+    font-size: 10px;
+  }
+}
