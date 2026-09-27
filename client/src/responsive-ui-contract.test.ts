@@ -67,4 +67,21 @@ describe("responsive UI contract", () => {
     expect(appSource).toContain("攻撃直前に防御し、受け流したら斬る");
     expect(appSource).toContain("青い輪は防御中。斬で崩す。");
   });
+
+  it("keeps the touch surface inside the viewport and stacks its guidance", () => {
+    const battleCopyStart = appSource.indexOf('className="battle-copy"');
+    const guideStart = appSource.indexOf("className={`combat-guide");
+    const stanceStart = appSource.indexOf('className="stance"', battleCopyStart);
+
+    expect(battleCopyStart).toBeGreaterThanOrEqual(0);
+    expect(guideStart).toBeGreaterThan(battleCopyStart);
+    expect(guideStart).toBeLessThan(stanceStart);
+    expect(cssSource).toContain("overflow-x: hidden");
+    expect(cssSource).toContain("@media (pointer: coarse) and (hover: none)");
+    expect(cssSource).toContain("left: max(12px, env(safe-area-inset-left))");
+    expect(cssSource).toContain("right: max(12px, env(safe-area-inset-right))");
+    expect(cssSource).toContain("min-width: 0");
+    expect(cssSource).toContain("width: max-content");
+  });
+
 });

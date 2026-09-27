@@ -883,35 +883,35 @@ export default function App() {
           </div>
         )}
       </section>
-      {state.tutorialStep > 0 && !state.defeated && (
-        <aside
-          className={`combat-guide ${state.practice ? "is-practice" : ""}`}
-          aria-label="序盤の操作ガイド"
-        >
-          <small className="guide-kicker">
-            {state.practice
-              ? `安全稽古 ${state.wave} / 3・記録なし`
-              : `序盤の型 ${state.wave} / 3`}
-          </small>
-          <b>
-            {state.tutorialObjectiveMet
-              ? "成功"
-              : state.tutorialStep === 3
-                ? "防"
-                : state.tutorialStep === 1
-                  ? "右"
-                  : "左"}
-          </b>{" "}
-          {state.tutorialObjectiveMet
-            ? state.tutorialStep === 3
-              ? "今すぐ斬で反撃"
-              : "斬で仕留める"
-            : state.tutorialStep === 3
-              ? "攻撃直前に防御し、受け流したら斬る"
-              : "赤い危険線の反対側へ移動"}
-        </aside>
-      )}
       <div className="battle-copy">
+        {state.tutorialStep > 0 && !state.defeated && (
+          <aside
+            className={`combat-guide ${state.practice ? "is-practice" : ""}`}
+            aria-label="序盤の操作ガイド"
+          >
+            <small className="guide-kicker">
+              {state.practice
+                ? `安全稽古 ${state.wave} / 3・記録なし`
+                : `序盤の型 ${state.wave} / 3`}
+            </small>
+            <b>
+              {state.tutorialObjectiveMet
+                ? "成功"
+                : state.tutorialStep === 3
+                  ? "防"
+                  : state.tutorialStep === 1
+                    ? "右"
+                    : "左"}
+            </b>{" "}
+            {state.tutorialObjectiveMet
+              ? state.tutorialStep === 3
+                ? "今すぐ斬で反撃"
+                : "斬で仕留める"
+              : state.tutorialStep === 3
+                ? "攻撃直前に防御し、受け流したら斬る"
+                : "赤い危険線の反対側へ移動"}
+          </aside>
+        )}
         <div className="stance">
           <span className="dot" />
           構え <strong>{state.stance}</strong>
