@@ -84,4 +84,24 @@ describe("responsive UI contract", () => {
     expect(cssSource).toContain("width: max-content");
   });
 
+
+  it("uses CSS geometry for direction controls", () => {
+    const directionSymbols = [
+      String.fromCodePoint(0x2190),
+      String.fromCodePoint(0x2192),
+      String.fromCodePoint(0x25c0),
+      String.fromCodePoint(0x25b6),
+      String.fromCodePoint(0x2b05, 0xfe0f),
+      String.fromCodePoint(0x27a1, 0xfe0f),
+    ];
+
+    expect(appSource).toContain("direction-glyph");
+    expect(cssSource).toContain(".direction-glyph");
+    expect(cssSource).toContain(".direction-glyph-left");
+    expect(cssSource).toContain(".direction-glyph-right");
+    for (const symbol of directionSymbols) {
+      expect(appSource).not.toContain(symbol);
+    }
+  });
+
 });
