@@ -899,9 +899,13 @@ body,
 }
 
 .battle-copy .combat-guide,
-.battle-copy .message,
-.battle-copy .stance {
+.battle-copy .message {
   width: 100%;
+  max-width: 100%;
+}
+
+.battle-copy .stance {
+  width: max-content;
   max-width: 100%;
 }
 

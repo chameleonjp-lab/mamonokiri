@@ -81,6 +81,7 @@ describe("responsive UI contract", () => {
     expect(cssSource).toContain("left: max(12px, env(safe-area-inset-left))");
     expect(cssSource).toContain("right: max(12px, env(safe-area-inset-right))");
     expect(cssSource).toContain("min-width: 0");
+    expect(cssSource).toContain("width: max-content");
   });
 
 });
