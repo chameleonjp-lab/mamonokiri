@@ -67,6 +67,7 @@ describe("responsive UI contract", () => {
     expect(appSource).toContain("攻撃直前に防御し、受け流したら斬る");
     expect(appSource).toContain("青い輪は防御中。斬で崩す。");
   });
+
   it("keeps the touch surface inside the viewport and stacks its guidance", () => {
     const battleCopyStart = appSource.indexOf('className="battle-copy"');
     const guideStart = appSource.indexOf("className={`combat-guide");

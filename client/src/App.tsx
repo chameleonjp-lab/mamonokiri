@@ -912,7 +912,7 @@ export default function App() {
                 : "赤い危険線の反対側へ移動"}
           </aside>
         )}
-          <div className="stance">
+        <div className="stance">
           <span className="dot" />
           構え <strong>{state.stance}</strong>
           {state.counterReady && (
