@@ -967,7 +967,10 @@ export default function App() {
                 })
               }
             >
-              <b>◀</b>
+              <span
+                className="direction-glyph direction-glyph-left"
+                aria-hidden="true"
+              />
               <small>左</small>
             </button>
             <button
@@ -985,7 +988,10 @@ export default function App() {
                 })
               }
             >
-              <b>▶</b>
+              <span
+                className="direction-glyph direction-glyph-right"
+                aria-hidden="true"
+              />
               <small>右</small>
             </button>
           </div>
