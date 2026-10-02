@@ -11,7 +11,7 @@ import {
 
 const source = readFileSync(
   new URL("./proceduralCharacter.ts", import.meta.url),
-  "utf8",
+  "utf8"
 );
 
 describe("procedural character motion contract", () => {
@@ -42,7 +42,7 @@ describe("procedural character motion contract", () => {
     expect(source).toContain('"right_elbow"');
     expect(source).toContain('"left_knee"');
     expect(source).toContain('"right_ankle"');
-    expect(source).toContain("applyMotion: (sample) => applyMotion");
+    expect(source).toMatch(/applyMotion: \(?sample\)? => applyMotion/);
   });
 
   it("does not depend on image, texture, or external model data", () => {
@@ -67,11 +67,11 @@ describe("procedural character motion contract", () => {
         "hair",
         "steel",
         "gold",
-      ].map((name) => {
+      ].map(name => {
         const material = new StandardMaterial(name, scene);
         material.diffuseColor = new Color3(0.5, 0.5, 0.5);
         return [name, material];
-      }),
+      })
     ) as Record<string, StandardMaterial>;
     const player = makeProceduralPlayer(scene, materials);
     const motions: PlayerMotionKind[] = [
@@ -99,7 +99,15 @@ describe("procedural character motion contract", () => {
 
     expect(player.root.getChildren().length).toBeGreaterThan(0);
     expect(player.blade.parent?.name).toBe("right_hand");
-    expect(player.root.position.y).toBe(0.36);
+    const feet = ["left_zori", "right_zori"].map(
+      name => scene.getMeshByName(name)!
+    );
+    feet.forEach(foot => foot.computeWorldMatrix(true));
+    expect(
+      Math.min(
+        ...feet.map(foot => foot.getBoundingInfo().boundingBox.minimumWorld.y)
+      )
+    ).toBeCloseTo(0, 5);
     scene.dispose();
     engine.dispose();
   });

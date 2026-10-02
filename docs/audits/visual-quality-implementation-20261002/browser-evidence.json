@@ -1,0 +1,6100 @@
+{
+  "sourceCommit": "39229d2ad07accc07b667760ac88bf1557c61c05",
+  "lockHash": "8259f54c0fbe8ac371e17432e3a2bec1c59411e64d5a76d0303e2a2fa25ce8b1",
+  "browser": "151.0.7922.173",
+  "renderer": "Chromium SwiftShader (software GPU)",
+  "dpr": 1,
+  "records": [
+    {
+      "kind": "title-targets",
+      "targets": [
+        {
+          "text": "",
+          "width": 342,
+          "height": 44
+        },
+        {
+          "text": "追加設定十番勝負・見習い",
+          "width": 370,
+          "height": 44
+        },
+        {
+          "text": "十番勝負短時間で一章を駆け抜ける",
+          "width": 370,
+          "height": 67.09375
+        },
+        {
+          "text": "二十五番勝負前半の型を読み切る",
+          "width": 370,
+          "height": 67.09375
+        },
+        {
+          "text": "五十番修行五章を通して修める",
+          "width": 370,
+          "height": 67.09375
+        },
+        {
+          "text": "見習い予告が長く、型を読みやすい",
+          "width": 370,
+          "height": 67.09375
+        },
+        {
+          "text": "修験標準の予告と間合い",
+          "width": 370,
+          "height": 67.09375
+        },
+        {
+          "text": "無明予告が短く、判断が速い",
+          "width": 370,
+          "height": 67.09375
+        },
+        {
+          "text": "操作配置：右利き",
+          "width": 182,
+          "height": 44
+        },
+        {
+          "text": "全消音：切",
+          "width": 182,
+          "height": 44
+        },
+        {
+          "text": "主音量：大",
+          "width": 182,
+          "height": 44
+        },
+        {
+          "text": "効果音：大",
+          "width": 182,
+          "height": 44
+        },
+        {
+          "text": "環境音：中",
+          "width": 182,
+          "height": 44
+        },
+        {
+          "text": "演出：標準",
+          "width": 182,
+          "height": 44
+        },
+        {
+          "text": "描画：標準",
+          "width": 182,
+          "height": 44
+        },
+        {
+          "text": "新しく始める",
+          "width": 370,
+          "height": 44
+        },
+        {
+          "text": "稽古を試す 記録なし・3手順",
+          "width": 169.59375,
+          "height": 44
+        },
+        {
+          "text": "ゲームを共有",
+          "width": 370,
+          "height": 44
+        }
+      ]
+    },
+    {
+      "kind": "title",
+      "width": 320,
+      "height": 568,
+      "settingsOpen": true,
+      "visualHeight": 150,
+      "focusContained": true
+    },
+    {
+      "kind": "title",
+      "width": 402,
+      "height": 874,
+      "settingsOpen": true,
+      "visualHeight": 150,
+      "focusContained": true
+    },
+    {
+      "kind": "title",
+      "width": 874,
+      "height": 402,
+      "settingsOpen": true,
+      "visualHeight": 192.265625,
+      "focusContained": true
+    },
+    {
+      "kind": "enlarged-text",
+      "scale": 2,
+      "scrollHeight": 1215,
+      "clientHeight": 874,
+      "scrollWidth": 402,
+      "clientWidth": 402,
+      "visualHeight": 150
+    },
+    {
+      "kind": "actual-touch",
+      "name": "右へ回避",
+      "expectedX": 0.9,
+      "actualX": 0.9,
+      "width": 80.484375,
+      "height": 56
+    },
+    {
+      "kind": "actual-touch",
+      "name": "左へ回避",
+      "expectedX": -0.9,
+      "actualX": -0.9,
+      "width": 80.484375,
+      "height": 56
+    },
+    {
+      "kind": "enemy-sample",
+      "name": "影面",
+      "phase": 2,
+      "samples": 74,
+      "cpuMs": {
+        "retained": 74,
+        "p50": 1.7999999998137355,
+        "p95": 5.2000000001862645,
+        "p99": 19.700000000186265
+      },
+      "frameIntervalMs": {
+        "retained": 74,
+        "p50": 34.5,
+        "p95": 108.60000000009313,
+        "p99": null
+      },
+      "gpuMs": null,
+      "meshes": 122,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.4672346771027105,
+          "maxX": 0.6220497238891957,
+          "minY": 0.3777485442915528,
+          "maxY": 0.5120563985502211
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-sample",
+      "name": "角岩",
+      "phase": 2,
+      "samples": 75,
+      "cpuMs": {
+        "retained": 75,
+        "p50": 1.7999999998137355,
+        "p95": 5.2000000001862645,
+        "p99": 19.700000000186265
+      },
+      "frameIntervalMs": {
+        "retained": 75,
+        "p50": 34.700000000186265,
+        "p95": 131,
+        "p99": null
+      },
+      "gpuMs": null,
+      "meshes": 122,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.4672346771027105,
+          "maxX": 0.6220497238891957,
+          "minY": 0.3232782758153396,
+          "maxY": 0.5120563985502211
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-sample",
+      "name": "鳴壺",
+      "phase": 2,
+      "samples": 76,
+      "cpuMs": {
+        "retained": 76,
+        "p50": 1.7999999998137355,
+        "p95": 5.2000000001862645,
+        "p99": 19.700000000186265
+      },
+      "frameIntervalMs": {
+        "retained": 76,
+        "p50": 34.700000000186265,
+        "p95": 131,
+        "p99": null
+      },
+      "gpuMs": null,
+      "meshes": 123,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.5117872254080046,
+          "maxX": 0.6220208597981918,
+          "minY": 0.3538198676936577,
+          "maxY": 0.5120563985502211
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-sample",
+      "name": "逆鉾",
+      "phase": 2,
+      "samples": 77,
+      "cpuMs": {
+        "retained": 77,
+        "p50": 1.8000000002793968,
+        "p95": 5.2000000001862645,
+        "p99": 19.700000000186265
+      },
+      "frameIntervalMs": {
+        "retained": 77,
+        "p50": 36.09999999962747,
+        "p95": 131,
+        "p99": null
+      },
+      "gpuMs": null,
+      "meshes": 123,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.4672346771027105,
+          "maxX": 0.6220497238891957,
+          "minY": 0.3777485442915528,
+          "maxY": 0.5120563985502211
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-sample",
+      "name": "霧猿",
+      "phase": 2,
+      "samples": 78,
+      "cpuMs": {
+        "retained": 78,
+        "p50": 1.8000000002793968,
+        "p95": 5.2000000001862645,
+        "p99": 19.700000000186265
+      },
+      "frameIntervalMs": {
+        "retained": 78,
+        "p50": 36.09999999962747,
+        "p95": 131,
+        "p99": null
+      },
+      "gpuMs": null,
+      "meshes": 122,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.5107955088627022,
+          "maxX": 0.6223665413261487,
+          "minY": 0.3777485442915528,
+          "maxY": 0.5120563985502211
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-sample",
+      "name": "鉄輪",
+      "phase": 2,
+      "samples": 79,
+      "cpuMs": {
+        "retained": 79,
+        "p50": 1.8000000002793968,
+        "p95": 5.2000000001862645,
+        "p99": 19.700000000186265
+      },
+      "frameIntervalMs": {
+        "retained": 79,
+        "p50": 36.799999999813735,
+        "p95": 131,
+        "p99": null
+      },
+      "gpuMs": null,
+      "meshes": 123,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.47804176783926905,
+          "maxX": 0.638460505789539,
+          "minY": 0.3777485442915528,
+          "maxY": 0.5120563985502211
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-sample",
+      "name": "骨灯",
+      "phase": 2,
+      "samples": 80,
+      "cpuMs": {
+        "retained": 80,
+        "p50": 1.8000000002793968,
+        "p95": 4.600000000093132,
+        "p99": 19.700000000186265
+      },
+      "frameIntervalMs": {
+        "retained": 80,
+        "p50": 36.799999999813735,
+        "p95": 108.60000000009313,
+        "p99": null
+      },
+      "gpuMs": null,
+      "meshes": 124,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.5117872254080046,
+          "maxX": 0.6220208597981918,
+          "minY": 0.37774753584762405,
+          "maxY": 0.5120563985502211
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-sample",
+      "name": "牙嶺",
+      "phase": 2,
+      "samples": 81,
+      "cpuMs": {
+        "retained": 81,
+        "p50": 1.900000000372529,
+        "p95": 4.600000000093132,
+        "p99": 19.700000000186265
+      },
+      "frameIntervalMs": {
+        "retained": 81,
+        "p50": 37,
+        "p95": 108.60000000009313,
+        "p99": null
+      },
+      "gpuMs": null,
+      "meshes": 126,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.48382428153246776,
+          "maxX": 0.6500069378808768,
+          "minY": 0.34587148236657933,
+          "maxY": 0.5175381514184892
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-sample",
+      "name": "鎧熊",
+      "phase": 2,
+      "samples": 82,
+      "cpuMs": {
+        "retained": 82,
+        "p50": 1.900000000372529,
+        "p95": 4.600000000093132,
+        "p99": 19.700000000186265
+      },
+      "frameIntervalMs": {
+        "retained": 82,
+        "p50": 37,
+        "p95": 108.60000000009313,
+        "p99": null
+      },
+      "gpuMs": null,
+      "meshes": 128,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.46042991760950647,
+          "maxX": 0.6738066644471379,
+          "minY": 0.31798246883045683,
+          "maxY": 0.5187822330203589
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-sample",
+      "name": "沼喰",
+      "phase": 2,
+      "samples": 83,
+      "cpuMs": {
+        "retained": 83,
+        "p50": 1.900000000372529,
+        "p95": 4.600000000093132,
+        "p99": 19.700000000186265
+      },
+      "frameIntervalMs": {
+        "retained": 83,
+        "p50": 38,
+        "p95": 108.60000000009313,
+        "p99": null
+      },
+      "gpuMs": null,
+      "meshes": 122,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.4546270891513629,
+          "maxX": 0.6891055842388883,
+          "minY": 0.3522476101430258,
+          "maxY": 0.5166982027246242
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-sample",
+      "name": "百眼",
+      "phase": 2,
+      "samples": 84,
+      "cpuMs": {
+        "retained": 84,
+        "p50": 1.900000000372529,
+        "p95": 4.600000000093132,
+        "p99": 19.700000000186265
+      },
+      "frameIntervalMs": {
+        "retained": 84,
+        "p50": 38,
+        "p95": 108.60000000009313,
+        "p99": null
+      },
+      "gpuMs": null,
+      "meshes": 128,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.48009540003436196,
+          "maxX": 0.6459085727728321,
+          "minY": 0.2824119116714427,
+          "maxY": 0.5145477163291495
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-sample",
+      "name": "鬼将",
+      "phase": 2,
+      "samples": 85,
+      "cpuMs": {
+        "retained": 85,
+        "p50": 2,
+        "p95": 4.600000000093132,
+        "p99": 19.700000000186265
+      },
+      "frameIntervalMs": {
+        "retained": 85,
+        "p50": 38.5,
+        "p95": 108.60000000009313,
+        "p99": null
+      },
+      "gpuMs": null,
+      "meshes": 125,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.48782994698356863,
+          "maxX": 0.6459085727728321,
+          "minY": 0.2563029640144148,
+          "maxY": 0.5145477163291495
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-sample",
+      "name": "白面",
+      "phase": 2,
+      "samples": 86,
+      "cpuMs": {
+        "retained": 86,
+        "p50": 2,
+        "p95": 4.600000000093132,
+        "p99": 19.700000000186265
+      },
+      "frameIntervalMs": {
+        "retained": 86,
+        "p50": 38.5,
+        "p95": 108.60000000009313,
+        "p99": null
+      },
+      "gpuMs": null,
+      "meshes": 123,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.5136348764220886,
+          "maxX": 0.6226621712414592,
+          "minY": 0.30871844251874153,
+          "maxY": 0.5133289190862448
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-sample",
+      "name": "天狗鴉",
+      "phase": 2,
+      "samples": 87,
+      "cpuMs": {
+        "retained": 87,
+        "p50": 2,
+        "p95": 4.600000000093132,
+        "p99": 19.700000000186265
+      },
+      "frameIntervalMs": {
+        "retained": 87,
+        "p50": 38.6999999997206,
+        "p95": 108.60000000009313,
+        "p99": null
+      },
+      "gpuMs": null,
+      "meshes": 122,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.4264565475961782,
+          "maxX": 0.7114803485352216,
+          "minY": 0.3156175625386785,
+          "maxY": 0.5145477154876809
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-sample",
+      "name": "鶴骸",
+      "phase": 2,
+      "samples": 88,
+      "cpuMs": {
+        "retained": 88,
+        "p50": 1.900000000372529,
+        "p95": 4.600000000093132,
+        "p99": 19.700000000186265
+      },
+      "frameIntervalMs": {
+        "retained": 88,
+        "p50": 38.6999999997206,
+        "p95": 108.60000000009313,
+        "p99": null
+      },
+      "gpuMs": null,
+      "meshes": 123,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.44795200666130214,
+          "maxX": 0.6865943670138505,
+          "minY": 0.29792034509459264,
+          "maxY": 0.5133289182469895
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-sample",
+      "name": "石門王",
+      "phase": 2,
+      "samples": 89,
+      "cpuMs": {
+        "retained": 89,
+        "p50": 2,
+        "p95": 4.600000000093132,
+        "p99": 19.700000000186265
+      },
+      "frameIntervalMs": {
+        "retained": 89,
+        "p50": 38.6999999997206,
+        "p95": 108.60000000009313,
+        "p99": null
+      },
+      "gpuMs": null,
+      "meshes": 125,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.44048748225537565,
+          "maxX": 0.6792277281494239,
+          "minY": 0.2615795976490923,
+          "maxY": 0.5199217791690173
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-sample",
+      "name": "巨仏",
+      "phase": 2,
+      "samples": 90,
+      "cpuMs": {
+        "retained": 90,
+        "p50": 1.900000000372529,
+        "p95": 4.600000000093132,
+        "p99": 19.700000000186265
+      },
+      "frameIntervalMs": {
+        "retained": 90,
+        "p50": 38.6999999997206,
+        "p95": 108.60000000009313,
+        "p99": null
+      },
+      "gpuMs": null,
+      "meshes": 125,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.4562715990033875,
+          "maxX": 0.6627878410055952,
+          "minY": 0.2568624600537076,
+          "maxY": 0.5273916472705674
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "影面",
+      "phase": 1,
+      "strike": 0,
+      "samples": 91,
+      "cpuMs": {
+        "retained": 91,
+        "p50": 1.900000000372529,
+        "p95": 4.600000000093132,
+        "p99": 19.700000000186265
+      },
+      "frameIntervalMs": {
+        "retained": 91,
+        "p50": 39.700000000186265,
+        "p95": 108.60000000009313,
+        "p99": null
+      },
+      "gpuMs": null,
+      "meshes": 122,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.4672346771027105,
+          "maxX": 0.6220497238891957,
+          "minY": 0.3770316895653324,
+          "maxY": 0.5120563985502211
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "影面",
+      "phase": 1,
+      "strike": 0.5,
+      "samples": 92,
+      "cpuMs": {
+        "retained": 92,
+        "p50": 1.8000000002793968,
+        "p95": 4.600000000093132,
+        "p99": 19.700000000186265
+      },
+      "frameIntervalMs": {
+        "retained": 92,
+        "p50": 38.6999999997206,
+        "p95": 108.60000000009313,
+        "p99": null
+      },
+      "gpuMs": null,
+      "meshes": 122,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.4672346771027105,
+          "maxX": 0.6372966721266852,
+          "minY": 0.3776754639491749,
+          "maxY": 0.5120563985502211
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "影面",
+      "phase": 1,
+      "strike": 1,
+      "samples": 93,
+      "cpuMs": {
+        "retained": 93,
+        "p50": 1.8999999999068677,
+        "p95": 4.600000000093132,
+        "p99": 19.700000000186265
+      },
+      "frameIntervalMs": {
+        "retained": 93,
+        "p50": 38.6999999997206,
+        "p95": 108.60000000009313,
+        "p99": null
+      },
+      "gpuMs": null,
+      "meshes": 122,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.4672346771027105,
+          "maxX": 0.6220497238891957,
+          "minY": 0.3746266819968102,
+          "maxY": 0.5120563985502211
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "影面",
+      "phase": 2,
+      "strike": 0,
+      "samples": 94,
+      "cpuMs": {
+        "retained": 94,
+        "p50": 1.8000000002793968,
+        "p95": 4.600000000093132,
+        "p99": 19.700000000186265
+      },
+      "frameIntervalMs": {
+        "retained": 94,
+        "p50": 38.6999999997206,
+        "p95": 108.60000000009313,
+        "p99": null
+      },
+      "gpuMs": null,
+      "meshes": 122,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.4672346771027105,
+          "maxX": 0.6220497238891957,
+          "minY": 0.3770316895653324,
+          "maxY": 0.5120563985502211
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "影面",
+      "phase": 2,
+      "strike": 0.5,
+      "samples": 95,
+      "cpuMs": {
+        "retained": 95,
+        "p50": 1.8000000002793968,
+        "p95": 4.600000000093132,
+        "p99": 19.700000000186265
+      },
+      "frameIntervalMs": {
+        "retained": 95,
+        "p50": 38.6999999997206,
+        "p95": 108.60000000009313,
+        "p99": null
+      },
+      "gpuMs": null,
+      "meshes": 122,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.4672346771027105,
+          "maxX": 0.6374107502018682,
+          "minY": 0.3776754639491749,
+          "maxY": 0.5120563985502211
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "影面",
+      "phase": 2,
+      "strike": 1,
+      "samples": 96,
+      "cpuMs": {
+        "retained": 96,
+        "p50": 1.8000000002793968,
+        "p95": 4.600000000093132,
+        "p99": 19.700000000186265
+      },
+      "frameIntervalMs": {
+        "retained": 96,
+        "p50": 38.5,
+        "p95": 108.60000000009313,
+        "p99": null
+      },
+      "gpuMs": null,
+      "meshes": 122,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.4672346771027105,
+          "maxX": 0.6220497238891957,
+          "minY": 0.3746266819968102,
+          "maxY": 0.5120563985502211
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "角岩",
+      "phase": 1,
+      "strike": 0,
+      "samples": 97,
+      "cpuMs": {
+        "retained": 97,
+        "p50": 1.8999999999068677,
+        "p95": 4.600000000093132,
+        "p99": 19.700000000186265
+      },
+      "frameIntervalMs": {
+        "retained": 97,
+        "p50": 38.5,
+        "p95": 108.60000000009313,
+        "p99": null
+      },
+      "gpuMs": null,
+      "meshes": 122,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.4672346771027105,
+          "maxX": 0.6220497238891957,
+          "minY": 0.325581976703449,
+          "maxY": 0.5120563985502211
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "角岩",
+      "phase": 1,
+      "strike": 0.5,
+      "samples": 98,
+      "cpuMs": {
+        "retained": 98,
+        "p50": 1.8999999999068677,
+        "p95": 4.600000000093132,
+        "p99": 19.700000000186265
+      },
+      "frameIntervalMs": {
+        "retained": 98,
+        "p50": 38,
+        "p95": 108.60000000009313,
+        "p99": null
+      },
+      "gpuMs": null,
+      "meshes": 122,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.4672346771027105,
+          "maxX": 0.6372966721266852,
+          "minY": 0.3284621457042964,
+          "maxY": 0.5120563985502211
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "角岩",
+      "phase": 1,
+      "strike": 1,
+      "samples": 99,
+      "cpuMs": {
+        "retained": 99,
+        "p50": 1.900000000372529,
+        "p95": 4.600000000093132,
+        "p99": 19.700000000186265
+      },
+      "frameIntervalMs": {
+        "retained": 99,
+        "p50": 38,
+        "p95": 108.60000000009313,
+        "p99": null
+      },
+      "gpuMs": null,
+      "meshes": 122,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.4672346771027105,
+          "maxX": 0.6220497238891957,
+          "minY": 0.32111450080897774,
+          "maxY": 0.5120563985502211
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "角岩",
+      "phase": 2,
+      "strike": 0,
+      "samples": 100,
+      "cpuMs": {
+        "retained": 100,
+        "p50": 1.900000000372529,
+        "p95": 3.8999999999068677,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 100,
+        "p50": 37,
+        "p95": 96.70000000018626,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 122,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.4672346771027105,
+          "maxX": 0.6220497238891957,
+          "minY": 0.325581976703449,
+          "maxY": 0.5120563985502211
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "角岩",
+      "phase": 2,
+      "strike": 0.5,
+      "samples": 101,
+      "cpuMs": {
+        "retained": 101,
+        "p50": 1.900000000372529,
+        "p95": 3.8999999999068677,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 101,
+        "p50": 37,
+        "p95": 96.70000000018626,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 122,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.4672346771027105,
+          "maxX": 0.6374107502018682,
+          "minY": 0.3284621457042964,
+          "maxY": 0.5120563985502211
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "角岩",
+      "phase": 2,
+      "strike": 1,
+      "samples": 102,
+      "cpuMs": {
+        "retained": 102,
+        "p50": 1.900000000372529,
+        "p95": 4.600000000093132,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 102,
+        "p50": 36.799999999813735,
+        "p95": 96.70000000018626,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 122,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.4672346771027105,
+          "maxX": 0.6220497238891957,
+          "minY": 0.32111450080897774,
+          "maxY": 0.5120563985502211
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "鳴壺",
+      "phase": 1,
+      "strike": 0,
+      "samples": 103,
+      "cpuMs": {
+        "retained": 103,
+        "p50": 2,
+        "p95": 4.600000000093132,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 103,
+        "p50": 36.799999999813735,
+        "p95": 96.70000000018626,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 123,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.5064722794531207,
+          "maxX": 0.6170085951373975,
+          "minY": 0.35266346315334146,
+          "maxY": 0.5120563985502211
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "鳴壺",
+      "phase": 1,
+      "strike": 0.5,
+      "samples": 104,
+      "cpuMs": {
+        "retained": 104,
+        "p50": 1.900000000372529,
+        "p95": 4.600000000093132,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 104,
+        "p50": 36.09999999962747,
+        "p95": 96.70000000018626,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 123,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.512329468268982,
+          "maxX": 0.6372966721266852,
+          "minY": 0.3517929617254838,
+          "maxY": 0.5120563985502211
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "鳴壺",
+      "phase": 1,
+      "strike": 1,
+      "samples": 105,
+      "cpuMs": {
+        "retained": 105,
+        "p50": 1.900000000372529,
+        "p95": 4.600000000093132,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 105,
+        "p50": 36.09999999962747,
+        "p95": 96.70000000018626,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 123,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.5045216382604035,
+          "maxX": 0.618317587421345,
+          "minY": 0.35044338007253084,
+          "maxY": 0.5120563985502211
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "鳴壺",
+      "phase": 2,
+      "strike": 0,
+      "samples": 106,
+      "cpuMs": {
+        "retained": 106,
+        "p50": 1.900000000372529,
+        "p95": 4.600000000093132,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 106,
+        "p50": 34.700000000186265,
+        "p95": 96.70000000018626,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 123,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.5064850009450294,
+          "maxX": 0.6170037028976768,
+          "minY": 0.35266346315334146,
+          "maxY": 0.5120563985502211
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "鳴壺",
+      "phase": 2,
+      "strike": 0.5,
+      "samples": 107,
+      "cpuMs": {
+        "retained": 107,
+        "p50": 1.900000000372529,
+        "p95": 4.600000000093132,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 107,
+        "p50": 34.700000000186265,
+        "p95": 96.70000000018626,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 123,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.512329468268982,
+          "maxX": 0.6374107502018682,
+          "minY": 0.3517929617254838,
+          "maxY": 0.5120563985502211
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "鳴壺",
+      "phase": 2,
+      "strike": 1,
+      "samples": 108,
+      "cpuMs": {
+        "retained": 108,
+        "p50": 1.8999999999068677,
+        "p95": 4.600000000093132,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 108,
+        "p50": 34.5,
+        "p95": 96.70000000018626,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 123,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.5045216382604035,
+          "maxX": 0.618317587421345,
+          "minY": 0.35044338007253084,
+          "maxY": 0.5120563985502211
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "逆鉾",
+      "phase": 1,
+      "strike": 0,
+      "samples": 109,
+      "cpuMs": {
+        "retained": 109,
+        "p50": 1.8999999999068677,
+        "p95": 4.600000000093132,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 109,
+        "p50": 34.5,
+        "p95": 96.70000000018626,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 123,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.4672346771027105,
+          "maxX": 0.6220497238891957,
+          "minY": 0.3770316895653324,
+          "maxY": 0.5120563985502211
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "逆鉾",
+      "phase": 1,
+      "strike": 0.5,
+      "samples": 110,
+      "cpuMs": {
+        "retained": 110,
+        "p50": 1.8999999999068677,
+        "p95": 4.600000000093132,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 110,
+        "p50": 34.5,
+        "p95": 96.70000000018626,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 123,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.4672346771027105,
+          "maxX": 0.6414713075530398,
+          "minY": 0.3776754639491749,
+          "maxY": 0.5120563985502211
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "逆鉾",
+      "phase": 1,
+      "strike": 1,
+      "samples": 111,
+      "cpuMs": {
+        "retained": 111,
+        "p50": 1.8999999999068677,
+        "p95": 4.600000000093132,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 111,
+        "p50": 34.5,
+        "p95": 96.70000000018626,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 123,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.4672346771027105,
+          "maxX": 0.6220497238891957,
+          "minY": 0.3746266819968102,
+          "maxY": 0.5120563985502211
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "逆鉾",
+      "phase": 2,
+      "strike": 0,
+      "samples": 112,
+      "cpuMs": {
+        "retained": 112,
+        "p50": 1.8999999999068677,
+        "p95": 4.600000000093132,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 112,
+        "p50": 34,
+        "p95": 96.70000000018626,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 123,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.4672346771027105,
+          "maxX": 0.6220497238891957,
+          "minY": 0.3770316895653324,
+          "maxY": 0.5120563985502211
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "逆鉾",
+      "phase": 2,
+      "strike": 0.5,
+      "samples": 113,
+      "cpuMs": {
+        "retained": 113,
+        "p50": 1.8999999999068677,
+        "p95": 4.600000000093132,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 113,
+        "p50": 34,
+        "p95": 96.70000000018626,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 123,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.4672346771027105,
+          "maxX": 0.6417963783406974,
+          "minY": 0.3776754639491749,
+          "maxY": 0.5120563985502211
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "逆鉾",
+      "phase": 2,
+      "strike": 1,
+      "samples": 114,
+      "cpuMs": {
+        "retained": 114,
+        "p50": 1.8999999999068677,
+        "p95": 4.600000000093132,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 114,
+        "p50": 34,
+        "p95": 96.70000000018626,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 123,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.4672346771027105,
+          "maxX": 0.6220497238891957,
+          "minY": 0.3746266819968102,
+          "maxY": 0.5120563985502211
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "霧猿",
+      "phase": 1,
+      "strike": 0,
+      "samples": 115,
+      "cpuMs": {
+        "retained": 115,
+        "p50": 1.8999999999068677,
+        "p95": 4.600000000093132,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 115,
+        "p50": 34,
+        "p95": 96.70000000018626,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 122,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.504696966884289,
+          "maxX": 0.6170085947469127,
+          "minY": 0.3770316895653324,
+          "maxY": 0.5120563985502211
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "霧猿",
+      "phase": 1,
+      "strike": 0.5,
+      "samples": 116,
+      "cpuMs": {
+        "retained": 116,
+        "p50": 1.8999999999068677,
+        "p95": 4.600000000093132,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 116,
+        "p50": 33.5,
+        "p95": 96.70000000018626,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 122,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.512329468268982,
+          "maxX": 0.6417707702635941,
+          "minY": 0.3776754639491749,
+          "maxY": 0.5120563985502211
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "霧猿",
+      "phase": 1,
+      "strike": 1,
+      "samples": 117,
+      "cpuMs": {
+        "retained": 117,
+        "p50": 1.8999999999068677,
+        "p95": 4.600000000093132,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 117,
+        "p50": 33.5,
+        "p95": 96.70000000018626,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 122,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.5033726588093708,
+          "maxX": 0.6191404882902575,
+          "minY": 0.3746266819968102,
+          "maxY": 0.5120563985502211
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "霧猿",
+      "phase": 2,
+      "strike": 0,
+      "samples": 118,
+      "cpuMs": {
+        "retained": 118,
+        "p50": 1.8000000002793968,
+        "p95": 4.600000000093132,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 118,
+        "p50": 33.10000000009313,
+        "p95": 96.70000000018626,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 122,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.5046713369310091,
+          "maxX": 0.6170037035503564,
+          "minY": 0.3770316895653324,
+          "maxY": 0.5120563985502211
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "霧猿",
+      "phase": 2,
+      "strike": 0.5,
+      "samples": 119,
+      "cpuMs": {
+        "retained": 119,
+        "p50": 1.8000000002793968,
+        "p95": 4.600000000093132,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 119,
+        "p50": 33.10000000009313,
+        "p95": 96.70000000018626,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 122,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.512329468268982,
+          "maxX": 0.6418711438843728,
+          "minY": 0.3776754639491749,
+          "maxY": 0.5120563985502211
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "霧猿",
+      "phase": 2,
+      "strike": 1,
+      "samples": 120,
+      "cpuMs": {
+        "retained": 120,
+        "p50": 1.8000000002793968,
+        "p95": 3.8999999999068677,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 120,
+        "p50": 32.8000000002794,
+        "p95": 80.39999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 122,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.5033726588093708,
+          "maxX": 0.6191404882902575,
+          "minY": 0.3746266819968102,
+          "maxY": 0.5120563985502211
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "鉄輪",
+      "phase": 1,
+      "strike": 0,
+      "samples": 121,
+      "cpuMs": {
+        "retained": 121,
+        "p50": 1.8000000002793968,
+        "p95": 3.8999999999068677,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 121,
+        "p50": 32.8000000002794,
+        "p95": 80.39999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 123,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.46944028509123564,
+          "maxX": 0.6374472170234718,
+          "minY": 0.3770316895653324,
+          "maxY": 0.5120563985502211
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "鉄輪",
+      "phase": 1,
+      "strike": 0.5,
+      "samples": 122,
+      "cpuMs": {
+        "retained": 122,
+        "p50": 1.8000000002793968,
+        "p95": 3.8999999999068677,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 122,
+        "p50": 32.3000000002794,
+        "p95": 80.39999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 123,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.48263143294404093,
+          "maxX": 0.6690978978785244,
+          "minY": 0.3776754639491749,
+          "maxY": 0.5120563985502211
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "鉄輪",
+      "phase": 1,
+      "strike": 1,
+      "samples": 123,
+      "cpuMs": {
+        "retained": 123,
+        "p50": 1.8999999999068677,
+        "p95": 3.8999999999068677,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 123,
+        "p50": 32.3000000002794,
+        "p95": 80.39999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 123,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.46958988365101617,
+          "maxX": 0.6395743594483488,
+          "minY": 0.3746266819968102,
+          "maxY": 0.5120563985502211
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "鉄輪",
+      "phase": 2,
+      "strike": 0,
+      "samples": 124,
+      "cpuMs": {
+        "retained": 124,
+        "p50": 1.8999999999068677,
+        "p95": 3.8999999999068677,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 124,
+        "p50": 31.200000000186265,
+        "p95": 80.39999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 123,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.46917820933310567,
+          "maxX": 0.6373932410691929,
+          "minY": 0.3770316895653324,
+          "maxY": 0.5120563985502211
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "鉄輪",
+      "phase": 2,
+      "strike": 0.5,
+      "samples": 125,
+      "cpuMs": {
+        "retained": 125,
+        "p50": 1.8999999999068677,
+        "p95": 3.8999999999068677,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 125,
+        "p50": 31.200000000186265,
+        "p95": 80.39999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 123,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.48007062695503044,
+          "maxX": 0.669305268164168,
+          "minY": 0.3776754639491749,
+          "maxY": 0.5120563985502211
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "鉄輪",
+      "phase": 2,
+      "strike": 1,
+      "samples": 126,
+      "cpuMs": {
+        "retained": 126,
+        "p50": 1.8999999999068677,
+        "p95": 3.8999999999068677,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 126,
+        "p50": 31,
+        "p95": 80.39999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 123,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.46958988365101617,
+          "maxX": 0.6395743594483488,
+          "minY": 0.3746266819968102,
+          "maxY": 0.5120563985502211
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "骨灯",
+      "phase": 1,
+      "strike": 0,
+      "samples": 127,
+      "cpuMs": {
+        "retained": 127,
+        "p50": 1.900000000372529,
+        "p95": 3.8999999999068677,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 127,
+        "p50": 31,
+        "p95": 80.39999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 124,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.5064722794531207,
+          "maxX": 0.6170085951373975,
+          "minY": 0.3770316895653324,
+          "maxY": 0.5120563985502211
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "骨灯",
+      "phase": 1,
+      "strike": 0.5,
+      "samples": 128,
+      "cpuMs": {
+        "retained": 128,
+        "p50": 1.8999999999068677,
+        "p95": 3.8999999999068677,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 128,
+        "p50": 30.299999999813735,
+        "p95": 80.39999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 124,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.512329468268982,
+          "maxX": 0.6372966721266852,
+          "minY": 0.3776754639491749,
+          "maxY": 0.5120563985502211
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "骨灯",
+      "phase": 1,
+      "strike": 1,
+      "samples": 129,
+      "cpuMs": {
+        "retained": 129,
+        "p50": 1.900000000372529,
+        "p95": 3.8999999999068677,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 129,
+        "p50": 30.299999999813735,
+        "p95": 80.39999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 124,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.5045216382604035,
+          "maxX": 0.618317587421345,
+          "minY": 0.3746266819968102,
+          "maxY": 0.5120563985502211
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "骨灯",
+      "phase": 2,
+      "strike": 0,
+      "samples": 130,
+      "cpuMs": {
+        "retained": 130,
+        "p50": 1.8999999999068677,
+        "p95": 3.8999999999068677,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 130,
+        "p50": 30.299999999813735,
+        "p95": 80.39999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 124,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.5064850009450294,
+          "maxX": 0.6170037028976768,
+          "minY": 0.3770316895653324,
+          "maxY": 0.5120563985502211
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "骨灯",
+      "phase": 2,
+      "strike": 0.5,
+      "samples": 131,
+      "cpuMs": {
+        "retained": 131,
+        "p50": 1.8999999999068677,
+        "p95": 3.8999999999068677,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 131,
+        "p50": 30.299999999813735,
+        "p95": 80.39999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 124,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.512329468268982,
+          "maxX": 0.6374107502018682,
+          "minY": 0.3776754639491749,
+          "maxY": 0.5120563985502211
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "骨灯",
+      "phase": 2,
+      "strike": 1,
+      "samples": 132,
+      "cpuMs": {
+        "retained": 132,
+        "p50": 1.8999999999068677,
+        "p95": 3.8999999999068677,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 132,
+        "p50": 30.299999999813735,
+        "p95": 80.39999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 124,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.5045216382604035,
+          "maxX": 0.618317587421345,
+          "minY": 0.3746266819968102,
+          "maxY": 0.5120563985502211
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "牙嶺",
+      "phase": 1,
+      "strike": 0,
+      "samples": 133,
+      "cpuMs": {
+        "retained": 133,
+        "p50": 1.8999999999068677,
+        "p95": 3.8999999999068677,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 133,
+        "p50": 30.299999999813735,
+        "p95": 80.39999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 126,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.4859502974317755,
+          "maxX": 0.6452707843426683,
+          "minY": 0.34218310351880166,
+          "maxY": 0.5175381514184892
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "牙嶺",
+      "phase": 1,
+      "strike": 0.5,
+      "samples": 134,
+      "cpuMs": {
+        "retained": 134,
+        "p50": 1.8999999999068677,
+        "p95": 3.8999999999068677,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 134,
+        "p50": 30.200000000186265,
+        "p95": 80.39999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 126,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.48182078446256293,
+          "maxX": 0.6665080974644129,
+          "minY": 0.3329997883242504,
+          "maxY": 0.5175381514184892
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "牙嶺",
+      "phase": 1,
+      "strike": 1,
+      "samples": 135,
+      "cpuMs": {
+        "retained": 135,
+        "p50": 1.8999999999068677,
+        "p95": 3.8999999999068677,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 135,
+        "p50": 30.200000000186265,
+        "p95": 80.39999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 126,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.48120909530918177,
+          "maxX": 0.6443234119395411,
+          "minY": 0.3384176195705325,
+          "maxY": 0.5175381514184892
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "牙嶺",
+      "phase": 2,
+      "strike": 0,
+      "samples": 136,
+      "cpuMs": {
+        "retained": 136,
+        "p50": 1.8999999999068677,
+        "p95": 3.8999999999068677,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 136,
+        "p50": 30,
+        "p95": 80.39999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 126,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.485880374475821,
+          "maxX": 0.6452707843426683,
+          "minY": 0.34218310351880166,
+          "maxY": 0.5175381514184892
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "牙嶺",
+      "phase": 2,
+      "strike": 0.5,
+      "samples": 137,
+      "cpuMs": {
+        "retained": 137,
+        "p50": 1.8999999999068677,
+        "p95": 3.8999999999068677,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 137,
+        "p50": 30,
+        "p95": 80.39999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 126,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.48182078446256293,
+          "maxX": 0.6666867700510895,
+          "minY": 0.3329997883242504,
+          "maxY": 0.5175381514184892
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "牙嶺",
+      "phase": 2,
+      "strike": 1,
+      "samples": 138,
+      "cpuMs": {
+        "retained": 138,
+        "p50": 1.8999999999068677,
+        "p95": 3.8999999999068677,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 138,
+        "p50": 29.700000000186265,
+        "p95": 80.39999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 126,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.48120909530918177,
+          "maxX": 0.6443234119395411,
+          "minY": 0.3384176195705325,
+          "maxY": 0.5175381514184892
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "鎧熊",
+      "phase": 1,
+      "strike": 0,
+      "samples": 139,
+      "cpuMs": {
+        "retained": 139,
+        "p50": 1.900000000372529,
+        "p95": 3.8999999999068677,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 139,
+        "p50": 29.700000000186265,
+        "p95": 80.39999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 128,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.462429629159577,
+          "maxX": 0.6692335165066078,
+          "minY": 0.3147574887479203,
+          "maxY": 0.5187822330203589
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "鎧熊",
+      "phase": 1,
+      "strike": 0.5,
+      "samples": 140,
+      "cpuMs": {
+        "retained": 140,
+        "p50": 1.8999999999068677,
+        "p95": 3.7999999998137355,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 140,
+        "p50": 29.700000000186265,
+        "p95": 74.89999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 128,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.45763006550588753,
+          "maxX": 0.6896975246442858,
+          "minY": 0.30591454000248874,
+          "maxY": 0.5187822330203589
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "鎧熊",
+      "phase": 1,
+      "strike": 1,
+      "samples": 141,
+      "cpuMs": {
+        "retained": 141,
+        "p50": 1.900000000372529,
+        "p95": 3.7999999998137355,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 141,
+        "p50": 29.700000000186265,
+        "p95": 74.89999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 128,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.45790794095886667,
+          "maxX": 0.6689052193441031,
+          "minY": 0.3077528871569451,
+          "maxY": 0.5187822330203589
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "鎧熊",
+      "phase": 2,
+      "strike": 0,
+      "samples": 142,
+      "cpuMs": {
+        "retained": 142,
+        "p50": 1.8999999999068677,
+        "p95": 3.7999999998137355,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 142,
+        "p50": 29.699999999720603,
+        "p95": 74.89999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 128,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.4622596557850125,
+          "maxX": 0.6692335165066078,
+          "minY": 0.3147574887479203,
+          "maxY": 0.5187822330203589
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "鎧熊",
+      "phase": 2,
+      "strike": 0.5,
+      "samples": 143,
+      "cpuMs": {
+        "retained": 143,
+        "p50": 1.900000000372529,
+        "p95": 3.7999999998137355,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 143,
+        "p50": 29.699999999720603,
+        "p95": 74.89999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 128,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.45763006550588753,
+          "maxX": 0.6898088106128967,
+          "minY": 0.30591454000248874,
+          "maxY": 0.5187822330203589
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "鎧熊",
+      "phase": 2,
+      "strike": 1,
+      "samples": 144,
+      "cpuMs": {
+        "retained": 144,
+        "p50": 1.900000000372529,
+        "p95": 3.7999999998137355,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 144,
+        "p50": 29.399999999906868,
+        "p95": 74.89999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 128,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.45790794095886667,
+          "maxX": 0.6689052193441031,
+          "minY": 0.3077528871569451,
+          "maxY": 0.5187822330203589
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "沼喰",
+      "phase": 1,
+      "strike": 0,
+      "samples": 145,
+      "cpuMs": {
+        "retained": 145,
+        "p50": 1.900000000372529,
+        "p95": 3.7999999998137355,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 145,
+        "p50": 29.399999999906868,
+        "p95": 74.89999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 122,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.44557531269270656,
+          "maxX": 0.6798047451483044,
+          "minY": 0.35087803519802924,
+          "maxY": 0.5166982027246242
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "沼喰",
+      "phase": 1,
+      "strike": 0.5,
+      "samples": 146,
+      "cpuMs": {
+        "retained": 146,
+        "p50": 1.8999999999068677,
+        "p95": 3.7999999998137355,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 146,
+        "p50": 29.199999999720603,
+        "p95": 74.89999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 122,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.4541568561233471,
+          "maxX": 0.7113764752577943,
+          "minY": 0.3424081654911218,
+          "maxY": 0.5166982027246242
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "沼喰",
+      "phase": 1,
+      "strike": 1,
+      "samples": 147,
+      "cpuMs": {
+        "retained": 147,
+        "p50": 1.8999999999068677,
+        "p95": 3.7999999998137355,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 147,
+        "p50": 29.199999999720603,
+        "p95": 74.89999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 122,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.44229728375721034,
+          "maxX": 0.6841000282740448,
+          "minY": 0.3462355995794223,
+          "maxY": 0.5166982027246242
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "沼喰",
+      "phase": 2,
+      "strike": 0,
+      "samples": 148,
+      "cpuMs": {
+        "retained": 148,
+        "p50": 1.8999999999068677,
+        "p95": 3.7999999998137355,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 148,
+        "p50": 28.300000000279397,
+        "p95": 74.89999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 122,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.4451665418742894,
+          "maxX": 0.6797673394575194,
+          "minY": 0.35087803519802924,
+          "maxY": 0.5166982027246242
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "沼喰",
+      "phase": 2,
+      "strike": 0.5,
+      "samples": 149,
+      "cpuMs": {
+        "retained": 149,
+        "p50": 1.8999999999068677,
+        "p95": 3.7999999998137355,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 149,
+        "p50": 28.300000000279397,
+        "p95": 74.89999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 122,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.4541568561233471,
+          "maxX": 0.7115757154306569,
+          "minY": 0.3424081654911218,
+          "maxY": 0.5166982027246242
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "沼喰",
+      "phase": 2,
+      "strike": 1,
+      "samples": 150,
+      "cpuMs": {
+        "retained": 150,
+        "p50": 1.8999999999068677,
+        "p95": 3.7999999998137355,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 150,
+        "p50": 28.09999999962747,
+        "p95": 74.89999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 122,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.44229728375721034,
+          "maxX": 0.6841000282740448,
+          "minY": 0.3462355995794223,
+          "maxY": 0.5166982027246242
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "百眼",
+      "phase": 1,
+      "strike": 0,
+      "samples": 151,
+      "cpuMs": {
+        "retained": 151,
+        "p50": 1.8999999999068677,
+        "p95": 3.7999999998137355,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 151,
+        "p50": 28.09999999962747,
+        "p95": 74.89999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 128,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.4859502974317755,
+          "maxX": 0.6386537825910104,
+          "minY": 0.28223123819126766,
+          "maxY": 0.5145477163291495
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "百眼",
+      "phase": 1,
+      "strike": 0.5,
+      "samples": 152,
+      "cpuMs": {
+        "retained": 152,
+        "p50": 1.8999999999068677,
+        "p95": 3.7999999998137355,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 152,
+        "p50": 28,
+        "p95": 74.89999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 128,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.47422130145511726,
+          "maxX": 0.6665080974644129,
+          "minY": 0.28124831473406986,
+          "maxY": 0.5145477163291495
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "百眼",
+      "phase": 1,
+      "strike": 1,
+      "samples": 153,
+      "cpuMs": {
+        "retained": 153,
+        "p50": 1.8999999999068677,
+        "p95": 3.7999999998137355,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 153,
+        "p50": 28,
+        "p95": 74.89999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 128,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.4830836627044278,
+          "maxX": 0.6408972634483333,
+          "minY": 0.277686044697362,
+          "maxY": 0.5145477163291495
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "百眼",
+      "phase": 2,
+      "strike": 0,
+      "samples": 154,
+      "cpuMs": {
+        "retained": 154,
+        "p50": 1.8999999999068677,
+        "p95": 3.8999999999068677,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 154,
+        "p50": 27.899999999906868,
+        "p95": 74.89999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 128,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.485880374475821,
+          "maxX": 0.6386438696404576,
+          "minY": 0.28223123819126766,
+          "maxY": 0.5145477163291495
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "百眼",
+      "phase": 2,
+      "strike": 0.5,
+      "samples": 155,
+      "cpuMs": {
+        "retained": 155,
+        "p50": 1.8999999999068677,
+        "p95": 3.8999999999068677,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 155,
+        "p50": 27.899999999906868,
+        "p95": 74.89999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 128,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.47422130145511726,
+          "maxX": 0.6666867700510895,
+          "minY": 0.28124831473406986,
+          "maxY": 0.5145477163291495
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "百眼",
+      "phase": 2,
+      "strike": 1,
+      "samples": 156,
+      "cpuMs": {
+        "retained": 156,
+        "p50": 1.8999999999068677,
+        "p95": 4.399999999906868,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 156,
+        "p50": 27.5,
+        "p95": 74.89999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 128,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.4830836627044278,
+          "maxX": 0.6408972634483333,
+          "minY": 0.277686044697362,
+          "maxY": 0.5145477163291495
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "鬼将",
+      "phase": 1,
+      "strike": 0,
+      "samples": 157,
+      "cpuMs": {
+        "retained": 157,
+        "p50": 1.8999999999068677,
+        "p95": 4.399999999906868,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 157,
+        "p50": 27.5,
+        "p95": 74.89999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 125,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.4859502974317755,
+          "maxX": 0.6386537825910104,
+          "minY": 0.2569813910832173,
+          "maxY": 0.5145477163291495
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "鬼将",
+      "phase": 1,
+      "strike": 0.5,
+      "samples": 158,
+      "cpuMs": {
+        "retained": 158,
+        "p50": 1.8999999999068677,
+        "p95": 4.399999999906868,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 158,
+        "p50": 27.5,
+        "p95": 74.89999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 125,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.4856185537821558,
+          "maxX": 0.6714906105415461,
+          "minY": 0.25880236874527396,
+          "maxY": 0.5145477163291495
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "鬼将",
+      "phase": 1,
+      "strike": 1,
+      "samples": 159,
+      "cpuMs": {
+        "retained": 159,
+        "p50": 1.8999999999068677,
+        "p95": 4.399999999906868,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 159,
+        "p50": 27.5,
+        "p95": 74.89999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 125,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.4820667509869056,
+          "maxX": 0.6408972634483333,
+          "minY": 0.2516243770709412,
+          "maxY": 0.5145477163291495
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "鬼将",
+      "phase": 2,
+      "strike": 0,
+      "samples": 160,
+      "cpuMs": {
+        "retained": 160,
+        "p50": 1.8999999999068677,
+        "p95": 3.8999999999068677,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 160,
+        "p50": 27.40000000037253,
+        "p95": 74.39999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 125,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.485880374475821,
+          "maxX": 0.6386438696404576,
+          "minY": 0.2569813910832173,
+          "maxY": 0.5145477163291495
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "鬼将",
+      "phase": 2,
+      "strike": 0.5,
+      "samples": 161,
+      "cpuMs": {
+        "retained": 161,
+        "p50": 1.8999999999068677,
+        "p95": 3.8999999999068677,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 161,
+        "p50": 27.40000000037253,
+        "p95": 74.39999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 125,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.4856185537821558,
+          "maxX": 0.671959368240506,
+          "minY": 0.25880236874527396,
+          "maxY": 0.5145477163291495
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "鬼将",
+      "phase": 2,
+      "strike": 1,
+      "samples": 162,
+      "cpuMs": {
+        "retained": 162,
+        "p50": 1.8000000002793968,
+        "p95": 3.8999999999068677,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 162,
+        "p50": 26.5,
+        "p95": 74.39999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 125,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.4820667509869056,
+          "maxX": 0.6408972634483333,
+          "minY": 0.2516243770709412,
+          "maxY": 0.5145477163291495
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "白面",
+      "phase": 1,
+      "strike": 0,
+      "samples": 163,
+      "cpuMs": {
+        "retained": 163,
+        "p50": 1.8000000002793968,
+        "p95": 3.8999999999068677,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 163,
+        "p50": 26.5,
+        "p95": 74.39999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 123,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.5095445302326255,
+          "maxX": 0.6148224376202436,
+          "minY": 0.3091140122329315,
+          "maxY": 0.5133289190862448
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "白面",
+      "phase": 1,
+      "strike": 0.5,
+      "samples": 164,
+      "cpuMs": {
+        "retained": 164,
+        "p50": 1.8000000002793968,
+        "p95": 3.8999999999068677,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 164,
+        "p50": 25.700000000186265,
+        "p95": 74.39999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 123,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.516176453102901,
+          "maxX": 0.6492328300745357,
+          "minY": 0.3100780214239894,
+          "maxY": 0.5133289190862448
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "白面",
+      "phase": 1,
+      "strike": 1,
+      "samples": 165,
+      "cpuMs": {
+        "retained": 165,
+        "p50": 1.8000000002793968,
+        "p95": 3.8999999999068677,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 165,
+        "p50": 25.700000000186265,
+        "p95": 74.39999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 123,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.5053387358831825,
+          "maxX": 0.6168688863448898,
+          "minY": 0.30440840928593776,
+          "maxY": 0.5133289190862448
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "白面",
+      "phase": 2,
+      "strike": 0,
+      "samples": 166,
+      "cpuMs": {
+        "retained": 166,
+        "p50": 1.7999999998137355,
+        "p95": 3.8999999999068677,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 166,
+        "p50": 25.100000000093132,
+        "p95": 74.39999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 123,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.5095752722400455,
+          "maxX": 0.6148160015677226,
+          "minY": 0.3091140122329315,
+          "maxY": 0.5133289190862448
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "白面",
+      "phase": 2,
+      "strike": 0.5,
+      "samples": 167,
+      "cpuMs": {
+        "retained": 167,
+        "p50": 1.7999999998137355,
+        "p95": 3.8999999999068677,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 167,
+        "p50": 25.100000000093132,
+        "p95": 74.39999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 123,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.516176453102901,
+          "maxX": 0.6496813920726342,
+          "minY": 0.3100780214239894,
+          "maxY": 0.5133289190862448
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "白面",
+      "phase": 2,
+      "strike": 1,
+      "samples": 168,
+      "cpuMs": {
+        "retained": 168,
+        "p50": 1.7999999998137355,
+        "p95": 3.8999999999068677,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 168,
+        "p50": 25,
+        "p95": 74.39999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 123,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.5053387358831825,
+          "maxX": 0.6168688863448898,
+          "minY": 0.30440840928593776,
+          "maxY": 0.5133289190862448
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "天狗鴉",
+      "phase": 1,
+      "strike": 0,
+      "samples": 169,
+      "cpuMs": {
+        "retained": 169,
+        "p50": 1.7999999998137355,
+        "p95": 3.8999999999068677,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 169,
+        "p50": 25,
+        "p95": 74.39999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 122,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.4235522117624656,
+          "maxX": 0.7094658873627354,
+          "minY": 0.314626016011399,
+          "maxY": 0.5145477154876809
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "天狗鴉",
+      "phase": 1,
+      "strike": 0.5,
+      "samples": 170,
+      "cpuMs": {
+        "retained": 170,
+        "p50": 1.7999999998137355,
+        "p95": 3.8999999999068677,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 170,
+        "p50": 24.899999999906868,
+        "p95": 74.39999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 122,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.42207403297581636,
+          "maxX": 0.729378835056417,
+          "minY": 0.3150746381148854,
+          "maxY": 0.5145477154876809
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "天狗鴉",
+      "phase": 1,
+      "strike": 1,
+      "samples": 171,
+      "cpuMs": {
+        "retained": 171,
+        "p50": 1.7999999998137355,
+        "p95": 3.8999999999068677,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 171,
+        "p50": 24.899999999906868,
+        "p95": 74.39999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 122,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.4002622633147703,
+          "maxX": 0.7336406083535876,
+          "minY": 0.31072206648550654,
+          "maxY": 0.5145477154876809
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "天狗鴉",
+      "phase": 2,
+      "strike": 0,
+      "samples": 172,
+      "cpuMs": {
+        "retained": 172,
+        "p50": 1.7999999998137355,
+        "p95": 4.399999999906868,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 172,
+        "p50": 22.799999999813735,
+        "p95": 74.39999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 122,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.4235542504706758,
+          "maxX": 0.7091484738759554,
+          "minY": 0.314626016011399,
+          "maxY": 0.5145477154876809
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "天狗鴉",
+      "phase": 2,
+      "strike": 0.5,
+      "samples": 173,
+      "cpuMs": {
+        "retained": 173,
+        "p50": 1.7999999998137355,
+        "p95": 4.399999999906868,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 173,
+        "p50": 22.799999999813735,
+        "p95": 74.39999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 122,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.4219239711638082,
+          "maxX": 0.7293680444891227,
+          "minY": 0.3150746381148854,
+          "maxY": 0.5145477154876809
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "天狗鴉",
+      "phase": 2,
+      "strike": 1,
+      "samples": 174,
+      "cpuMs": {
+        "retained": 174,
+        "p50": 1.7999999998137355,
+        "p95": 4.399999999906868,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 174,
+        "p50": 21.799999999813735,
+        "p95": 74.39999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 122,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.4002622633147703,
+          "maxX": 0.7336406083535876,
+          "minY": 0.31072206648550654,
+          "maxY": 0.5145477154876809
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "鶴骸",
+      "phase": 1,
+      "strike": 0,
+      "samples": 175,
+      "cpuMs": {
+        "retained": 175,
+        "p50": 1.7999999998137355,
+        "p95": 4.399999999906868,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 175,
+        "p50": 21.799999999813735,
+        "p95": 74.39999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 123,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.4471240015364289,
+          "maxX": 0.6850865887474566,
+          "minY": 0.2983144398708422,
+          "maxY": 0.5133289182469895
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "鶴骸",
+      "phase": 1,
+      "strike": 0.5,
+      "samples": 176,
+      "cpuMs": {
+        "retained": 176,
+        "p50": 1.7999999998137355,
+        "p95": 4.399999999906868,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 176,
+        "p50": 21.5,
+        "p95": 74.39999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 123,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.4436967188462601,
+          "maxX": 0.7044170646659382,
+          "minY": 0.2991781604796768,
+          "maxY": 0.5133289182469895
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "鶴骸",
+      "phase": 1,
+      "strike": 1,
+      "samples": 177,
+      "cpuMs": {
+        "retained": 177,
+        "p50": 1.7999999998137355,
+        "p95": 4.399999999906868,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 177,
+        "p50": 21.5,
+        "p95": 74.39999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 123,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.42320623962686915,
+          "maxX": 0.7081565135877244,
+          "minY": 0.2935076225850669,
+          "maxY": 0.5133289182469895
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "鶴骸",
+      "phase": 2,
+      "strike": 0,
+      "samples": 178,
+      "cpuMs": {
+        "retained": 178,
+        "p50": 1.7000000001862645,
+        "p95": 4.399999999906868,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 178,
+        "p50": 21.399999999906868,
+        "p95": 74.39999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 123,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.4471849801027989,
+          "maxX": 0.6847198970397119,
+          "minY": 0.2983144398708422,
+          "maxY": 0.5133289182469895
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "鶴骸",
+      "phase": 2,
+      "strike": 0.5,
+      "samples": 179,
+      "cpuMs": {
+        "retained": 179,
+        "p50": 1.7000000001862645,
+        "p95": 4.399999999906868,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 179,
+        "p50": 21.399999999906868,
+        "p95": 74.39999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 123,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.44329604613117074,
+          "maxX": 0.7043958164624858,
+          "minY": 0.2991781604796768,
+          "maxY": 0.5133289182469895
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "鶴骸",
+      "phase": 2,
+      "strike": 1,
+      "samples": 180,
+      "cpuMs": {
+        "retained": 180,
+        "p50": 1.7000000001862645,
+        "p95": 3.8999999999068677,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 180,
+        "p50": 20.600000000093132,
+        "p95": 71.79999999981374,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 123,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.42320623962686915,
+          "maxX": 0.7081565135877244,
+          "minY": 0.2935076225850669,
+          "maxY": 0.5133289182469895
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "石門王",
+      "phase": 1,
+      "strike": 0,
+      "samples": 181,
+      "cpuMs": {
+        "retained": 181,
+        "p50": 1.7000000001862645,
+        "p95": 3.8999999999068677,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 181,
+        "p50": 20.600000000093132,
+        "p95": 71.79999999981374,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 125,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.43971788783512383,
+          "maxX": 0.6803765143847125,
+          "minY": 0.2574662631022112,
+          "maxY": 0.5199217791690173
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "石門王",
+      "phase": 1,
+      "strike": 0.5,
+      "samples": 182,
+      "cpuMs": {
+        "retained": 182,
+        "p50": 1.7000000001862645,
+        "p95": 3.8999999999068677,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 182,
+        "p50": 20.600000000093132,
+        "p95": 71.79999999981374,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 125,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.4454108882461477,
+          "maxX": 0.6854812703328738,
+          "minY": 0.26140447257443855,
+          "maxY": 0.5199217791690173
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "石門王",
+      "phase": 1,
+      "strike": 1,
+      "samples": 183,
+      "cpuMs": {
+        "retained": 183,
+        "p50": 1.7000000001862645,
+        "p95": 3.8999999999068677,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 183,
+        "p50": 20.600000000093132,
+        "p95": 71.79999999981374,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 125,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.44094982094151175,
+          "maxX": 0.6818574501957039,
+          "minY": 0.2614806704386691,
+          "maxY": 0.5199217791690173
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "石門王",
+      "phase": 2,
+      "strike": 0,
+      "samples": 184,
+      "cpuMs": {
+        "retained": 184,
+        "p50": 1.7000000001862645,
+        "p95": 3.8999999999068677,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 184,
+        "p50": 19.899999999906868,
+        "p95": 71.79999999981374,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 125,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.43971788783512383,
+          "maxX": 0.6803765143847125,
+          "minY": 0.2574662631022112,
+          "maxY": 0.5199217791690173
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "石門王",
+      "phase": 2,
+      "strike": 0.5,
+      "samples": 185,
+      "cpuMs": {
+        "retained": 185,
+        "p50": 1.7000000001862645,
+        "p95": 3.8999999999068677,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 185,
+        "p50": 19.899999999906868,
+        "p95": 71.79999999981374,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 125,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.4454108882461477,
+          "maxX": 0.6854812703328738,
+          "minY": 0.26140447257443855,
+          "maxY": 0.5199217791690173
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "石門王",
+      "phase": 2,
+      "strike": 1,
+      "samples": 186,
+      "cpuMs": {
+        "retained": 186,
+        "p50": 1.7000000001862645,
+        "p95": 3.8999999999068677,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 186,
+        "p50": 18.399999999906868,
+        "p95": 71.79999999981374,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 125,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.44094982094151175,
+          "maxX": 0.6818574501957039,
+          "minY": 0.2614806704386691,
+          "maxY": 0.5199217791690173
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "巨仏",
+      "phase": 1,
+      "strike": 0,
+      "samples": 187,
+      "cpuMs": {
+        "retained": 187,
+        "p50": 1.7000000001862645,
+        "p95": 3.8999999999068677,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 187,
+        "p50": 19.899999999906868,
+        "p95": 71.79999999981374,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 125,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.4562715990033875,
+          "maxX": 0.6627878410055952,
+          "minY": 0.2556610077407986,
+          "maxY": 0.5273916472705674
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "巨仏",
+      "phase": 1,
+      "strike": 0.5,
+      "samples": 188,
+      "cpuMs": {
+        "retained": 188,
+        "p50": 1.7000000001862645,
+        "p95": 3.8999999999068677,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 188,
+        "p50": 18.399999999906868,
+        "p95": 71.79999999981374,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 125,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.4562715990033875,
+          "maxX": 0.6831430603395007,
+          "minY": 0.25811748766576326,
+          "maxY": 0.5273916472705674
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "巨仏",
+      "phase": 1,
+      "strike": 1,
+      "samples": 189,
+      "cpuMs": {
+        "retained": 189,
+        "p50": 1.7000000001862645,
+        "p95": 3.8999999999068677,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 189,
+        "p50": 18.399999999906868,
+        "p95": 71.79999999981374,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 125,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.45400165345793714,
+          "maxX": 0.6627878410055952,
+          "minY": 0.2576416265437437,
+          "maxY": 0.5273916472705674
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "巨仏",
+      "phase": 2,
+      "strike": 0,
+      "samples": 190,
+      "cpuMs": {
+        "retained": 190,
+        "p50": 1.7000000001862645,
+        "p95": 3.8999999999068677,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 190,
+        "p50": 17,
+        "p95": 71.79999999981374,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 125,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.4562715990033875,
+          "maxX": 0.6627878410055952,
+          "minY": 0.2556610077407986,
+          "maxY": 0.5273916472705674
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "巨仏",
+      "phase": 2,
+      "strike": 0.5,
+      "samples": 191,
+      "cpuMs": {
+        "retained": 191,
+        "p50": 1.7000000001862645,
+        "p95": 3.8999999999068677,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 191,
+        "p50": 17,
+        "p95": 71.79999999981374,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 125,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.4562715990033875,
+          "maxX": 0.6834224114524037,
+          "minY": 0.25811748766576326,
+          "maxY": 0.5273916472705674
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "enemy-phase-projection",
+      "name": "巨仏",
+      "phase": 2,
+      "strike": 1,
+      "samples": 192,
+      "cpuMs": {
+        "retained": 192,
+        "p50": 1.7000000001862645,
+        "p95": 3.8999999999068677,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 192,
+        "p50": 15.700000000186265,
+        "p95": 71.79999999981374,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 125,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.37282779593020676, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.17104032618353984,
+          "maxX": 0.4204495478099572,
+          "minY": 0.35847199422244375,
+          "maxY": 0.6757241785098982
+        },
+        "enemy": {
+          "minX": 0.45400165345793714,
+          "maxX": 0.6627878410055952,
+          "minY": 0.2576416265437437,
+          "maxY": 0.5273916472705674
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [313, 681],
+      "quality": "balanced",
+      "effects": "full"
+    },
+    {
+      "kind": "quality-viewport",
+      "width": 402,
+      "height": 874,
+      "tier": "high",
+      "samples": 199,
+      "cpuMs": {
+        "retained": 199,
+        "p50": 1.7000000001862645,
+        "p95": 3.8999999999068677,
+        "p99": 17.100000000093132
+      },
+      "frameIntervalMs": {
+        "retained": 199,
+        "p50": 18.399999999906868,
+        "p95": 74.89999999990687,
+        "p99": 443.10000000009313
+      },
+      "gpuMs": null,
+      "meshes": 125,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.35847849287092687, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.24820768922469288,
+          "maxX": 0.42054602527868945,
+          "minY": 0.37640329077879575,
+          "maxY": 0.6759187160956776
+        },
+        "enemy": {
+          "minX": 0.45403528537259286,
+          "maxX": 0.6626689404479356,
+          "minY": 0.257641597024685,
+          "maxY": 0.5273916097614347
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [402, 874],
+      "quality": "high",
+      "effects": "full"
+    },
+    {
+      "kind": "quality-viewport",
+      "width": 874,
+      "height": 402,
+      "tier": "high",
+      "samples": 203,
+      "cpuMs": {
+        "retained": 203,
+        "p50": 1.7000000001862645,
+        "p95": 3.7999999998137355,
+        "p99": 16.899999999906868
+      },
+      "frameIntervalMs": {
+        "retained": 203,
+        "p50": 17,
+        "p95": 74.89999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 125,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.35847849287092687, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.4473596871399666,
+          "maxX": 0.48338916694686956,
+          "minY": 0.3764032167382652,
+          "maxY": 0.6759186524423844
+        },
+        "enemy": {
+          "minX": 0.4903905069579087,
+          "maxX": 0.5340079760991795,
+          "minY": 0.25764154486106233,
+          "maxY": 0.5273915659647712
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2786069651741293,
+        "width": 1,
+        "height": 0.4850746268656717
+      },
+      "buffer": [874, 402],
+      "quality": "high",
+      "effects": "full"
+    },
+    {
+      "kind": "quality-viewport",
+      "width": 402,
+      "height": 874,
+      "tier": "lite",
+      "samples": 207,
+      "cpuMs": {
+        "retained": 207,
+        "p50": 1.7000000001862645,
+        "p95": 4.399999999906868,
+        "p99": 16.899999999906868
+      },
+      "frameIntervalMs": {
+        "retained": 207,
+        "p50": 15.700000000186265,
+        "p95": 80.39999999990687,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 125,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.35847849287092687, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.2479818052274586,
+          "maxX": 0.4204747449856419,
+          "minY": 0.37640320051920284,
+          "maxY": 0.6759186369512657
+        },
+        "enemy": {
+          "minX": 0.45399404699751467,
+          "maxX": 0.662814865721532,
+          "minY": 0.25764151875632085,
+          "maxY": 0.5273915404776327
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2860411899313501,
+        "width": 1,
+        "height": 0.49086455949656754
+      },
+      "buffer": [301, 655],
+      "quality": "lite",
+      "effects": "full"
+    },
+    {
+      "kind": "quality-viewport",
+      "width": 874,
+      "height": 402,
+      "tier": "lite",
+      "samples": 211,
+      "cpuMs": {
+        "retained": 211,
+        "p50": 1.7000000001862645,
+        "p95": 4.399999999906868,
+        "p99": 16.899999999906868
+      },
+      "frameIntervalMs": {
+        "retained": 211,
+        "p50": 14.899999999906868,
+        "p95": 96.70000000018626,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 125,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.35847849287092687, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.4474068628405586,
+          "maxX": 0.48340405181502544,
+          "minY": 0.3764032010159846,
+          "maxY": 0.6759186161291765
+        },
+        "enemy": {
+          "minX": 0.49039911729006863,
+          "maxX": 0.5339774954536188,
+          "minY": 0.25764153443993826,
+          "maxY": 0.527391537191221
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2786069651741293,
+        "width": 1,
+        "height": 0.4850746268656717
+      },
+      "buffer": [655, 301],
+      "quality": "lite",
+      "effects": "full"
+    },
+    {
+      "kind": "reduced-motion",
+      "setting": "OS reduce",
+      "samples": 212,
+      "cpuMs": {
+        "retained": 212,
+        "p50": 1.6999999997206032,
+        "p95": 4.399999999906868,
+        "p99": 16.899999999906868
+      },
+      "frameIntervalMs": {
+        "retained": 212,
+        "p50": 14.899999999906868,
+        "p95": 100.10000000009313,
+        "p99": 389.60000000009313
+      },
+      "gpuMs": null,
+      "meshes": 125,
+      "materials": 31,
+      "transforms": 30,
+      "camera": [3.2, 5.2, -9.8],
+      "playerPosition": [-0.9, 0.3667285024514422, 0],
+      "projectedBounds": {
+        "player": {
+          "minX": 0.4446768765457403,
+          "maxX": 0.48272184226833476,
+          "minY": 0.36039226253667067,
+          "maxY": 0.6752360024829516
+        },
+        "enemy": {
+          "minX": 0.49039911729006863,
+          "maxX": 0.5339774954536188,
+          "minY": 0.25764153443993826,
+          "maxY": 0.527391537191221
+        }
+      },
+      "viewport": {
+        "x": 0,
+        "y": 0.2786069651741293,
+        "width": 1,
+        "height": 0.4850746268656717
+      },
+      "buffer": [655, 301],
+      "quality": "lite",
+      "effects": "full"
+    },
+    {
+      "kind": "context-loss",
+      "restored": true,
+      "titleUsable": true,
+      "manualResumeRequired": true
+    }
+  ],
+  "errors": [],
+  "limitations": [
+    "Not an iPhone/Safari/VoiceOver or touch ergonomics test",
+    "CPU is measured; GPU duration is unavailable",
+    "Paused diagnostic samples do not establish continuous-play quality",
+    "No live ranking writes or shares performed",
+    "30 minute hardware/thermal run not performed"
+  ]
+}

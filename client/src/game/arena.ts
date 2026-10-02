@@ -2,12 +2,14 @@ import { COMBAT_LANE_SPACING } from "./rules";
 import type { Lane } from "./rules";
 
 /** The combat space is deliberately independent from the viewport aspect ratio. */
+export const COMBAT_FLOOR_Y = 0;
+export const FLOOR_MARKER_Y = COMBAT_FLOOR_Y + 0.035;
 export const COMBAT_SIDE_X = COMBAT_LANE_SPACING;
 export const COMBAT_MIN_X = -COMBAT_SIDE_X;
 export const COMBAT_MAX_X = COMBAT_SIDE_X;
 
 export const CAMERA_TARGET = Object.freeze([0, 1.05, 2.2] as const);
-export const CAMERA_BASE_POSITION = Object.freeze([7.6, 5.2, -8.5] as const);
+export const CAMERA_BASE_POSITION = Object.freeze([3.2, 5.2, -9.8] as const);
 export const CAMERA_BASE_FOV = 0.8;
 
 export function laneX(lane: Lane): number {

@@ -36,6 +36,7 @@ export default function GameCanvas({
     let battleRenderActive = false;
     let renderLoopRunning = false;
     let motionStopTimer: number | null = null;
+    let removeRestoreObserver: (() => void) | null = null;
     const renderFrame = () => handle?.scene.render();
     const setBattleRenderActive = (active: boolean) => {
       battleRenderActive = active;
@@ -54,6 +55,30 @@ export default function GameCanvas({
     };
     const onResize = () => {
       engine?.resize();
+      const bounds = canvas.getBoundingClientRect();
+      const hudBottom = Math.max(
+        0,
+        ...Array.from(
+          document.querySelectorAll(".hud-card, .pause-button")
+        ).map(node => node.getBoundingClientRect().bottom)
+      );
+      const copy = document
+        .querySelector(".battle-copy")
+        ?.getBoundingClientRect();
+      const top = Math.min(bounds.height * 0.3, hudBottom + 8);
+      const bottom = Math.max(
+        top + bounds.height * 0.35,
+        copy?.top ?? bounds.height * 0.8
+      );
+      if (bounds.width > 0 && bounds.height > 0)
+        window.dispatchEvent(
+          new CustomEvent("yamabushi-viewport", {
+            detail: {
+              top: top / bounds.height,
+              bottom: Math.min(bounds.height, bottom) / bounds.height,
+            },
+          })
+        );
       if (!battleRenderActive) renderFrame();
     };
     const onGameState = (event: Event) => {
@@ -96,6 +121,37 @@ export default function GameCanvas({
     const onVisibilityChange = () => pauseForInterruption("visibility");
     const onPageHide = () => pauseForInterruption("pagehide");
     const onPageShow = () => pauseForInterruption("pageshow");
+    const onContextLost = (event: Event) => {
+      event.preventDefault();
+      window.dispatchEvent(
+        new CustomEvent("yamabushi-pause", {
+          detail: { paused: true, reason: "context-lost" },
+        })
+      );
+      onStatusChange({ phase: "error", reason: "context-lost" });
+    };
+    const onContextRestored = () => {
+      if (disposed || !handle || !engine) return;
+      try {
+        onResize();
+        onStatusChange({ phase: "ready" });
+      } catch {
+        onStatusChange({ phase: "error", reason: "context-lost" });
+      }
+    };
+    canvas.addEventListener("webglcontextlost", onContextLost);
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const onMotion = () =>
+      window.dispatchEvent(
+        new CustomEvent("yamabushi-motion", {
+          detail: { reduced: reducedMotion.matches },
+        })
+      );
+    reducedMotion.addEventListener("change", onMotion);
+    const resizeObserver = new ResizeObserver(onResize);
+    document
+      .querySelectorAll(".hud-card, .battle-copy, .gameboy-controls")
+      .forEach(node => resizeObserver.observe(node));
     window.addEventListener("resize", onResize);
     window.addEventListener("yamabushi-state", onGameState);
     window.addEventListener("yamabushi-performance", onPerformance);
@@ -113,6 +169,14 @@ export default function GameCanvas({
         }),
       createScene: async nextEngine => {
         engine = nextEngine;
+        // Babylon rebuilds GPU resources asynchronously after the canvas event.
+        // Readiness follows its restoration observable and a successful frame.
+        if (nextEngine.onContextRestoredObservable) {
+          const observer =
+            nextEngine.onContextRestoredObservable.add(onContextRestored);
+          removeRestoreObserver = () =>
+            nextEngine.onContextRestoredObservable.remove(observer);
+        }
         const tier = readPerformanceTier(
           safeStorage.getItem(SETTINGS_STORAGE_KEYS.performance)
         );
@@ -122,7 +186,8 @@ export default function GameCanvas({
       onReady: next => {
         handle = next;
         // A scene is ready only after the first frame has actually succeeded.
-        renderFrame();
+        onResize();
+        onMotion();
         if (battleRenderActive) setBattleRenderActive(true);
         onStatusChange({ phase: "ready" });
       },
@@ -131,11 +196,19 @@ export default function GameCanvas({
         handle = null;
         renderLoopRunning = false;
         console.error("Game scene initialization failed", error);
-        onStatusChange({ phase: "error" });
+        onStatusChange({
+          phase: "error",
+          reason:
+            (Engine.isSupported?.() ?? true) ? "initialization" : "unsupported",
+        });
       },
     });
     return () => {
       disposed = true;
+      resizeObserver.disconnect();
+      reducedMotion.removeEventListener("change", onMotion);
+      canvas.removeEventListener("webglcontextlost", onContextLost);
+      removeRestoreObserver?.();
       if (motionStopTimer !== null) window.clearTimeout(motionStopTimer);
       if (renderLoopRunning) engine?.stopRenderLoop(renderFrame);
       window.removeEventListener("resize", onResize);

@@ -1,7 +1,9 @@
+import { COMBAT_FLOOR_Y } from "./arena";
+import { attackTimingFor } from "./rules";
 import { Mesh } from "@babylonjs/core/Meshes/mesh";
 import { MeshBuilder } from "@babylonjs/core/Meshes/meshBuilder";
 import { TransformNode } from "@babylonjs/core/Meshes/transformNode";
-import { Vector3 } from "@babylonjs/core/Maths/math.vector";
+import { Vector3, Quaternion, Matrix } from "@babylonjs/core/Maths/math.vector";
 import { Scene } from "@babylonjs/core/scene";
 import { StandardMaterial } from "@babylonjs/core/Materials/standardMaterial";
 
@@ -34,6 +36,11 @@ export type PlayerMotionSample = {
   timeSeconds: number;
   direction?: -1 | 1;
   attackKind?: PlayerAttackKind;
+  hitProgress?: number;
+  hitDirection?: -1 | 1;
+  guardBroken?: boolean;
+  counterReady?: boolean;
+  reducedMotion?: boolean;
 };
 
 export type ProceduralCharacterMaterials = Record<string, StandardMaterial>;
@@ -62,7 +69,7 @@ export type ProceduralPlayer = {
   applyMotion: (sample: PlayerMotionSample) => void;
 };
 
-const BASE_ROOT_Y = 0.36;
+const BASE_ROOT_Y = COMBAT_FLOOR_Y + 0.37;
 
 function clamp01(value: number): number {
   return Math.max(0, Math.min(1, value));
@@ -86,7 +93,7 @@ function pivot(
   scene: Scene,
   name: string,
   parent: Joint,
-  position: Vector3,
+  position: Vector3
 ): Joint {
   const node = new TransformNode(name, scene);
   node.parent = parent;
@@ -100,12 +107,12 @@ function part(
   size: Vector3,
   parent: Joint,
   position: Vector3,
-  material: StandardMaterial,
+  material: StandardMaterial
 ): Mesh {
   const mesh = MeshBuilder.CreateBox(
     name,
     { width: size.x, height: size.y, depth: size.z },
-    scene,
+    scene
   );
   mesh.parent = parent;
   mesh.position.copyFrom(position);
@@ -122,7 +129,7 @@ function segment(
   width: number,
   depth: number,
   material: StandardMaterial,
-  direction: 1 | -1,
+  direction: 1 | -1
 ): Segment {
   const joint = pivot(scene, `${name}_joint`, parent, position);
   const mesh = part(
@@ -131,7 +138,7 @@ function segment(
     new Vector3(width, length, depth),
     joint,
     new Vector3(0, (length / 2) * direction, 0),
-    material,
+    material
   );
   return { joint, mesh };
 }
@@ -143,7 +150,7 @@ function sphere(
   parent: Joint,
   position: Vector3,
   material: StandardMaterial,
-  segments = 10,
+  segments = 10
 ): Mesh {
   const mesh = MeshBuilder.CreateSphere(name, { diameter, segments }, scene);
   mesh.parent = parent;
@@ -204,6 +211,10 @@ function resetPose(player: BuiltPlayer) {
   spine.position.set(0, 0.52, 0);
   setRotation(spine);
   setRotation(headJoint);
+  leftShoulder.rotationQuaternion = null;
+  leftElbow.rotationQuaternion = null;
+  leftShoulder.position.set(-0.49, 0.82, 0);
+  rightShoulder.position.set(0.49, 0.82, 0);
   setRotation(leftShoulder);
   setRotation(rightShoulder);
   setRotation(leftElbow);
@@ -271,6 +282,7 @@ type BuiltPlayer = {
   staffRoot: Joint;
   staff: Mesh;
   blade: Mesh;
+  grip: Mesh;
   guard: Mesh;
   scabbard: Mesh;
   torso: Mesh;
@@ -292,7 +304,7 @@ type BuiltPlayer = {
 
 function createBuiltPlayer(
   scene: Scene,
-  materials: ProceduralCharacterMaterials,
+  materials: ProceduralCharacterMaterials
 ): BuiltPlayer {
   const root = new TransformNode("yamabushi_procedural_root", scene);
   root.position.set(0, BASE_ROOT_Y, 0);
@@ -301,13 +313,13 @@ function createBuiltPlayer(
     scene,
     "yamabushi_pelvis",
     root,
-    new Vector3(0, 0.46, 0),
+    new Vector3(0, 0.46, 0)
   );
   const spine = pivot(
     scene,
     "yamabushi_spine",
     pelvis,
-    new Vector3(0, 0.52, 0),
+    new Vector3(0, 0.52, 0)
   );
   const torso = part(
     scene,
@@ -315,7 +327,7 @@ function createBuiltPlayer(
     new Vector3(0.82, 0.86, 0.52),
     spine,
     new Vector3(0, 0.42, 0),
-    materials.indigo,
+    materials.indigo
   );
   const chestFold = part(
     scene,
@@ -323,7 +335,7 @@ function createBuiltPlayer(
     new Vector3(0.16, 0.68, 0.56),
     spine,
     new Vector3(0.08, 0.49, -0.03),
-    materials.cream,
+    materials.cream
   );
   chestFold.rotation.z = -0.16;
 
@@ -333,7 +345,7 @@ function createBuiltPlayer(
     new Vector3(0.88, 0.16, 0.58),
     pelvis,
     new Vector3(0, 0.18, -0.01),
-    materials.leather,
+    materials.leather
   );
   const sashTail = part(
     scene,
@@ -341,7 +353,7 @@ function createBuiltPlayer(
     new Vector3(0.14, 0.42, 0.1),
     pelvis,
     new Vector3(-0.35, -0.03, 0.18),
-    materials.vermilion,
+    materials.vermilion
   );
   sashTail.rotation.z = -0.12;
   part(
@@ -350,12 +362,12 @@ function createBuiltPlayer(
     new Vector3(0.22, 0.24, 0.12),
     pelvis,
     new Vector3(-0.38, 0.21, 0.24),
-    materials.vermilion,
+    materials.vermilion
   );
   const hakama = MeshBuilder.CreateCylinder(
     "hakama",
     { height: 0.58, diameterTop: 0.72, diameterBottom: 1.0, tessellation: 6 },
-    scene,
+    scene
   );
   hakama.parent = pelvis;
   hakama.position.y = -0.1;
@@ -370,7 +382,7 @@ function createBuiltPlayer(
     0.2,
     0.26,
     materials.gaiter,
-    -1,
+    -1
   );
   const rightThighSegment = segment(
     scene,
@@ -381,19 +393,19 @@ function createBuiltPlayer(
     0.2,
     0.26,
     materials.gaiter,
-    -1,
+    -1
   );
   const leftKnee = pivot(
     scene,
     "left_knee",
     leftThighSegment.joint,
-    new Vector3(0, -0.36, 0),
+    new Vector3(0, -0.36, 0)
   );
   const rightKnee = pivot(
     scene,
     "right_knee",
     rightThighSegment.joint,
-    new Vector3(0, -0.36, 0),
+    new Vector3(0, -0.36, 0)
   );
   const leftLower = segment(
     scene,
@@ -404,7 +416,7 @@ function createBuiltPlayer(
     0.17,
     0.23,
     materials.gaiter,
-    -1,
+    -1
   );
   const rightLower = segment(
     scene,
@@ -415,19 +427,19 @@ function createBuiltPlayer(
     0.17,
     0.23,
     materials.gaiter,
-    -1,
+    -1
   );
   const leftAnkle = pivot(
     scene,
     "left_ankle",
     leftLower.joint,
-    new Vector3(0, -0.42, 0),
+    new Vector3(0, -0.42, 0)
   );
   const rightAnkle = pivot(
     scene,
     "right_ankle",
     rightLower.joint,
-    new Vector3(0, -0.42, 0),
+    new Vector3(0, -0.42, 0)
   );
   const leftFoot = part(
     scene,
@@ -435,7 +447,7 @@ function createBuiltPlayer(
     new Vector3(0.3, 0.08, 0.48),
     leftAnkle,
     new Vector3(0, -0.04, -0.03),
-    materials.wood,
+    materials.wood
   );
   const rightFoot = part(
     scene,
@@ -443,20 +455,20 @@ function createBuiltPlayer(
     new Vector3(0.3, 0.08, 0.48),
     rightAnkle,
     new Vector3(0, -0.04, -0.03),
-    materials.wood,
+    materials.wood
   );
 
   const leftShoulder = pivot(
     scene,
     "left_shoulder",
     spine,
-    new Vector3(-0.49, 0.82, 0),
+    new Vector3(-0.49, 0.82, 0)
   );
   const rightShoulder = pivot(
     scene,
     "right_shoulder",
     spine,
-    new Vector3(0.49, 0.82, 0),
+    new Vector3(0.49, 0.82, 0)
   );
   const leftUpper = segment(
     scene,
@@ -467,7 +479,7 @@ function createBuiltPlayer(
     0.22,
     0.25,
     materials.indigo,
-    -1,
+    -1
   );
   const rightUpper = segment(
     scene,
@@ -478,19 +490,19 @@ function createBuiltPlayer(
     0.22,
     0.25,
     materials.indigo,
-    -1,
+    -1
   );
   const leftElbow = pivot(
     scene,
     "left_elbow",
     leftUpper.joint,
-    new Vector3(0, -0.4, 0),
+    new Vector3(0, -0.4, 0)
   );
   const rightElbow = pivot(
     scene,
     "right_elbow",
     rightUpper.joint,
-    new Vector3(0, -0.4, 0),
+    new Vector3(0, -0.4, 0)
   );
   const leftForearm = segment(
     scene,
@@ -501,7 +513,7 @@ function createBuiltPlayer(
     0.18,
     0.22,
     materials.indigo,
-    -1,
+    -1
   );
   const rightForearm = segment(
     scene,
@@ -512,19 +524,19 @@ function createBuiltPlayer(
     0.18,
     0.22,
     materials.indigo,
-    -1,
+    -1
   );
   const leftHand = pivot(
     scene,
     "left_hand",
     leftForearm.joint,
-    new Vector3(0, -0.38, 0),
+    new Vector3(0, -0.38, 0)
   );
   const rightHand = pivot(
     scene,
     "right_hand",
     rightForearm.joint,
-    new Vector3(0, -0.38, 0),
+    new Vector3(0, -0.38, 0)
   );
   sphere(
     scene,
@@ -533,7 +545,7 @@ function createBuiltPlayer(
     leftHand,
     new Vector3(0, 0, -0.02),
     materials.skin,
-    8,
+    8
   );
   sphere(
     scene,
@@ -542,14 +554,14 @@ function createBuiltPlayer(
     rightHand,
     new Vector3(0, 0, -0.02),
     materials.skin,
-    8,
+    8
   );
 
   const headJoint = pivot(
     scene,
     "yamabushi_head_joint",
     spine,
-    new Vector3(0, 0.86, 0),
+    new Vector3(0, 0.86, 0)
   );
   const head = sphere(
     scene,
@@ -558,8 +570,16 @@ function createBuiltPlayer(
     headJoint,
     new Vector3(0, 0.22, -0.02),
     materials.skin,
-    12,
+    12
   );
+  const hat = MeshBuilder.CreateCylinder(
+    "yamabushi_hat",
+    { height: 0.22, diameterTop: 0.18, diameterBottom: 0.9, tessellation: 10 },
+    scene
+  );
+  hat.parent = headJoint;
+  hat.position.y = 0.61;
+  hat.material = materials.wood;
   const hair = sphere(
     scene,
     "chonmage_hair",
@@ -567,13 +587,13 @@ function createBuiltPlayer(
     headJoint,
     new Vector3(0, 0.45, 0.02),
     materials.hair,
-    8,
+    8
   );
   hair.scaling.set(0.92, 0.58, 0.92);
   const topknot = MeshBuilder.CreateCylinder(
     "topknot",
     { height: 0.22, diameterTop: 0.14, diameterBottom: 0.22, tessellation: 8 },
-    scene,
+    scene
   );
   topknot.parent = headJoint;
   topknot.position.set(0, 0.68, 0.02);
@@ -584,7 +604,7 @@ function createBuiltPlayer(
     new Vector3(0.5, 0.06, 0.5),
     headJoint,
     new Vector3(0, 0.32, -0.02),
-    materials.vermilion,
+    materials.vermilion
   );
   const neckCloth = part(
     scene,
@@ -592,7 +612,7 @@ function createBuiltPlayer(
     new Vector3(0.42, 0.16, 0.42),
     headJoint,
     new Vector3(0, 0.02, 0),
-    materials.cream,
+    materials.cream
   );
   const eyeL = sphere(
     scene,
@@ -601,7 +621,7 @@ function createBuiltPlayer(
     headJoint,
     new Vector3(-0.11, 0.25, -0.22),
     materials.hair,
-    6,
+    6
   );
   const eyeR = sphere(
     scene,
@@ -610,7 +630,7 @@ function createBuiltPlayer(
     headJoint,
     new Vector3(0.11, 0.25, -0.22),
     materials.hair,
-    6,
+    6
   );
   eyeL.scaling.set(1, 0.55, 0.5);
   eyeR.scaling.set(1, 0.55, 0.5);
@@ -619,12 +639,12 @@ function createBuiltPlayer(
     scene,
     "staff_root",
     root,
-    new Vector3(-0.72, 0.08, 0.05),
+    new Vector3(-0.72, 0.08, 0.05)
   );
   const staff = MeshBuilder.CreateCylinder(
     "staff",
     { height: 1.9, diameter: 0.07, tessellation: 8 },
-    scene,
+    scene
   );
   staff.parent = staffRoot;
   staff.position.y = 0.95;
@@ -635,31 +655,40 @@ function createBuiltPlayer(
     new Vector3(0.1, 1.18, 0.1),
     pelvis,
     new Vector3(0.28, 0.48, 0.22),
-    materials.wood,
+    materials.wood
   );
   scabbard.rotation.z = -0.72;
   const blade = part(
     scene,
     "katana",
-    new Vector3(0.07, 1.45, 0.08),
+    new Vector3(0.085, 1.45, 0.09),
     rightHand,
     new Vector3(0.04, 0.7, -0.04),
-    materials.steel,
+    materials.steel
   );
   blade.rotation.z = -0.65;
   const guard = MeshBuilder.CreateTorus(
     "tsuba",
     { diameter: 0.2, thickness: 0.035, tessellation: 16 },
-    scene,
+    scene
   );
   guard.parent = rightHand;
   guard.position.set(0.04, 0.11, -0.04);
   guard.rotation.y = Math.PI / 2;
   guard.material = materials.gold;
+  const handle = part(
+    scene,
+    "katana_grip",
+    new Vector3(0.11, 0.25, 0.11),
+    rightHand,
+    new Vector3(0.04, 0, -0.02),
+    materials.leather
+  );
+  handle.metadata = { weaponGrip: true };
   const prayer = MeshBuilder.CreateTorus(
     "prayer_beads",
     { diameter: 0.28, thickness: 0.025, tessellation: 12 },
-    scene,
+    scene
   );
   prayer.parent = headJoint;
   prayer.position.set(-0.19, 0.08, -0.28);
@@ -686,6 +715,7 @@ function createBuiltPlayer(
     staffRoot,
     staff,
     blade,
+    grip: handle,
     guard,
     scabbard,
     torso,
@@ -788,12 +818,23 @@ function applyAttack(
   progress: number,
   kind: PlayerAttackKind,
   time: number,
-  direction: -1 | 1,
+  direction: -1 | 1
 ) {
   const p = clamp01(progress);
-  const draw = smooth(p / 0.28);
-  const swing = smooth((p - 0.2) / 0.42);
-  const recover = easeOut((p - 0.56) / 0.44);
+  const timing = attackTimingFor(kind);
+  const elapsed = p * timing.total;
+  const startupEnd = timing.startup / timing.total;
+  const activeEnd = (timing.startup + timing.active) / timing.total;
+  const draw =
+    smooth(elapsed / (timing.startup * 0.45)) *
+    (1 - easeOut((elapsed - timing.startup - timing.active) / timing.recovery));
+  const swing = smooth(
+    (elapsed - timing.startup * 0.45) /
+      (timing.startup * 0.55 + timing.active * 0.5)
+  );
+  const recover = easeOut(
+    (elapsed - timing.startup - timing.active) / timing.recovery
+  );
   const isHeavy = kind === "guard-break";
   const isCounter = kind === "counter";
   const isFinisher = kind === "finisher";
@@ -816,9 +857,9 @@ function applyAttack(
   const rightDraw = isHeavy ? -1.48 : isCounter ? -0.92 : -1.32;
   const rightActive = isHeavy ? 1.45 : isFinisher ? 1.55 : 1.24;
   const bladeAngle =
-    p < 0.24
+    p < startupEnd * 0.45
       ? lerp(-0.65, rightDraw, draw)
-      : p < 0.66
+      : p < activeEnd
         ? lerp(rightDraw, rightActive, swing)
         : lerp(rightActive, -0.65, recover);
   player.blade.rotation.z = bladeAngle;
@@ -828,24 +869,24 @@ function applyAttack(
   player.rightShoulder.rotation.z = lerp(
     -0.16,
     isHeavy ? -0.92 : isCounter ? -0.72 : -0.84,
-    draw,
+    draw
   );
   player.rightShoulder.rotation.y = lerp(0, isHeavy ? -0.28 : -0.18, draw);
   player.rightElbow.rotation.z = lerp(
     0.04,
     isHeavy ? 0.86 : isCounter ? 0.62 : 0.74,
-    draw,
+    draw
   );
   player.rightForearm.rotation.z = lerp(
     -0.02,
     isHeavy ? -0.58 : isCounter ? -0.44 : -0.52,
-    draw,
+    draw
   );
   player.rightHand.rotation.y = lerp(0, -0.12, draw);
   player.leftShoulder.rotation.z = lerp(
     0.16,
     isHeavy ? 0.58 : isCounter ? 0.42 : 0.48,
-    draw,
+    draw
   );
   player.leftShoulder.rotation.y = lerp(0, 0.16, draw);
   player.leftElbow.rotation.z = lerp(-0.04, -0.42, draw);
@@ -864,7 +905,7 @@ function applyAttack(
   player.neckCloth.rotation.z = direction * impactPulse * 0.16;
   player.hair.rotation.z = direction * impactPulse * 0.12;
 
-  if (p > 0.66) {
+  if (p > activeEnd) {
     const breath = Math.sin(time * 9) * 0.012 * (1 - recover);
     player.spine.position.y -= breath;
   }
@@ -984,15 +1025,44 @@ function applySpawn(player: BuiltPlayer, progress: number, time: number) {
   player.prayer.rotation.y = (1 - p) * 1.2;
 }
 
+type PoseValue = {
+  node: Joint | Mesh;
+  rotation: Vector3;
+  position: Vector3;
+  scaling: Vector3;
+};
+const secondaryHistory = new WeakMap<
+  BuiltPlayer,
+  { angle: number; time: number; lag: number }
+>();
+const poseHistory = new WeakMap<
+  BuiltPlayer,
+  {
+    kind: PlayerMotionKind;
+    time: number;
+    changedAt: number;
+    previous: PoseValue[];
+    from: PoseValue[];
+  }
+>();
+function poseValues(player: BuiltPlayer): PoseValue[] {
+  return Object.values(player).map(node => ({
+    node,
+    rotation: node.rotation.clone(),
+    position: node.position.clone(),
+    scaling: node.scaling.clone(),
+  }));
+}
 function applyMotion(player: BuiltPlayer, sample: PlayerMotionSample) {
   resetPose(player);
   const progress = clamp01(sample.progress);
   const time = sample.timeSeconds;
+  const decorativeTime = sample.reducedMotion ? 0 : time;
   const direction = sample.direction === -1 ? -1 : 1;
 
   switch (sample.kind) {
     case "spawn":
-      applySpawn(player, progress, time);
+      applySpawn(player, progress, decorativeTime);
       break;
     case "dodge":
       applyDodge(player, progress, direction);
@@ -1003,14 +1073,14 @@ function applyMotion(player: BuiltPlayer, sample: PlayerMotionSample) {
         progress,
         sample.attackKind ?? "normal",
         time,
-        direction,
+        direction
       );
       break;
     case "sheath":
-      applySheath(player, progress, time);
+      applySheath(player, progress, decorativeTime);
       break;
     case "guard":
-      applyGuard(player, time);
+      applyGuard(player, decorativeTime);
       break;
     case "parry":
       applyParry(player, progress, direction);
@@ -1022,18 +1092,170 @@ function applyMotion(player: BuiltPlayer, sample: PlayerMotionSample) {
       applyDefeat(player, progress);
       break;
     case "victory":
-      applyVictory(player, progress, time);
+      applyVictory(player, progress, decorativeTime);
       break;
     case "idle":
     default:
-      applyIdle(player, time);
+      applyIdle(player, decorativeTime);
       break;
   }
+  let history = poseHistory.get(player);
+  if (history && time >= history.time) {
+    if (history.kind !== sample.kind) {
+      history.from = history.previous;
+      history.changedAt = time;
+    }
+    const amount = smooth(
+      (time - history.changedAt) / (sample.kind === "attack" ? 0.045 : 0.065)
+    );
+    if (amount < 1)
+      history.from.forEach(({ node, rotation, position, scaling }) => {
+        const x = node.position.x,
+          z = node.position.z;
+        node.rotation.copyFrom(Vector3.Lerp(rotation, node.rotation, amount));
+        node.position.copyFrom(Vector3.Lerp(position, node.position, amount));
+        node.scaling.copyFrom(Vector3.Lerp(scaling, node.scaling, amount));
+        if (node === player.root) {
+          node.position.x = x;
+          node.position.z = z;
+        }
+      });
+    history.kind = sample.kind;
+    history.time = time;
+    history.previous = poseValues(player);
+  } else {
+    history = {
+      kind: sample.kind,
+      time,
+      changedAt: time - 1,
+      previous: poseValues(player),
+      from: [],
+    };
+    poseHistory.set(player, history);
+  }
+  // Final display pass: effects cannot move the gameplay lane/root.
+  if (sample.guardBroken) {
+    player.pelvis.position.y -= 0.12;
+    player.spine.rotation.x += 0.25;
+    player.headJoint.rotation.x += 0.18;
+  }
+  if (sample.counterReady && sample.kind === "idle") {
+    player.rightShoulder.rotation.z = -0.65;
+    player.rightElbow.rotation.z = 0.6;
+  }
+  if (
+    sample.hitProgress !== undefined &&
+    sample.kind !== "hit" &&
+    sample.kind !== "defeat"
+  ) {
+    const pulse = Math.sin(clamp01(sample.hitProgress) * Math.PI);
+    player.spine.rotation.z +=
+      (sample.hitDirection ?? direction) * pulse * 0.18;
+    player.headJoint.rotation.z +=
+      (sample.hitDirection ?? direction) * pulse * 0.12;
+  }
+  const secondary = secondaryHistory.get(player);
+  if (secondary && time > secondary.time && !sample.reducedMotion) {
+    const dt = Math.min(0.1, time - secondary.time);
+    const velocity =
+      (player.blade.rotation.z - secondary.angle) / Math.max(0.001, dt);
+    const target = Math.max(-0.16, Math.min(0.16, -velocity * 0.008));
+    secondary.lag += (target - secondary.lag) * (1 - Math.exp(-dt * 12));
+    player.hair.rotation.z += secondary.lag * 0.45;
+    player.neckCloth.rotation.z += secondary.lag * 0.7;
+    player.sashTail.rotation.z += secondary.lag;
+    player.prayer.rotation.y += secondary.lag * 0.65;
+    secondary.angle = player.blade.rotation.z;
+    secondary.time = time;
+  } else
+    secondaryHistory.set(player, {
+      angle: player.blade.rotation.z,
+      time,
+      lag: 0,
+    });
+  // The mesh faces local -Z; the combat forward vector is world +Z.
+  player.root.rotation.y += Math.PI;
+  // The blade's origin is its centre, so derive its centre from the grip.
+  const angle = player.blade.rotation.z;
+  player.blade.position.set(
+    0.04 - Math.sin(angle) * 0.85,
+    Math.cos(angle) * 0.85,
+    -0.02
+  );
+  player.guard.position.set(
+    0.04 - Math.sin(angle) * 0.13,
+    Math.cos(angle) * 0.13,
+    -0.02
+  );
+  player.guard.rotation.set(0, 0, angle);
+  player.grip.rotation.z = angle;
+  // The left arm uses a two-bone display IK solution during two-handed poses.
+  // It never changes the gameplay root or the right-hand weapon transform.
+  if (["guard", "parry", "attack"].includes(sample.kind)) {
+    player.root.computeWorldMatrix(true);
+    player.rightHand.computeWorldMatrix(true);
+    player.leftShoulder.computeWorldMatrix(true);
+    const targetWorld = Vector3.TransformCoordinates(
+      new Vector3(0.04 + Math.sin(angle) * 0.1, -Math.cos(angle) * 0.1, -0.02),
+      player.rightHand.getWorldMatrix()
+    );
+    const parentMatrix = player.spine.computeWorldMatrix(true);
+    const target = Vector3.TransformCoordinates(
+      targetWorld,
+      Matrix.Invert(parentMatrix)
+    );
+    const origin = player.leftShoulder.position;
+    const delta = target.subtract(origin);
+    // A small clavicle translation keeps both bones within their reach.
+    if (delta.length() > 0.779) {
+      origin.addInPlace(delta.normalizeToNew().scale(delta.length() - 0.779));
+      delta.copyFrom(target.subtract(origin));
+    }
+    const distance = Math.min(0.779, Math.max(0.03, delta.length()));
+    const along = delta.normalize();
+    let bend = Vector3.Cross(along, new Vector3(0, 0, 1));
+    if (bend.lengthSquared() < 0.001) bend = new Vector3(1, 0, 0);
+    bend.normalize();
+    const projection =
+      (distance * distance + 0.4 * 0.4 - 0.38 * 0.38) / (2 * distance);
+    const height = Math.sqrt(Math.max(0, 0.4 * 0.4 - projection * projection));
+    const upper = along.scale(projection).add(bend.scale(height));
+    const shoulderQ = Quaternion.Identity();
+    Quaternion.FromUnitVectorsToRef(
+      new Vector3(0, -1, 0),
+      upper.normalizeToNew(),
+      shoulderQ
+    );
+    player.leftShoulder.rotationQuaternion = shoulderQ;
+    player.leftShoulder.computeWorldMatrix(true);
+    const lowerWorld = targetWorld.subtract(
+      player.leftElbow.computeWorldMatrix(true).getTranslation()
+    );
+    const lowerLocal = Vector3.TransformNormal(
+      lowerWorld,
+      Matrix.Invert(player.leftShoulder.getWorldMatrix())
+    ).normalize();
+    const elbowQ = Quaternion.Identity();
+    Quaternion.FromUnitVectorsToRef(new Vector3(0, -1, 0), lowerLocal, elbowQ);
+    player.leftElbow.rotationQuaternion = elbowQ;
+    player.leftForearm.rotation.setAll(0);
+    player.leftHand.rotation.setAll(0);
+  }
+  // Keep the lowest supporting sole on the common floor for every pose.
+  player.root.computeWorldMatrix(true);
+  const sole = Math.min(
+    ...[player.leftFoot, player.rightFoot].map(foot => {
+      foot.computeWorldMatrix(true);
+      return foot.getBoundingInfo().boundingBox.minimumWorld.y;
+    })
+  );
+  const lift = sample.kind === "spawn" ? (1 - easeOut(progress)) * 0.72 : 0;
+  player.root.position.y += COMBAT_FLOOR_Y + lift - sole;
 }
 
 export function makeProceduralPlayer(
   scene: Scene,
-  materials: ProceduralCharacterMaterials,
+  materials: ProceduralCharacterMaterials
 ): ProceduralPlayer {
   const built = createBuiltPlayer(scene, materials);
   resetPose(built);
@@ -1051,6 +1273,6 @@ export function makeProceduralPlayer(
     prayer: built.prayer,
     sash: built.sash,
     scabbard: built.scabbard,
-    applyMotion: (sample) => applyMotion(built, sample),
+    applyMotion: sample => applyMotion(built, sample),
   };
 }

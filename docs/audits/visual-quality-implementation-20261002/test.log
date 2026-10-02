@@ -1,0 +1,227 @@
+
+ RUN  v2.1.9 /workspace/mamonokiri/client
+
+ ✓ src/mobile-contract.test.ts (22 tests) 11ms
+ ✓ src/game/rules.test.ts (40 tests) 13ms
+ ✓ src/game/checkpoint.test.ts (5 tests) 8ms
+stdout | src/game/scene-input.test.ts > scene action input > starts a visible slash from the mobile event path before tutorial success
+BJS - [06:56:58]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/scene-input.test.ts > scene action input > keeps the optional practice safe after an incorrect guard
+BJS - [06:56:58]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/scene-input.test.ts > scene action input > keeps the fifty-match seed visible for a dark-mode replay
+BJS - [06:56:58]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/scene-input.test.ts > scene action input > resolves a parry counter at its hit time, not on button-down
+BJS - [06:56:58]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/scene-input.test.ts > scene action input > keeps repeated defensive success useful but finitely scored per enemy
+BJS - [06:56:58]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/scene-input.test.ts > scene action input > keeps hit effects visual-only and reuses the flying slash material
+BJS - [06:56:58]: Babylon.js v9.20.1 - Null engine
+BJS - [06:56:58]: Babylon.js v9.20.1 - Null engine
+
+ ✓ src/game/scene-input.test.ts (6 tests) 319ms
+stdout | src/game/visual-quality.test.ts > live visual geometry > keeps normal soles and the hilt connected at every phase
+BJS - [06:56:58]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/visual-quality.test.ts > live visual geometry > keeps counter soles and the hilt connected at every phase
+BJS - [06:56:58]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/visual-quality.test.ts > live visual geometry > keeps guard-break soles and the hilt connected at every phase
+BJS - [06:56:58]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/visual-quality.test.ts > live visual geometry > keeps finisher soles and the hilt connected at every phase
+BJS - [06:56:58]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/visual-quality.test.ts > live visual geometry > keeps support points above the floor for idle
+BJS - [06:56:58]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/visual-quality.test.ts > live visual geometry > keeps support points above the floor for dodge
+BJS - [06:56:58]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/visual-quality.test.ts > live visual geometry > keeps support points above the floor for guard
+BJS - [06:56:58]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/visual-quality.test.ts > live visual geometry > keeps support points above the floor for parry
+BJS - [06:56:58]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/visual-quality.test.ts > live visual geometry > keeps support points above the floor for hit
+BJS - [06:56:58]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/visual-quality.test.ts > live visual geometry > keeps support points above the floor for defeat
+BJS - [06:56:58]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/visual-quality.test.ts > live visual geometry > keeps support points above the floor for victory
+BJS - [06:56:58]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/visual-quality.test.ts > live visual geometry > keeps support points above the floor for sheath
+BJS - [06:56:58]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/visual-quality.test.ts > live visual geometry > detects a weapon reparented away from its grip
+BJS - [06:56:58]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/visual-quality.test.ts > live visual geometry > has already begun the counter's returning swing at 90ms
+BJS - [06:56:58]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/visual-quality.test.ts > live visual geometry > articulates 影面 and keeps supports on the floor through both phases
+BJS - [06:56:58]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/visual-quality.test.ts > live visual geometry > articulates 角岩 and keeps supports on the floor through both phases
+BJS - [06:56:58]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/visual-quality.test.ts > live visual geometry > articulates 鳴壺 and keeps supports on the floor through both phases
+BJS - [06:56:58]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/visual-quality.test.ts > live visual geometry > articulates 逆鉾 and keeps supports on the floor through both phases
+BJS - [06:56:58]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/visual-quality.test.ts > live visual geometry > articulates 霧猿 and keeps supports on the floor through both phases
+BJS - [06:56:58]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/visual-quality.test.ts > live visual geometry > articulates 鉄輪 and keeps supports on the floor through both phases
+BJS - [06:56:58]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/visual-quality.test.ts > live visual geometry > articulates 骨灯 and keeps supports on the floor through both phases
+BJS - [06:56:58]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/visual-quality.test.ts > live visual geometry > articulates 牙嶺 and keeps supports on the floor through both phases
+BJS - [06:56:58]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/visual-quality.test.ts > live visual geometry > articulates 鎧熊 and keeps supports on the floor through both phases
+BJS - [06:56:58]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/visual-quality.test.ts > live visual geometry > articulates 沼喰 and keeps supports on the floor through both phases
+BJS - [06:56:58]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/visual-quality.test.ts > live visual geometry > articulates 百眼 and keeps supports on the floor through both phases
+BJS - [06:56:58]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/visual-quality.test.ts > live visual geometry > articulates 鬼将 and keeps supports on the floor through both phases
+BJS - [06:56:58]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/visual-quality.test.ts > live visual geometry > articulates 白面 and keeps supports on the floor through both phases
+BJS - [06:56:58]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/visual-quality.test.ts > live visual geometry > articulates 天狗鴉 and keeps supports on the floor through both phases
+BJS - [06:56:58]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/visual-quality.test.ts > live visual geometry > articulates 鶴骸 and keeps supports on the floor through both phases
+BJS - [06:56:58]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/visual-quality.test.ts > live visual geometry > articulates 石門王 and keeps supports on the floor through both phases
+BJS - [06:56:58]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/visual-quality.test.ts > live visual geometry > articulates 巨仏 and keeps supports on the floor through both phases
+BJS - [06:56:58]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/visual-quality.test.ts > live visual geometry > replaces enemy parts without accumulating meshes or materials
+BJS - [06:56:58]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/visual-quality.test.ts > live visual geometry > selects exactly one static chapter and retains its geometry
+BJS - [06:56:58]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/visual-quality.test.ts > real scene input and effects > accepts left and right keyboard routes, but ignores IME, editable fields, repeats and menus
+BJS - [06:56:58]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/visual-quality.test.ts > real scene input and effects > keeps the extended spear tip's rear connected to its shaft
+BJS - [06:56:58]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/visual-quality.test.ts > real scene input and effects > uses the same damage boundaries in floor information
+BJS - [06:56:58]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/visual-quality.test.ts > real scene input and effects > expires contact effects on gameplay time and clears them on restart
+BJS - [06:56:58]: Babylon.js v9.20.1 - Null engine
+
+ ✓ src/game/visual-quality.test.ts (38 tests) 492ms
+stdout | src/game/scene-clock.test.ts > scene run clock > starts the first warning from run start after 0ms in the title
+BJS - [06:56:58]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/scene-clock.test.ts > scene run clock > starts the first warning from run start after 10000ms in the title
+BJS - [06:56:58]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/scene-clock.test.ts > scene run clock > starts the first warning from run start after 60000ms in the title
+BJS - [06:56:58]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/scene-clock.test.ts > scene run clock > restarts the same first-enemy wait on retry
+BJS - [06:56:58]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/scene-clock.test.ts > scene run clock > waits from the second enemy's own spawn, not the page or first enemy
+BJS - [06:56:58]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/scene-clock.test.ts > scene run clock > preserves the pending hit through a 1600ms interruption and manual resume
+BJS - [06:56:58]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/scene-clock.test.ts > scene run clock > freezes an active slash for manual pauses
+BJS - [06:56:58]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/scene-clock.test.ts > scene run clock > freezes an active slash for visibility pauses
+BJS - [06:56:58]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/scene-clock.test.ts > scene run clock > freezes an active slash for pagehide pauses
+BJS - [06:56:58]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/scene-clock.test.ts > scene run clock > freezes an active slash for pageshow pauses
+BJS - [06:56:58]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/scene-clock.test.ts > scene run clock > detects a long gap before accepting input, even before another render
+BJS - [06:56:58]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/scene-clock.test.ts > scene run clock > resolves the same hit with 30 rendered frames per second
+BJS - [06:56:58]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/scene-clock.test.ts > scene run clock > resolves the same hit with 60 rendered frames per second
+BJS - [06:56:58]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/scene-clock.test.ts > scene run clock > resolves the same hit with 120 rendered frames per second
+BJS - [06:56:59]: Babylon.js v9.20.1 - Null engine
+
+ ✓ src/game/scene-clock.test.ts (14 tests) 500ms
+ ✓ src/responsive-ui-contract.test.ts (6 tests) 5ms
+ ✓ src/game/config.test.ts (6 tests) 6ms
+stdout | src/game/scene-checkpoint.test.ts > scene run checkpoint > writes only a stable boundary and resumes the same run state
+BJS - [06:56:59]: Babylon.js v9.20.1 - Null engine
+BJS - [06:56:59]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/scene-checkpoint.test.ts > scene run checkpoint > restores a chapter reward checkpoint as a paused choice
+BJS - [06:56:59]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/scene-checkpoint.test.ts > scene run checkpoint > does not overwrite the checkpoint while a slash is in flight
+BJS - [06:56:59]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/scene-checkpoint.test.ts > scene run checkpoint > ignores corrupt resume data and still allows a fresh run
+BJS - [06:56:59]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/scene-checkpoint.test.ts > scene run checkpoint > keeps scene resources bounded across repeated retry cycles
+BJS - [06:56:59]: Babylon.js v9.20.1 - Null engine
+
+ ✓ src/game/scene-checkpoint.test.ts (5 tests) 197ms
+stdout | src/game/proceduralCharacter.test.ts > procedural character motion contract > applies every motion to the same live Babylon hierarchy
+BJS - [06:56:59]: Babylon.js v9.20.1 - Null engine
+
+ ✓ src/game/proceduralCharacter.test.ts (4 tests) 31ms
+ ✓ src/game/bootstrap.test.ts (4 tests) 8ms
+ ✓ src/game/ranking.test.ts (3 tests) 4ms
+ ✓ src/game/arena.test.ts (8 tests) 4ms
+ ✓ src/game/storage.test.ts (2 tests) 3ms
+ ✓ src/game/clock.test.ts (2 tests) 3ms
+stdout | src/game/scene-arena.test.ts > scene arena alignment > moves between fixed side anchors instead of accumulating viewport-sized drift
+BJS - [06:56:59]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/scene-arena.test.ts > scene arena alignment > places the strong warning and all three lane markers in the same arena
+BJS - [06:56:59]: Babylon.js v9.20.1 - Null engine
+
+stdout | src/game/scene-arena.test.ts > scene arena alignment > keeps the fixed right lane safe from the first left attack
+BJS - [06:56:59]: Babylon.js v9.20.1 - Null engine
+
+ ✓ src/game/scene-arena.test.ts (3 tests) 153ms
+ ✓ src/game/sharing.test.ts (4 tests) 4ms
+ ✓ src/startup.test.ts (6 tests) 357ms
+
+ Test Files  18 passed (18)
+      Tests  178 passed (178)
+   Start at  06:56:57
+   Duration  3.29s (transform 922ms, setup 0ms, collect 2.56s, tests 2.12s, environment 430ms, prepare 977ms)
+

@@ -1063,3 +1063,88 @@ body,
     font-size: 10px;
   }
 }
+
+/* Audit Q10: preserve a single scroll direction and readable real targets. */
+.title-screen { justify-content: flex-start; }
+.title-visual { flex: 0 0 auto; min-height: 150px; }
+.title-screen button, .pause-panel button, .result-card button, .exit-panel button,
+.pause-button, .title-advanced summary, .platform-link { min-height: 44px; }
+.title-screen input { min-height: 44px; font-size: 16px; }
+.title-choice-row button small, .title-settings button, .pause-settings button,
+.platform-status, .reward-option span, .result-stats, .result-player, .online-ranking ol,
+.title-recommendation small, .title-screen > p { font-size: 14px; line-height: 1.65; color: #ddd8cd; }
+.title-choice-row button strong, .reward-option strong { font-size: 16px; }
+.title-settings { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.title-screen *, .result-card *, .pause-panel *, .reward-card * { overflow-wrap: anywhere; }
+.result-platform { max-height: none; overflow: visible; }
+.result-actions-primary { position: sticky; top: 0; z-index: 1; background: #11171a; padding: 8px 0; }
+.hud-card { background: #10171bf2; }
+.hud-card .stat-line, .posture-meter, .posture-meter > strong,
+.enemy-count, .enemy-phase, .battle-copy .message-line, .battle-copy .stance,
+.battle-copy .combat-guide { font-size: 14px; line-height: 1.5; }
+.hud-card .hud-label small, .hud-kicker, .message-caption, .run-meta { display: none; }
+.posture-meter { grid-template-columns: auto 1fr 26px; }
+.pause-button { font-size: 14px; min-width: 64px; }
+.battle-copy { background: #0b1115f2; }
+.threat-vignette.is-warning { animation: none; opacity: .45; }
+.phase-予備, .counter-ready, .posture-meter.is-low > i > b { animation: none; }
+.is-counter-ready { border: 3px solid #f0cc87 !important; box-shadow: inset 0 0 0 2px #11171a; }
+.resume-progress { position: fixed; z-index: 8; top: 38%; left: 50%; transform: translateX(-50%); background: #11171a; color: #f0cc87; padding: 12px; font-size: 16px; }
+.code-figure-player .code-figure-head::before { content: ""; position: absolute; width: 160%; height: 35%; left: -30%; top: -16%; background: #8e7152; clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+@media (max-width: 560px) {
+  .title-choice-row { grid-template-columns: 1fr; }
+  .title-choice-row button { min-height: 64px !important; }
+  .title-choice-row button strong { font-size: 16px; }
+  .title-choice-row button small { font-size: 14px; }
+  .enemy-hud .enemy-phase { max-width: none; font-size: 14px; }
+  .hud-card .enemy-count { font-size: 14px; }
+  .pause-button { top: calc(10px + env(safe-area-inset-top)); right: max(10px, env(safe-area-inset-right)); }
+  .player-hud, .enemy-hud { width: calc(50vw - 18px); top: calc(64px + env(safe-area-inset-top)); }
+  .battle-copy .message-line, .battle-copy .combat-guide, .battle-copy .stance { font-size: 14px; }
+}
+@media (max-height: 500px) and (orientation: landscape) {
+  .hud-card .posture-meter, .enemy-count { display: none; }
+  .battle-copy { max-width: 44vw; }
+  .battle-copy .combat-guide { display: none; }
+  .pause-button { top: max(6px, env(safe-area-inset-top)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .threat-vignette, .climax-fx, .boss-victory-fx { display: none; }
+}
+
+.procedural-title-visual .code-figure { scale: .66; transform: none; bottom: 14px; }
+.procedural-title-visual .code-figure-head::after { display: none; }
+
+.pause-button { width: auto; left: auto; transform: none; }
+.score-hud { top: calc(10px + env(safe-area-inset-top)); left: max(12px, env(safe-area-inset-left)); transform: none; width: 120px; }
+.score-label { font-size: 14px; }
+.score-hud .score-label, .score-hud > strong { color: #e8e3d7; }
+.counter-window { position: absolute; bottom: 2px; left: 5%; width: 90%; height: 5px; accent-color: #f0cc87; }
+@media (min-width: 561px) { .score-hud { left: 50%; transform: translateX(-50%); } }
+.action-receipt { position: absolute; top: 3px; right: 4px; font-size: 12px; color: #f0cc87; }
+.climax-fx, .counter-fx, .boss-victory-fx { inset: auto; top: 25%; right: 12px; left: auto; width: min(170px, 36vw); height: auto; min-height: 0; padding: 8px; background: #10171bef; transform: none; pointer-events: none; }
+.climax-fx .slash, .climax-fx .burst, .boss-victory-fx .victory-rays { display: none; }
+.climax-fx strong, .counter-fx strong, .boss-victory-fx strong { font-size: 24px; }
+.pause-button { bottom: auto; right: max(12px, env(safe-area-inset-right)); }
+.score-hud { right: auto; }
+@media (max-height: 500px) and (orientation: landscape) {
+  .pause-button { top: max(6px, env(safe-area-inset-top)); right: calc(50% - 185px); bottom: auto; }
+  .player-hud, .enemy-hud { top: max(6px, env(safe-area-inset-top)); }
+  .battle-copy .stance { display: none; }
+  .battle-copy { bottom: calc(80px + env(safe-area-inset-bottom)); gap: 0; }
+}
+@media (max-height: 500px) and (orientation: landscape) and (pointer: fine) {
+  .battle-copy { bottom: 44px; }
+  .desktop-controls { font-size: 12px; }
+}
+@media (max-height: 500px) and (orientation: landscape) {
+  .player-hud, .enemy-hud { width: min(24vw, 200px); max-width: 200px; }
+}
+.title-screen button, .pause-panel button, .result-card button, .exit-panel button,
+.gameboy-controls .gb-btn { border-color: #8f8b81; }
+.title-choice-row button.is-selected { border-color: #f0cc87 !important; }
+.title-choice-row button { border-color: #8f8b81 !important; }
+.gameboy-controls .gb-btn small, .mobile-group-label { font-size: 14px; line-height: 1.3; }
+@media (max-width: 560px), (pointer: coarse) and (hover: none) and (orientation: portrait) {
+  .battle-copy { bottom: calc(130px + env(safe-area-inset-bottom)); }
+}
