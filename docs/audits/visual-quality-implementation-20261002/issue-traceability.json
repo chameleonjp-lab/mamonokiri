@@ -1,0 +1,1364 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-02",
+  "sourceCommit": "39229d2ad07accc07b667760ac88bf1557c61c05",
+  "scope": "88件の実装対応表。実装済みと受入完了を区別する。",
+  "issues": [
+    {
+      "id": "A01",
+      "title": "戦闘に必要な画面領域を先に確保する",
+      "contracts": ["Q01"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "HUDの実寸に合わせた描画領域、前方カメラ、全敵の投影検査",
+      "targetCode": [
+        "client/src/App.tsx",
+        "client/src/components/GameCanvas.tsx",
+        "client/src/game/arena.ts",
+        "client/src/game/config.ts",
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/rules.ts",
+        "client/src/game/scene.ts",
+        "docs/CURRENT_SPEC.md"
+      ],
+      "acceptanceChecks": ["Q01-I", "Q01-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "A02",
+      "title": "人物と敵の見える大きさを端末ごとに決める",
+      "contracts": ["Q01"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "HUDの実寸に合わせた描画領域、前方カメラ、全敵の投影検査",
+      "targetCode": [
+        "client/src/App.tsx",
+        "client/src/components/GameCanvas.tsx",
+        "client/src/game/arena.ts",
+        "client/src/game/config.ts",
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/rules.ts",
+        "client/src/game/scene.ts",
+        "docs/CURRENT_SPEC.md"
+      ],
+      "acceptanceChecks": ["Q01-I", "Q01-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "A03",
+      "title": "画面の左右と回避方向を一致させる",
+      "contracts": ["Q01"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "HUDの実寸に合わせた描画領域、前方カメラ、全敵の投影検査",
+      "targetCode": [
+        "client/src/App.tsx",
+        "client/src/components/GameCanvas.tsx",
+        "client/src/game/arena.ts",
+        "client/src/game/config.ts",
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/rules.ts",
+        "client/src/game/scene.ts",
+        "docs/CURRENT_SPEC.md"
+      ],
+      "acceptanceChecks": ["Q01-I", "Q01-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "A04",
+      "title": "足元と敵に接地感をつける",
+      "contracts": ["Q02"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "戦闘床0・表示高さ0.035の共通化、全姿勢の足底補正、接地影・着地表示",
+      "targetCode": [
+        "client/src/game/config.ts",
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/scene.ts"
+      ],
+      "acceptanceChecks": ["Q02-I", "Q02-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "A05",
+      "title": "石・布・金属・骨の材質を分ける",
+      "contracts": ["Q05"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "輪郭を読む照明と材質差、背景材質分離、敵切替で造形を破棄・再構築",
+      "targetCode": [
+        "client/src/game/arena.ts",
+        "client/src/game/config.ts",
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/scene.ts"
+      ],
+      "acceptanceChecks": ["Q05-I", "Q05-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "A06",
+      "title": "背景から人物と予兆を分離する",
+      "contracts": ["Q05"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "輪郭を読む照明と材質差、背景材質分離、敵切替で造形を破棄・再構築",
+      "targetCode": [
+        "client/src/game/arena.ts",
+        "client/src/game/config.ts",
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/scene.ts"
+      ],
+      "acceptanceChecks": ["Q05-I", "Q05-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "A07",
+      "title": "形状の簡略化を意図した美術へ揃える",
+      "contracts": ["Q05"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "輪郭を読む照明と材質差、背景材質分離、敵切替で造形を破棄・再構築",
+      "targetCode": [
+        "client/src/game/arena.ts",
+        "client/src/game/config.ts",
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/scene.ts"
+      ],
+      "acceptanceChecks": ["Q05-I", "Q05-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "A08",
+      "title": "低解像度でも輪郭と刀を保つ",
+      "contracts": ["Q01"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "HUDの実寸に合わせた描画領域、前方カメラ、全敵の投影検査",
+      "targetCode": [
+        "client/src/App.tsx",
+        "client/src/components/GameCanvas.tsx",
+        "client/src/game/arena.ts",
+        "client/src/game/config.ts",
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/rules.ts",
+        "client/src/game/scene.ts",
+        "docs/CURRENT_SPEC.md"
+      ],
+      "acceptanceChecks": ["Q01-I", "Q01-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "B01",
+      "title": "山伏剣士のシルエットを強くする",
+      "contracts": ["Q03"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "笠・刀幅・両手の柄接続、左手IK、槍軸端から穂先を算出",
+      "targetCode": [
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/scene.ts"
+      ],
+      "acceptanceChecks": ["Q03-I", "Q03-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "B02",
+      "title": "手と刀の握りを成立させる",
+      "contracts": ["Q03"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "笠・刀幅・両手の柄接続、左手IK、槍軸端から穂先を算出",
+      "targetCode": [
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/scene.ts"
+      ],
+      "acceptanceChecks": ["Q03-I", "Q03-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "B03",
+      "title": "顔・胴体・刀の向きを敵へ揃える",
+      "contracts": ["Q03"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "笠・刀幅・両手の柄接続、左手IK、槍軸端から穂先を算出",
+      "targetCode": [
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/scene.ts"
+      ],
+      "acceptanceChecks": ["Q03-I", "Q03-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "B04",
+      "title": "草履と脚を床上に置く",
+      "contracts": ["Q02"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "戦闘床0・表示高さ0.035の共通化、全姿勢の足底補正、接地影・着地表示",
+      "targetCode": [
+        "client/src/game/config.ts",
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/scene.ts"
+      ],
+      "acceptanceChecks": ["Q02-I", "Q02-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "B05",
+      "title": "布・髪・数珠の遅れを最終姿勢へ反映する",
+      "contracts": ["Q04"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "既存attackTimingForに同期した4技、90ms反撃、動作補間・被弾の重ね合わせ",
+      "targetCode": [
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/rules.ts",
+        "client/src/game/scene.ts",
+        "docs/CURRENT_SPEC.md"
+      ],
+      "acceptanceChecks": ["Q04-I", "Q04-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "B06",
+      "title": "衣服・腕・刀の貫通を動作ごとに直す",
+      "contracts": ["Q03"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "笠・刀幅・両手の柄接続、左手IK、槍軸端から穂先を算出",
+      "targetCode": [
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/scene.ts"
+      ],
+      "acceptanceChecks": ["Q03-I", "Q03-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "C01",
+      "title": "反撃の命中と刀が振れる瞬間を合わせる",
+      "contracts": ["Q04"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "既存attackTimingForに同期した4技、90ms反撃、動作補間・被弾の重ね合わせ",
+      "targetCode": [
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/rules.ts",
+        "client/src/game/scene.ts",
+        "docs/CURRENT_SPEC.md"
+      ],
+      "acceptanceChecks": ["Q04-I", "Q04-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "C02",
+      "title": "待機から各動作へ姿勢を滑らかにつなぐ",
+      "contracts": ["Q04"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "既存attackTimingForに同期した4技、90ms反撃、動作補間・被弾の重ね合わせ",
+      "targetCode": [
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/rules.ts",
+        "client/src/game/scene.ts",
+        "docs/CURRENT_SPEC.md"
+      ],
+      "acceptanceChecks": ["Q04-I", "Q04-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "C03",
+      "title": "通常の飛刃に重心移動と振り抜きをつける",
+      "contracts": ["Q04"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "既存attackTimingForに同期した4技、90ms反撃、動作補間・被弾の重ね合わせ",
+      "targetCode": [
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/rules.ts",
+        "client/src/game/scene.ts",
+        "docs/CURRENT_SPEC.md"
+      ],
+      "acceptanceChecks": ["Q04-I", "Q04-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "C04",
+      "title": "斬撃の軌跡を刃先から発生させる",
+      "contracts": ["Q04"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "既存attackTimingForに同期した4技、90ms反撃、動作補間・被弾の重ね合わせ",
+      "targetCode": [
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/rules.ts",
+        "client/src/game/scene.ts",
+        "docs/CURRENT_SPEC.md"
+      ],
+      "acceptanceChecks": ["Q04-I", "Q04-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "C05",
+      "title": "4種類の攻撃を構えと軌跡で分ける",
+      "contracts": ["Q04"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "既存attackTimingForに同期した4技、90ms反撃、動作補間・被弾の重ね合わせ",
+      "targetCode": [
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/rules.ts",
+        "client/src/game/scene.ts",
+        "docs/CURRENT_SPEC.md"
+      ],
+      "acceptanceChecks": ["Q04-I", "Q04-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "C06",
+      "title": "回避中の足運びと無敵区間を読めるようにする",
+      "contracts": ["Q04"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "既存attackTimingForに同期した4技、90ms反撃、動作補間・被弾の重ね合わせ",
+      "targetCode": [
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/rules.ts",
+        "client/src/game/scene.ts",
+        "docs/CURRENT_SPEC.md"
+      ],
+      "acceptanceChecks": ["Q04-I", "Q04-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "C07",
+      "title": "防御・弾き・防御崩れを別の姿勢にする",
+      "contracts": ["Q04"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "既存attackTimingForに同期した4技、90ms反撃、動作補間・被弾の重ね合わせ",
+      "targetCode": [
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/rules.ts",
+        "client/src/game/scene.ts",
+        "docs/CURRENT_SPEC.md"
+      ],
+      "acceptanceChecks": ["Q04-I", "Q04-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "C08",
+      "title": "被弾反応を動作優先順位で消さない",
+      "contracts": ["Q04"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "既存attackTimingForに同期した4技、90ms反撃、動作補間・被弾の重ね合わせ",
+      "targetCode": [
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/rules.ts",
+        "client/src/game/scene.ts",
+        "docs/CURRENT_SPEC.md"
+      ],
+      "acceptanceChecks": ["Q04-I", "Q04-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "C09",
+      "title": "登場・納刀・勝利・敗北の動作をつなげる",
+      "contracts": ["Q04"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "既存attackTimingForに同期した4技、90ms反撃、動作補間・被弾の重ね合わせ",
+      "targetCode": [
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/rules.ts",
+        "client/src/game/scene.ts",
+        "docs/CURRENT_SPEC.md"
+      ],
+      "acceptanceChecks": ["Q04-I", "Q04-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "C10",
+      "title": "待機を戦闘へ備える姿勢にする",
+      "contracts": ["Q04"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "既存attackTimingForに同期した4技、90ms反撃、動作補間・被弾の重ね合わせ",
+      "targetCode": [
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/rules.ts",
+        "client/src/game/scene.ts",
+        "docs/CURRENT_SPEC.md"
+      ],
+      "acceptanceChecks": ["Q04-I", "Q04-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "D01",
+      "title": "敵にも動く関節と固有の重心を持たせる",
+      "contracts": ["Q03"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "笠・刀幅・両手の柄接続、左手IK、槍軸端から穂先を算出",
+      "targetCode": [
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/scene.ts"
+      ],
+      "acceptanceChecks": ["Q03-I", "Q03-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "D02",
+      "title": "発光で敵の材質を一色に上書きしない",
+      "contracts": ["Q05"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "輪郭を読む照明と材質差、背景材質分離、敵切替で造形を破棄・再構築",
+      "targetCode": [
+        "client/src/game/arena.ts",
+        "client/src/game/config.ts",
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/scene.ts"
+      ],
+      "acceptanceChecks": ["Q05-I", "Q05-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "D03",
+      "title": "待機中の回転を無制限に蓄積しない",
+      "contracts": ["Q06"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "通常7種の固有部品と関節、既存AttackPlanの予告・攻撃・待機に同期",
+      "targetCode": ["client/src/game/scene.ts", "docs/CURRENT_SPEC.md"],
+      "acceptanceChecks": ["Q06-I", "Q06-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "D04",
+      "title": "被弾・ひるみ・消滅に方向と段階をつける",
+      "contracts": ["Q06"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "通常7種の固有部品と関節、既存AttackPlanの予告・攻撃・待機に同期",
+      "targetCode": ["client/src/game/scene.ts", "docs/CURRENT_SPEC.md"],
+      "acceptanceChecks": ["Q06-I", "Q06-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "E01",
+      "title": "影面：面と左側の予兆を主役にする",
+      "contracts": ["Q06"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "通常7種の固有部品と関節、既存AttackPlanの予告・攻撃・待機に同期",
+      "targetCode": ["client/src/game/scene.ts", "docs/CURRENT_SPEC.md"],
+      "acceptanceChecks": ["Q06-I", "Q06-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "E02",
+      "title": "角岩：角と右側の突進を結びつける",
+      "contracts": ["Q06"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "通常7種の固有部品と関節、既存AttackPlanの予告・攻撃・待機に同期",
+      "targetCode": ["client/src/game/scene.ts", "docs/CURRENT_SPEC.md"],
+      "acceptanceChecks": ["Q06-I", "Q06-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "E03",
+      "title": "鳴壺：口と傾きで左右の交代を見せる",
+      "contracts": ["Q06"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "通常7種の固有部品と関節、既存AttackPlanの予告・攻撃・待機に同期",
+      "targetCode": ["client/src/game/scene.ts", "docs/CURRENT_SPEC.md"],
+      "acceptanceChecks": ["Q06-I", "Q06-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "E04",
+      "title": "逆鉾：三手の順番を構えで記憶できるようにする",
+      "contracts": ["Q06"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "通常7種の固有部品と関節、既存AttackPlanの予告・攻撃・待機に同期",
+      "targetCode": ["client/src/game/scene.ts", "docs/CURRENT_SPEC.md"],
+      "acceptanceChecks": ["Q06-I", "Q06-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "E05",
+      "title": "霧猿：追尾と狙いの固定を動きで示す",
+      "contracts": ["Q06"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "通常7種の固有部品と関節、既存AttackPlanの予告・攻撃・待機に同期",
+      "targetCode": ["client/src/game/scene.ts", "docs/CURRENT_SPEC.md"],
+      "acceptanceChecks": ["Q06-I", "Q06-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "E06",
+      "title": "鉄輪：二撃目を残った輪で予告する",
+      "contracts": ["Q06"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "通常7種の固有部品と関節、既存AttackPlanの予告・攻撃・待機に同期",
+      "targetCode": ["client/src/game/scene.ts", "docs/CURRENT_SPEC.md"],
+      "acceptanceChecks": ["Q06-I", "Q06-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "E07",
+      "title": "骨灯：重い攻撃の溜めを骨と灯で見せる",
+      "contracts": ["Q06"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "通常7種の固有部品と関節、既存AttackPlanの予告・攻撃・待機に同期",
+      "targetCode": ["client/src/game/scene.ts", "docs/CURRENT_SPEC.md"],
+      "acceptanceChecks": ["Q06-I", "Q06-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "F01",
+      "title": "牙嶺：四肢と牙で二段攻撃を成立させる",
+      "contracts": ["Q07"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "ボス10種の固有造形・支持点、前後半・追撃を既存AttackPlanで表示",
+      "targetCode": ["client/src/game/rules.ts", "client/src/game/scene.ts"],
+      "acceptanceChecks": ["Q07-I", "Q07-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "F02",
+      "title": "鎧熊：装甲・肩・踏み込みで重さを見せる",
+      "contracts": ["Q07"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "ボス10種の固有造形・支持点、前後半・追撃を既存AttackPlanで表示",
+      "targetCode": ["client/src/game/rules.ts", "client/src/game/scene.ts"],
+      "acceptanceChecks": ["Q07-I", "Q07-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "F03",
+      "title": "沼喰：低い口と膨張で交互攻撃を見せる",
+      "contracts": ["Q07"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "ボス10種の固有造形・支持点、前後半・追撃を既存AttackPlanで表示",
+      "targetCode": ["client/src/game/rules.ts", "client/src/game/scene.ts"],
+      "acceptanceChecks": ["Q07-I", "Q07-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "F04",
+      "title": "百眼：多数の視線で追尾と固定を示す",
+      "contracts": ["Q07"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "ボス10種の固有造形・支持点、前後半・追撃を既存AttackPlanで表示",
+      "targetCode": ["client/src/game/rules.ts", "client/src/game/scene.ts"],
+      "acceptanceChecks": ["Q07-I", "Q07-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "F05",
+      "title": "鬼将：鎧と刀の構えで人型の駆け引きを作る",
+      "contracts": ["Q07"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "ボス10種の固有造形・支持点、前後半・追撃を既存AttackPlanで表示",
+      "targetCode": ["client/src/game/rules.ts", "client/src/game/scene.ts"],
+      "acceptanceChecks": ["Q07-I", "Q07-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "F06",
+      "title": "白面：細い輪郭と最小限の動きで差を作る",
+      "contracts": ["Q07"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "ボス10種の固有造形・支持点、前後半・追撃を既存AttackPlanで表示",
+      "targetCode": ["client/src/game/rules.ts", "client/src/game/scene.ts"],
+      "acceptanceChecks": ["Q07-I", "Q07-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "F07",
+      "title": "天狗鴉：翼の折り畳みと羽ばたきで攻撃する",
+      "contracts": ["Q07"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "ボス10種の固有造形・支持点、前後半・追撃を既存AttackPlanで表示",
+      "targetCode": ["client/src/game/rules.ts", "client/src/game/scene.ts"],
+      "acceptanceChecks": ["Q07-I", "Q07-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "F08",
+      "title": "鶴骸：長い首と脚で鴉との形を分ける",
+      "contracts": ["Q07"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "ボス10種の固有造形・支持点、前後半・追撃を既存AttackPlanで表示",
+      "targetCode": ["client/src/game/rules.ts", "client/src/game/scene.ts"],
+      "acceptanceChecks": ["Q07-I", "Q07-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "F09",
+      "title": "石門王：門自体を攻撃部にする",
+      "contracts": ["Q07"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "ボス10種の固有造形・支持点、前後半・追撃を既存AttackPlanで表示",
+      "targetCode": ["client/src/game/rules.ts", "client/src/game/scene.ts"],
+      "acceptanceChecks": ["Q07-I", "Q07-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "F10",
+      "title": "巨仏：仏像の身体と掌で最終ボスの格を作る",
+      "contracts": ["Q07"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "ボス10種の固有造形・支持点、前後半・追撃を既存AttackPlanで表示",
+      "targetCode": ["client/src/game/rules.ts", "client/src/game/scene.ts"],
+      "acceptanceChecks": ["Q07-I", "Q07-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "G01",
+      "title": "危険線と攻撃範囲を床面より上に表示する",
+      "contracts": ["Q02"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "戦闘床0・表示高さ0.035の共通化、全姿勢の足底補正、接地影・着地表示",
+      "targetCode": [
+        "client/src/game/config.ts",
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/scene.ts"
+      ],
+      "acceptanceChecks": ["Q02-I", "Q02-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "G02",
+      "title": "槍の先端と伸びる軸の位置を一致させる",
+      "contracts": ["Q03"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "笠・刀幅・両手の柄接続、左手IK、槍軸端から穂先を算出",
+      "targetCode": [
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/scene.ts"
+      ],
+      "acceptanceChecks": ["Q03-I", "Q03-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "G03",
+      "title": "危険側を色と形の両方で伝える",
+      "contracts": ["Q13"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "RunClockによる効果期限、再開・敵切替・破棄の取消し、接触・軌跡・安全表示",
+      "targetCode": [
+        "client/src/App.tsx",
+        "client/src/game/config.ts",
+        "client/src/game/scene.ts",
+        "client/src/index.css",
+        "docs/CURRENT_SPEC.md"
+      ],
+      "acceptanceChecks": ["Q13-I", "Q13-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "G04",
+      "title": "点滅より時間が読める予兆にする",
+      "contracts": ["Q13"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "RunClockによる効果期限、再開・敵切替・破棄の取消し、接触・軌跡・安全表示",
+      "targetCode": [
+        "client/src/App.tsx",
+        "client/src/game/config.ts",
+        "client/src/game/scene.ts",
+        "client/src/index.css",
+        "docs/CURRENT_SPEC.md"
+      ],
+      "acceptanceChecks": ["Q13-I", "Q13-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "G05",
+      "title": "二連撃・フェイント・後半変化を先に知らせる",
+      "contracts": ["Q07"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "ボス10種の固有造形・支持点、前後半・追撃を既存AttackPlanで表示",
+      "targetCode": ["client/src/game/rules.ts", "client/src/game/scene.ts"],
+      "acceptanceChecks": ["Q07-I", "Q07-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "G06",
+      "title": "見た目の範囲と被弾判定の境界を照合する",
+      "contracts": ["Q01"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "HUDの実寸に合わせた描画領域、前方カメラ、全敵の投影検査",
+      "targetCode": [
+        "client/src/App.tsx",
+        "client/src/components/GameCanvas.tsx",
+        "client/src/game/arena.ts",
+        "client/src/game/config.ts",
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/rules.ts",
+        "client/src/game/scene.ts",
+        "docs/CURRENT_SPEC.md"
+      ],
+      "acceptanceChecks": ["Q01-I", "Q01-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "H01",
+      "title": "5章に実際の景観差を持たせる",
+      "contracts": ["Q08"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "5章ごとの静的景観・章表示、戦闘床と背景段差を分離",
+      "targetCode": [
+        "client/src/App.tsx",
+        "client/src/game/arena.ts",
+        "client/src/game/scene.ts"
+      ],
+      "acceptanceChecks": ["Q08-I", "Q08-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "H02",
+      "title": "戦闘床・中景・遠景の情報量を分ける",
+      "contracts": ["Q08"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "5章ごとの静的景観・章表示、戦闘床と背景段差を分離",
+      "targetCode": [
+        "client/src/App.tsx",
+        "client/src/game/arena.ts",
+        "client/src/game/scene.ts"
+      ],
+      "acceptanceChecks": ["Q08-I", "Q08-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "H03",
+      "title": "鳥居の梁の重複を取り除く",
+      "contracts": ["Q05"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "輪郭を読む照明と材質差、背景材質分離、敵切替で造形を破棄・再構築",
+      "targetCode": [
+        "client/src/game/arena.ts",
+        "client/src/game/config.ts",
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/scene.ts"
+      ],
+      "acceptanceChecks": ["Q05-I", "Q05-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "H04",
+      "title": "平坦な戦闘床と登山の景観を接続する",
+      "contracts": ["Q02"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "戦闘床0・表示高さ0.035の共通化、全姿勢の足底補正、接地影・着地表示",
+      "targetCode": [
+        "client/src/game/config.ts",
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/scene.ts"
+      ],
+      "acceptanceChecks": ["Q02-I", "Q02-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "H05",
+      "title": "霧を奥行き表現へ使い、足元の情報を残す",
+      "contracts": ["Q05"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "輪郭を読む照明と材質差、背景材質分離、敵切替で造形を破棄・再構築",
+      "targetCode": [
+        "client/src/game/arena.ts",
+        "client/src/game/config.ts",
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/scene.ts"
+      ],
+      "acceptanceChecks": ["Q05-I", "Q05-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "H06",
+      "title": "章名・幕・背景・進行を一致させる",
+      "contracts": ["Q08"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "5章ごとの静的景観・章表示、戦闘床と背景段差を分離",
+      "targetCode": [
+        "client/src/App.tsx",
+        "client/src/game/arena.ts",
+        "client/src/game/scene.ts"
+      ],
+      "acceptanceChecks": ["Q08-I", "Q08-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "H07",
+      "title": "章と敵の登場を短い視線誘導で見せる",
+      "contracts": ["Q01"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "HUDの実寸に合わせた描画領域、前方カメラ、全敵の投影検査",
+      "targetCode": [
+        "client/src/App.tsx",
+        "client/src/components/GameCanvas.tsx",
+        "client/src/game/arena.ts",
+        "client/src/game/config.ts",
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/rules.ts",
+        "client/src/game/scene.ts",
+        "docs/CURRENT_SPEC.md"
+      ],
+      "acceptanceChecks": ["Q01-I", "Q01-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "I01",
+      "title": "キーボードでも左右へ回避できるようにする",
+      "contracts": ["Q09"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "左右キー、IME・repeat・背景入力除外、受付表示・反撃残時間・pointer取消し",
+      "targetCode": [
+        "client/src/App.tsx",
+        "client/src/components/GameCanvas.tsx",
+        "client/src/game/arena.ts",
+        "client/src/game/rules.ts",
+        "client/src/game/scene.ts",
+        "client/src/index.css"
+      ],
+      "acceptanceChecks": ["Q09-I", "Q09-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "I02",
+      "title": "触れたことと技が受理されたことを区別する",
+      "contracts": ["Q09"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "左右キー、IME・repeat・背景入力除外、受付表示・反撃残時間・pointer取消し",
+      "targetCode": [
+        "client/src/App.tsx",
+        "client/src/components/GameCanvas.tsx",
+        "client/src/game/arena.ts",
+        "client/src/game/rules.ts",
+        "client/src/game/scene.ts",
+        "client/src/index.css"
+      ],
+      "acceptanceChecks": ["Q09-I", "Q09-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "I03",
+      "title": "短い先行入力を採用するか決める",
+      "contracts": ["Q09"],
+      "implementationStatus": "decision_recorded",
+      "implementation": "先行入力は今回は採用せず直接受付を維持。比較試作・難度評価は未実施。",
+      "targetCode": [
+        "client/src/App.tsx",
+        "client/src/components/GameCanvas.tsx",
+        "client/src/game/arena.ts",
+        "client/src/game/rules.ts",
+        "client/src/game/scene.ts",
+        "client/src/index.css"
+      ],
+      "acceptanceChecks": ["Q09-I", "Q09-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "I04",
+      "title": "反撃可能を斬りボタンへ直接知らせる",
+      "contracts": ["Q09"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "左右キー、IME・repeat・背景入力除外、受付表示・反撃残時間・pointer取消し",
+      "targetCode": [
+        "client/src/App.tsx",
+        "client/src/components/GameCanvas.tsx",
+        "client/src/game/arena.ts",
+        "client/src/game/rules.ts",
+        "client/src/game/scene.ts",
+        "client/src/index.css"
+      ],
+      "acceptanceChecks": ["Q09-I", "Q09-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "I05",
+      "title": "親指の届き方と誤操作を実機で調整する",
+      "contracts": ["Q09"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "左右キー、IME・repeat・背景入力除外、受付表示・反撃残時間・pointer取消し",
+      "targetCode": [
+        "client/src/App.tsx",
+        "client/src/components/GameCanvas.tsx",
+        "client/src/game/arena.ts",
+        "client/src/game/rules.ts",
+        "client/src/game/scene.ts",
+        "client/src/index.css"
+      ],
+      "acceptanceChecks": ["Q09-I", "Q09-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "I06",
+      "title": "回転・複数タッチ・ブラウザ操作から安定して戻る",
+      "contracts": ["Q09"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "左右キー、IME・repeat・背景入力除外、受付表示・反撃残時間・pointer取消し",
+      "targetCode": [
+        "client/src/App.tsx",
+        "client/src/components/GameCanvas.tsx",
+        "client/src/game/arena.ts",
+        "client/src/game/rules.ts",
+        "client/src/game/scene.ts",
+        "client/src/index.css"
+      ],
+      "acceptanceChecks": ["Q09-I", "Q09-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "I07",
+      "title": "再開までの700msを見える待ち時間にする",
+      "contracts": ["Q12"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "WebGL喪失時停止・再構築後の手動再開、保存地点の概要とエラー説明",
+      "targetCode": [
+        "client/src/App.tsx",
+        "client/src/components/GameCanvas.tsx",
+        "client/src/game/scene.ts",
+        "docs/CURRENT_SPEC.md"
+      ],
+      "acceptanceChecks": ["Q12-I", "Q12-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "J01",
+      "title": "タイトルの人物紹介が潰れないレイアウトにする",
+      "contracts": ["Q10"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "タイトル最小150px、設定・名前・画像説明、200%文字と短い画面の検証",
+      "targetCode": [
+        "client/src/App.tsx",
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/rules.ts",
+        "client/src/game/scene.ts",
+        "client/src/index.css",
+        "docs/CURRENT_SPEC.md"
+      ],
+      "acceptanceChecks": ["Q10-I", "Q10-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "J02",
+      "title": "タイトルの人物表現を本編と揃える",
+      "contracts": ["Q10"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "タイトル最小150px、設定・名前・画像説明、200%文字と短い画面の検証",
+      "targetCode": [
+        "client/src/App.tsx",
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/rules.ts",
+        "client/src/game/scene.ts",
+        "client/src/index.css",
+        "docs/CURRENT_SPEC.md"
+      ],
+      "acceptanceChecks": ["Q10-I", "Q10-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "J03",
+      "title": "開始ボタンを最も強い操作にする",
+      "contracts": ["Q10"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "タイトル最小150px、設定・名前・画像説明、200%文字と短い画面の検証",
+      "targetCode": [
+        "client/src/App.tsx",
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/rules.ts",
+        "client/src/game/scene.ts",
+        "client/src/index.css",
+        "docs/CURRENT_SPEC.md"
+      ],
+      "acceptanceChecks": ["Q10-I", "Q10-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "J04",
+      "title": "戦闘HUDを判断に必要な順へ整理する",
+      "contracts": ["Q10"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "タイトル最小150px、設定・名前・画像説明、200%文字と短い画面の検証",
+      "targetCode": [
+        "client/src/App.tsx",
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/rules.ts",
+        "client/src/game/scene.ts",
+        "client/src/index.css",
+        "docs/CURRENT_SPEC.md"
+      ],
+      "acceptanceChecks": ["Q10-I", "Q10-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "J05",
+      "title": "内部分類をプレイヤー向けの言葉に替える",
+      "contracts": ["Q10"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "タイトル最小150px、設定・名前・画像説明、200%文字と短い画面の検証",
+      "targetCode": [
+        "client/src/App.tsx",
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/rules.ts",
+        "client/src/game/scene.ts",
+        "client/src/index.css",
+        "docs/CURRENT_SPEC.md"
+      ],
+      "acceptanceChecks": ["Q10-I", "Q10-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "J06",
+      "title": "一時停止の操作と設定を整理する",
+      "contracts": ["Q11"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "ダイアログのfocus/inert、操作説明・再開猶予表示、OS動作抑制",
+      "targetCode": [
+        "client/src/App.tsx",
+        "client/src/components/GameCanvas.tsx",
+        "client/src/game/config.ts",
+        "client/src/index.css"
+      ],
+      "acceptanceChecks": ["Q11-I", "Q11-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "J07",
+      "title": "章報酬の効果と現在状態を比較できるようにする",
+      "contracts": ["Q10"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "タイトル最小150px、設定・名前・画像説明、200%文字と短い画面の検証",
+      "targetCode": [
+        "client/src/App.tsx",
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/rules.ts",
+        "client/src/game/scene.ts",
+        "client/src/index.css",
+        "docs/CURRENT_SPEC.md"
+      ],
+      "acceptanceChecks": ["Q10-I", "Q10-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "J08",
+      "title": "勝利・敗北・リタイアの結果を明確にする",
+      "contracts": ["Q14"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "結果種別・HP報酬表示、共有取消しと世代ガード・コピー失敗案内",
+      "targetCode": [
+        "client/src/App.tsx",
+        "client/src/game/rules.ts",
+        "client/src/index.css"
+      ],
+      "acceptanceChecks": ["Q14-I", "Q14-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "J09",
+      "title": "結果の二重スクロールと共有の手間を減らす",
+      "contracts": ["Q14"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "結果種別・HP報酬表示、共有取消しと世代ガード・コピー失敗案内",
+      "targetCode": [
+        "client/src/App.tsx",
+        "client/src/game/rules.ts",
+        "client/src/index.css"
+      ],
+      "acceptanceChecks": ["Q14-I", "Q14-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "J10",
+      "title": "起動失敗と続きからの案内を状態別に出す",
+      "contracts": ["Q12"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "WebGL喪失時停止・再構築後の手動再開、保存地点の概要とエラー説明",
+      "targetCode": [
+        "client/src/App.tsx",
+        "client/src/components/GameCanvas.tsx",
+        "client/src/game/scene.ts",
+        "docs/CURRENT_SPEC.md"
+      ],
+      "acceptanceChecks": ["Q12-I", "Q12-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "J11",
+      "title": "既存の安全稽古と序盤案内を読みやすくする",
+      "contracts": ["Q10"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "タイトル最小150px、設定・名前・画像説明、200%文字と短い画面の検証",
+      "targetCode": [
+        "client/src/App.tsx",
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/rules.ts",
+        "client/src/game/scene.ts",
+        "client/src/index.css",
+        "docs/CURRENT_SPEC.md"
+      ],
+      "acceptanceChecks": ["Q10-I", "Q10-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "K01",
+      "title": "命中・弾き・着地の効果を実際の接触点へ置く",
+      "contracts": ["Q02"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "戦闘床0・表示高さ0.035の共通化、全姿勢の足底補正、接地影・着地表示",
+      "targetCode": [
+        "client/src/game/config.ts",
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/scene.ts"
+      ],
+      "acceptanceChecks": ["Q02-I", "Q02-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "K02",
+      "title": "大きな演出の優先度と終了時刻を揃える",
+      "contracts": ["Q13"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "RunClockによる効果期限、再開・敵切替・破棄の取消し、接触・軌跡・安全表示",
+      "targetCode": [
+        "client/src/App.tsx",
+        "client/src/game/config.ts",
+        "client/src/game/scene.ts",
+        "client/src/index.css",
+        "docs/CURRENT_SPEC.md"
+      ],
+      "acceptanceChecks": ["Q13-I", "Q13-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "K03",
+      "title": "カメラ揺れに強さと方向を反映する",
+      "contracts": ["Q13"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "RunClockによる効果期限、再開・敵切替・破棄の取消し、接触・軌跡・安全表示",
+      "targetCode": [
+        "client/src/App.tsx",
+        "client/src/game/config.ts",
+        "client/src/game/scene.ts",
+        "client/src/index.css",
+        "docs/CURRENT_SPEC.md"
+      ],
+      "acceptanceChecks": ["Q13-I", "Q13-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "K04",
+      "title": "効果の時計・取消し・破棄を統一する",
+      "contracts": ["Q13"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "RunClockによる効果期限、再開・敵切替・破棄の取消し、接触・軌跡・安全表示",
+      "targetCode": [
+        "client/src/App.tsx",
+        "client/src/game/config.ts",
+        "client/src/game/scene.ts",
+        "client/src/index.css",
+        "docs/CURRENT_SPEC.md"
+      ],
+      "acceptanceChecks": ["Q13-I", "Q13-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "K05",
+      "title": "演出を減らしても命中と危険を残す",
+      "contracts": ["Q13"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "RunClockによる効果期限、再開・敵切替・破棄の取消し、接触・軌跡・安全表示",
+      "targetCode": [
+        "client/src/App.tsx",
+        "client/src/game/config.ts",
+        "client/src/game/scene.ts",
+        "client/src/index.css",
+        "docs/CURRENT_SPEC.md"
+      ],
+      "acceptanceChecks": ["Q13-I", "Q13-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "K06",
+      "title": "ダメージ数値と一時通知の位置を整理する",
+      "contracts": ["Q13"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "RunClockによる効果期限、再開・敵切替・破棄の取消し、接触・軌跡・安全表示",
+      "targetCode": [
+        "client/src/App.tsx",
+        "client/src/game/config.ts",
+        "client/src/game/scene.ts",
+        "client/src/index.css",
+        "docs/CURRENT_SPEC.md"
+      ],
+      "acceptanceChecks": ["Q13-I", "Q13-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "L01",
+      "title": "小さな文字と設定ボタンを読みやすくする",
+      "contracts": ["Q10"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "タイトル最小150px、設定・名前・画像説明、200%文字と短い画面の検証",
+      "targetCode": [
+        "client/src/App.tsx",
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/rules.ts",
+        "client/src/game/scene.ts",
+        "client/src/index.css",
+        "docs/CURRENT_SPEC.md"
+      ],
+      "acceptanceChecks": ["Q10-I", "Q10-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "L02",
+      "title": "文字・操作・危険表示のコントラストを測る",
+      "contracts": ["Q10"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "タイトル最小150px、設定・名前・画像説明、200%文字と短い画面の検証",
+      "targetCode": [
+        "client/src/App.tsx",
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/rules.ts",
+        "client/src/game/scene.ts",
+        "client/src/index.css",
+        "docs/CURRENT_SPEC.md"
+      ],
+      "acceptanceChecks": ["Q10-I", "Q10-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "L03",
+      "title": "ダイアログと動きを抑える設定を一貫させる",
+      "contracts": ["Q11"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "ダイアログのfocus/inert、操作説明・再開猶予表示、OS動作抑制",
+      "targetCode": [
+        "client/src/App.tsx",
+        "client/src/components/GameCanvas.tsx",
+        "client/src/game/config.ts",
+        "client/src/index.css"
+      ],
+      "acceptanceChecks": ["Q11-I", "Q11-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "L04",
+      "title": "iPhoneで長時間の描画と入力を測る",
+      "contracts": ["Q15"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "文字14pxと操作44px、CPU/フレーム間隔の有界計測、実描画の再現スクリプト",
+      "targetCode": [
+        "client/src/components/GameCanvas.tsx",
+        "client/src/game/config.ts",
+        "client/src/game/proceduralCharacter.test.ts",
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/scene.ts",
+        "client/src/responsive-ui-contract.test.ts",
+        "docs/QUALITY_PLAN_STATUS.md"
+      ],
+      "acceptanceChecks": ["Q15-I", "Q15-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "L05",
+      "title": "ソース文字列の検査だけで見た目を合格にしない",
+      "contracts": ["Q15"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "文字14pxと操作44px、CPU/フレーム間隔の有界計測、実描画の再現スクリプト",
+      "targetCode": [
+        "client/src/components/GameCanvas.tsx",
+        "client/src/game/config.ts",
+        "client/src/game/proceduralCharacter.test.ts",
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/scene.ts",
+        "client/src/responsive-ui-contract.test.ts",
+        "docs/QUALITY_PLAN_STATUS.md"
+      ],
+      "acceptanceChecks": ["Q15-I", "Q15-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    },
+    {
+      "id": "L06",
+      "title": "本編と同じ経路で17種と全動作を比較する",
+      "contracts": ["Q15"],
+      "implementationStatus": "implemented_pending_acceptance",
+      "implementation": "文字14pxと操作44px、CPU/フレーム間隔の有界計測、実描画の再現スクリプト",
+      "targetCode": [
+        "client/src/components/GameCanvas.tsx",
+        "client/src/game/config.ts",
+        "client/src/game/proceduralCharacter.test.ts",
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/scene.ts",
+        "client/src/responsive-ui-contract.test.ts",
+        "docs/QUALITY_PLAN_STATUS.md"
+      ],
+      "acceptanceChecks": ["Q15-I", "Q15-E"],
+      "acceptanceStatus": "not_run",
+      "remaining": "元監査の完了条件を満たす全シナリオ・実機体験の最終受入は未完了。実行済み範囲はacceptance-checks.jsonとbrowser-evidence.jsonを参照。"
+    }
+  ]
+}

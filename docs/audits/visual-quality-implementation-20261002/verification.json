@@ -1,0 +1,26 @@
+{
+  "sourceCommit": "39229d2ad07accc07b667760ac88bf1557c61c05",
+  "tests": {
+    "command": "./node_modules/.bin/vitest run",
+    "files": 18,
+    "passed": 178
+  },
+  "types": {
+    "command": "./node_modules/.bin/tsc --noEmit",
+    "result": "pass"
+  },
+  "build": {
+    "command": "./node_modules/.bin/vite build --base=/mamonokiri/",
+    "result": "pass",
+    "warning": "既存の500kB超チャンク警告"
+  },
+  "productionProbeScan": {
+    "result": "pass",
+    "details": "開発用probe・旧manus markerは生成物に存在しない"
+  },
+  "browser": {
+    "command": "PLAYWRIGHT_MODULE=/tmp/browser-tools/node_modules/playwright node scripts/verify-visual-quality.mjs",
+    "records": 132,
+    "errors": []
+  }
+}
