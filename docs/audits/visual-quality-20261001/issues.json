@@ -1,0 +1,2801 @@
+{
+  "title": "墨霞の剣 — 視覚・動作・操作・UI/UX 品質監査",
+  "date": "2026-10-01",
+  "baselineCommit": "14f17c89da689aa71e54813ee49c362347b691a2",
+  "publicUrl": "https://chameleonjp-lab.github.io/mamonokiri/",
+  "stats": {
+    "total": 88,
+    "categories": {
+      "画面構成・描画": 8,
+      "プレイヤーの造形": 6,
+      "プレイヤーの動作・攻撃": 10,
+      "敵全体の造形・動作": 4,
+      "通常敵7種の個別改善": 7,
+      "ボス10種の個別改善": 10,
+      "敵の攻撃・予兆・判定表示": 6,
+      "ステージ・世界観": 7,
+      "操作・入力フィードバック": 7,
+      "ゲーム全体のUI・UX": 11,
+      "効果・演出": 6,
+      "読みやすさ・端末品質・検証": 6
+    },
+    "priorities": {
+      "P1": 70,
+      "P2": 10,
+      "P0": 8
+    },
+    "statuses": {
+      "実装確認": 45,
+      "要実機確認": 9,
+      "改善提案": 32,
+      "画像確認": 2
+    }
+  },
+  "items": [
+    {
+      "id": "A01",
+      "category": "画面構成・描画",
+      "title": "戦闘に必要な画面領域を先に確保する",
+      "priority": "P1",
+      "status": "実装確認",
+      "current": "カメラは縦画面で距離を補正するが、上下のHUDを除いた戦闘用の表示領域は定義していない。",
+      "problem": "端末比率やHUD量によって、刀・敵の予兆・足元が狭い領域に集中する可能性がある。",
+      "proposal": "安全領域、上部HUD、下部操作を除いた矩形に、プレイヤー・敵・攻撃範囲を収める。カメラの距離と注視点を同じ矩形から算出する。",
+      "acceptance": "小型iPhoneから大画面まで、全攻撃の予兆とプレイヤー全身が読める。ダメージ表示も主動作を隠さない。",
+      "evidence": ["S13", "S09"],
+      "phase": 1,
+      "contracts": ["Q01"],
+      "harnessModules": [
+        "visual.camera",
+        "domain.ui-input",
+        "visual.foundation"
+      ],
+      "checks": {
+        "integrity": ["Q01-I"],
+        "experience": ["Q01-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "A02",
+      "category": "画面構成・描画",
+      "title": "人物と敵の見える大きさを端末ごとに決める",
+      "priority": "P1",
+      "status": "要実機確認",
+      "current": "縦画面の距離補正はある。実機のスクリーンショットから人物の高さ・刀の太さを測った記録はない。",
+      "problem": "キャラクターを作り込んでも、小さすぎる表示では顔・構え・攻撃の違いが届かない。",
+      "proposal": "各画面で人物のピクセル高と刀・目の最小太さを測り、通常戦と大型ボス戦のカメラを調整する。",
+      "acceptance": "腕の構え、刀の向き、敵の攻撃開始が画面拡大なしで区別できる。調整前後の実機画像を残す。",
+      "evidence": ["S13", "S04"],
+      "phase": 1,
+      "contracts": ["Q01"],
+      "harnessModules": [
+        "visual.camera",
+        "domain.ui-input",
+        "visual.foundation"
+      ],
+      "checks": {
+        "integrity": ["Q01-I"],
+        "experience": ["Q01-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "A03",
+      "category": "画面構成・描画",
+      "title": "画面の左右と回避方向を一致させる",
+      "priority": "P1",
+      "status": "要実機確認",
+      "current": "カメラは斜め位置に固定され、回避はワールド座標のX方向に移動する。",
+      "problem": "横スワイプの期待する方向と、画面に見える移動量・危険側の表示が直感的に一致するか未確認。",
+      "proposal": "左右レーンを画面へ投影して順序・距離を測り、正面寄りのカメラと注視点を比較する。左−0.9・中央0・右0.9の戦闘座標と入力の意味を維持し、画角で分かりやすくする。",
+      "acceptance": "左右攻撃、左右ボタン、スワイプ、PCキーの意味と画面上の方向が一致する。縦横切替でも到達レーン・危険判定・得点が同じ。体感は実機で確認する。",
+      "evidence": ["S13", "S08", "S26"],
+      "phase": 1,
+      "contracts": ["Q01"],
+      "harnessModules": [
+        "visual.camera",
+        "domain.ui-input",
+        "visual.foundation"
+      ],
+      "checks": {
+        "integrity": ["Q01-I"],
+        "experience": ["Q01-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "A04",
+      "category": "画面構成・描画",
+      "title": "足元と敵に接地感をつける",
+      "priority": "P1",
+      "status": "実装確認",
+      "current": "照明はHemisphericLight中心で、ShadowGeneratorや足元の接触影を生成していない。",
+      "problem": "人物・敵が床から浮いて見える要因になり、跳躍・着地・体重移動も弱くなる。",
+      "proposal": "共通床面を直してから、草履の支持点と敵の支持部へ軽量な接触影を置く。浮遊中は床との距離に応じて影を薄く広げる。動的影は高画質の費用対効果を測って選び、軽量でも接地情報を残す。",
+      "acceptance": "静止・回避・着地で床との距離が分かる。低画質のiPhoneでも影が消えて姿勢判断を妨げない。",
+      "evidence": ["S02", "S15"],
+      "phase": 1,
+      "contracts": ["Q02"],
+      "harnessModules": [
+        "visual.shape",
+        "visual.surface-light",
+        "visual.motion-environment"
+      ],
+      "checks": {
+        "integrity": ["Q02-I"],
+        "experience": ["Q02-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "A05",
+      "category": "画面構成・描画",
+      "title": "石・布・金属・骨の材質を分ける",
+      "priority": "P1",
+      "status": "実装確認",
+      "current": "StandardMaterialの色と発光を主に使い、共通の弱い反射値を設定している。",
+      "problem": "刀、衣服、岩、骨が同じ表面に近づき、形の情報だけでは質感が伝わりにくい。",
+      "proposal": "刀の狭い反射、布の広い陰影、石の鈍い面、骨の暖色の低反射を本編照明で調整する。コード生成と現行材質を土台に面取り・部位別材質を使う。色・明るさ変換の担当を一本化し、PBRや外部モデル導入を必須にしない。",
+      "acceptance": "同じ照明下の比較画面で、色を弱めても刀・布・石の区別がつく。発光が表面の形を消さない。",
+      "evidence": ["S02", "S04", "S01"],
+      "phase": 1,
+      "contracts": ["Q05"],
+      "harnessModules": ["visual.surface-light", "visual.foundation"],
+      "checks": {
+        "integrity": ["Q05-I"],
+        "experience": ["Q05-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "A06",
+      "category": "画面構成・描画",
+      "title": "背景から人物と予兆を分離する",
+      "priority": "P1",
+      "status": "改善提案",
+      "current": "霧・暗い背景・発光色が全体の基調。敵と背景の明度差について実機の測定はない。",
+      "problem": "世界観を暗くするほど、輪郭と攻撃の予兆が背景へ埋もれるおそれがある。",
+      "proposal": "背景の明度・細部を抑え、人物に細い縁光を入れる。白い霧の奥と戦闘手前で密度を分け、危険表示の周辺に余白を確保する。",
+      "acceptance": "通常／低画質、屋内程度の明るさと屋外で、人物の手足と危険表示を追える。グレースケールでも主役が分かる。",
+      "evidence": ["S02", "S15"],
+      "phase": 1,
+      "contracts": ["Q05"],
+      "harnessModules": ["visual.surface-light", "visual.foundation"],
+      "checks": {
+        "integrity": ["Q05-I"],
+        "experience": ["Q05-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "A07",
+      "category": "画面構成・描画",
+      "title": "形状の簡略化を意図した美術へ揃える",
+      "priority": "P2",
+      "status": "改善提案",
+      "current": "人物・敵・舞台を主に箱、円柱、多面体で組み立てている。",
+      "problem": "パーツの継ぎ目と箱の角がそのまま出ると、作品の様式より仮組みの印象が強くなる。",
+      "proposal": "墨色・朱・生成りは方向性の候補として、主人公・影面・牙嶺・霧ノ峠の本編画面で比較する。輪郭、面の粗さ、接合を整え、顔・握り・武器へ造形を集中する。絵文字に頼らず、必要な記号は形と短い日本語で表す。",
+      "acceptance": "タイトル、人物、敵、ステージを並べても同じ作品に見える。継ぎ目が関節より目立たない。",
+      "evidence": ["S04", "S01", "S02"],
+      "phase": 1,
+      "contracts": ["Q05"],
+      "harnessModules": ["visual.surface-light", "visual.foundation"],
+      "checks": {
+        "integrity": ["Q05-I"],
+        "experience": ["Q05-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "A08",
+      "category": "画面構成・描画",
+      "title": "低解像度でも輪郭と刀を保つ",
+      "priority": "P1",
+      "status": "要実機確認",
+      "current": "解像度倍率は高1.0、標準0.78、軽量0.58。DPRにも上限があり、細い輪郭の実機比較はない。",
+      "problem": "軽量化で刀・目・危険線が消える、高画質で細い線がちらつく可能性がある。",
+      "proposal": "実サイズの画像で刀、目、輪郭、床線を比較し、形状の最低太さを決める。アンチエイリアスと解像度を負荷に合わせて調整する。",
+      "acceptance": "全設定で武器と危険線が途切れず、動いても輪郭が強くちらつかない。iPhoneで比較画像を残す。",
+      "evidence": ["S15", "S16", "S03"],
+      "phase": 1,
+      "contracts": ["Q01"],
+      "harnessModules": [
+        "visual.camera",
+        "domain.ui-input",
+        "visual.foundation"
+      ],
+      "checks": {
+        "integrity": ["Q01-I"],
+        "experience": ["Q01-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "B01",
+      "category": "プレイヤーの造形",
+      "title": "山伏剣士のシルエットを強くする",
+      "priority": "P1",
+      "status": "改善提案",
+      "current": "笠、結袈裟、法衣、腰帯、脚絆などのコード生成パーツは存在する。",
+      "problem": "小画面で重なる細部が多く、笠・肩・刀から主人公らしさを読む設計がまだ弱い。",
+      "proposal": "笠の幅、肩と袖、腰帯、裾の形を整理し、笠・結袈裟・刀の三要素が残るシルエットを作る。",
+      "acceptance": "黒いシルエットだけでも主人公を識別でき、通常敵の輪郭と混同しない。縦画面の実サイズで確認する。",
+      "evidence": ["S04"],
+      "phase": 2,
+      "contracts": ["Q03"],
+      "harnessModules": ["visual.shape", "visual.foundation"],
+      "checks": {
+        "integrity": ["Q03-I"],
+        "experience": ["Q03-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "B02",
+      "category": "プレイヤーの造形",
+      "title": "手と刀の握りを成立させる",
+      "priority": "P1",
+      "status": "実装確認",
+      "current": "腕の関節と刀は別パーツとして生成されている。手指や握りの接触を検証する基準はない。",
+      "problem": "振り動作で手と柄が離れる、両手の役割が曖昧になると攻撃の説得力が落ちる。",
+      "proposal": "刀の柄に握り位置を設け、右手を主握り、左手を添え手として追従させる。手首から刀までの親子関係を見直す。",
+      "acceptance": "通常・反撃・崩し・強撃の準備／有効／戻りを正面と側面で確認し、手と柄が接続する。本編の表示サイズでも握りが読め、刀の親子変換が二重に適用されない。",
+      "evidence": ["S04", "S05"],
+      "phase": 2,
+      "contracts": ["Q03"],
+      "harnessModules": ["visual.shape", "visual.foundation"],
+      "checks": {
+        "integrity": ["Q03-I"],
+        "experience": ["Q03-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "B03",
+      "category": "プレイヤーの造形",
+      "title": "顔・胴体・刀の向きを敵へ揃える",
+      "priority": "P1",
+      "status": "実装確認",
+      "current": "目の配置から読む人物の前方はローカル-Z。敵方向との内積は約-0.972だった。これは形状方向の検証で、実際の見え方は未確認。",
+      "problem": "顔の向き、胴体の構え、攻撃先が逆向きに見える可能性がある。",
+      "proposal": "人物の前方軸を一つに定義し、顔・肩・足・刀とカメラ基準を揃える。敵を向いた構えを斜め画面でも見せる。",
+      "acceptance": "静止・防御・攻撃の画面で顔と刀が敵を向く。モデルの前方と敵方向の内積が正となり、実描画も確認する。",
+      "evidence": ["S04", "S07", "S19"],
+      "phase": 2,
+      "contracts": ["Q03"],
+      "harnessModules": ["visual.shape", "visual.foundation"],
+      "checks": {
+        "integrity": ["Q03-I"],
+        "experience": ["Q03-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "B04",
+      "category": "プレイヤーの造形",
+      "title": "草履と脚を床上に置く",
+      "priority": "P0",
+      "status": "実装確認",
+      "current": "再現シーンで草履の上端は約0.073、同位置の石段上端は約0.260。草履全体が床面より下にある。",
+      "problem": "脚の短さや浮遊・埋まりに見える原因になり、足を運ぶ動作が成立しない。",
+      "proposal": "戦闘位置の床高さを一元化し、人物のルートと足を合わせる。まず平坦な戦闘床を設け、その後必要に応じて足の接地補正を加える。",
+      "acceptance": "全レーンで草履の底が床面に接し、待機・回避・攻撃で床を貫通しない。形状計算と画面の両方で確認する。",
+      "evidence": ["S02", "S04", "S19"],
+      "phase": 1,
+      "contracts": ["Q02"],
+      "harnessModules": [
+        "visual.shape",
+        "visual.surface-light",
+        "visual.motion-environment"
+      ],
+      "checks": {
+        "integrity": ["Q02-I"],
+        "experience": ["Q02-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "B05",
+      "category": "プレイヤーの造形",
+      "title": "布・髪・数珠の遅れを最終姿勢へ反映する",
+      "priority": "P2",
+      "status": "実装確認",
+      "current": "scene側で布や髪を動かした後に、updatePlayerMotionが姿勢をリセットして再適用する経路がある。",
+      "problem": "追加した揺れが上書きされ、走りや斬撃に追従する細かな動きが届かない。",
+      "proposal": "基本姿勢の計算後に二次動作を加える順序へ揃える。速度と加速度に応じた小さな遅れを布、髪、数珠へ分配する。",
+      "acceptance": "回避停止と斬撃後に一度遅れて収束する。静止で震え続けず、低画質でも重要な裾の動きは残る。",
+      "evidence": ["S05", "S07"],
+      "phase": 2,
+      "contracts": ["Q04"],
+      "harnessModules": [
+        "visual.motion-environment",
+        "domain.gameplay",
+        "domain.lifecycle"
+      ],
+      "checks": {
+        "integrity": ["Q04-I"],
+        "experience": ["Q04-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "B06",
+      "category": "プレイヤーの造形",
+      "title": "衣服・腕・刀の貫通を動作ごとに直す",
+      "priority": "P1",
+      "status": "要実機確認",
+      "current": "袖、裾、腕、刀を別パーツで動かす。全技の接触・貫通を実描画した確認記録はない。",
+      "problem": "袖を刀が横切る、胴を腕が突き抜けると、動作の良さより破綻が目立つ。",
+      "proposal": "各技の準備・有効・戻りの代表姿勢を正面と側面で確認する。袖の可動域、腕の軌道、刀の親子関係を調整する。",
+      "acceptance": "全4技、防御、回避、納刀、敗北で大きな貫通がない。裾の揺れも最後の姿勢へ重ねて確認する。",
+      "evidence": ["S04", "S05"],
+      "phase": 2,
+      "contracts": ["Q03"],
+      "harnessModules": ["visual.shape", "visual.foundation"],
+      "checks": {
+        "integrity": ["Q03-I"],
+        "experience": ["Q03-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "C01",
+      "category": "プレイヤーの動作・攻撃",
+      "title": "反撃の命中と刀が振れる瞬間を合わせる",
+      "priority": "P0",
+      "status": "実装確認",
+      "current": "反撃の命中開始は90ms、全体440ms。命中比率0.205に対し抜き姿勢は0.24まで続く。再現でも100msで敵HPが減り、刀は抜き姿勢だった。",
+      "problem": "刀がまだ振れていないのにダメージが出るため、手応えとタイミング学習がずれる。",
+      "proposal": "attackTimingForとシーンが予約した開始・命中時刻を動作へ渡す。反撃は90msまでに抜き姿勢を終え、その命中時刻で返しの有効姿勢を見せる。ダメージ時刻を遅らせて見た目へ合わせず、全体進行率による別計算を解消する。",
+      "acceptance": "反撃90msの前後で刀の返しとHP減少を照合する。通常はstartup＋飛刃到着、他3技は予約命中時刻を維持し、各技のダメージは一度だけ。停止・再開・低頻度描画でも一致し、連続映像でも原因と結果を読める。",
+      "evidence": ["S05", "S06", "S19", "S26"],
+      "phase": 1,
+      "contracts": ["Q04"],
+      "harnessModules": [
+        "visual.motion-environment",
+        "domain.gameplay",
+        "domain.lifecycle"
+      ],
+      "checks": {
+        "integrity": ["Q04-I"],
+        "experience": ["Q04-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "C02",
+      "category": "プレイヤーの動作・攻撃",
+      "title": "待機から各動作へ姿勢を滑らかにつなぐ",
+      "priority": "P1",
+      "status": "実装確認",
+      "current": "applyMotionは毎フレーム基本姿勢へ戻して現在の動作を適用する。前の姿勢からの補間はない。",
+      "problem": "攻撃、回避、防御の切り替えで腕・裾・刀が瞬間的に戻る原因になる。",
+      "proposal": "前の最終姿勢から次の開始姿勢への短い補間を用意する。判定時刻は維持し、関節角の移行だけを調整する。",
+      "acceptance": "待機→斬り、斬り→納刀、防御→反撃、回避→待機で関節の瞬間移動がない。",
+      "evidence": ["S05"],
+      "phase": 2,
+      "contracts": ["Q04"],
+      "harnessModules": [
+        "visual.motion-environment",
+        "domain.gameplay",
+        "domain.lifecycle"
+      ],
+      "checks": {
+        "integrity": ["Q04-I"],
+        "experience": ["Q04-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "C03",
+      "category": "プレイヤーの動作・攻撃",
+      "title": "通常の飛刃に重心移動と振り抜きをつける",
+      "priority": "P1",
+      "status": "改善提案",
+      "current": "通常斬撃は離れた敵へ飛刃を放つ現行仕様。腕・腰・ルートを進行率で動かすが、床上の支持足と連動した重心移動は弱い。",
+      "problem": "刀だけが動くように見え、攻撃の重さと振り終わりの隙が伝わりにくい。",
+      "proposal": "後足で溜め、腰を回し、前足へ重心を移して飛刃を放ち、支持足へ収束する。足運びと胴の変位は表示側へ限定し、敵へ近接移動する仕様へ変えない。移動レーン・射程・予約命中時刻を維持する。",
+      "acceptance": "通常攻撃の準備・飛刃の放出・振り終わりを読める。足が滑らず、敵の近くへ踏み込まなくても飛刃との関係が分かる。同じ入力で位置・HP・得点・経過時間が変更前と一致する。",
+      "evidence": ["S05", "S06", "S26"],
+      "phase": 2,
+      "contracts": ["Q04"],
+      "harnessModules": [
+        "visual.motion-environment",
+        "domain.gameplay",
+        "domain.lifecycle"
+      ],
+      "checks": {
+        "integrity": ["Q04-I"],
+        "experience": ["Q04-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "C04",
+      "category": "プレイヤーの動作・攻撃",
+      "title": "斬撃の軌跡を刃先から発生させる",
+      "priority": "P1",
+      "status": "実装確認",
+      "current": "飛ぶ斬撃の発生位置は人物ルートに対する固定座標で、刀の刃先のワールド座標を参照していない。",
+      "problem": "刀と離れた場所から斬撃が出ると、どの動作が当たったか分かりにくくなる。",
+      "proposal": "刃元・刃先のワールド座標から短い振り軌跡を作り、通常攻撃の飛刃は刀から離れる瞬間を明示する。発生点変更は表示だけに閉じ、通常の到着時間60msと予約命中時刻を維持する。反撃・崩し・強撃へ新しい飛行待ちを加えない。",
+      "acceptance": "全レーン・全4技で刀と最初の軌跡が接続する。通常の飛刃は出発・到着を読め、反撃等の命中を追加の飛行時間で遅らせない。低画質でも刃先との関係が残る。",
+      "evidence": ["S06", "S05", "S26"],
+      "phase": 2,
+      "contracts": ["Q04"],
+      "harnessModules": [
+        "visual.motion-environment",
+        "domain.gameplay",
+        "domain.lifecycle"
+      ],
+      "checks": {
+        "integrity": ["Q04-I"],
+        "experience": ["Q04-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "C05",
+      "category": "プレイヤーの動作・攻撃",
+      "title": "4種類の攻撃を構えと軌跡で分ける",
+      "priority": "P1",
+      "status": "改善提案",
+      "current": "通常、反撃、崩し、決め技で時間設定は分かれているが、基本の刀を振る構造を共有する。",
+      "problem": "効果を増やすだけでは技の役割が見分けにくく、攻撃選択の理解が進まない。",
+      "proposal": "通常は飛刃を放つ斜めの振り、反撃は短い返し、崩しは溜めた重い一撃、強撃は大きな終止姿勢として準備・軌道・戻りを分ける。各技のstartup・active・recoveryと受付条件は現行ルールを使い、表示用の溜めで入力を遅らせない。",
+      "acceptance": "技名と色を隠しても4種類を識別できる。威力、構え、命中時刻、得点、射程を維持し、演出最小でも技の役割と振り終わりが読める。",
+      "evidence": ["S05", "S14", "S26"],
+      "phase": 2,
+      "contracts": ["Q04"],
+      "harnessModules": [
+        "visual.motion-environment",
+        "domain.gameplay",
+        "domain.lifecycle"
+      ],
+      "checks": {
+        "integrity": ["Q04-I"],
+        "experience": ["Q04-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "C06",
+      "category": "プレイヤーの動作・攻撃",
+      "title": "回避中の足運びと無敵区間を読めるようにする",
+      "priority": "P1",
+      "status": "実装確認",
+      "current": "回避は360ms、危険を避ける区間は120～300ms。人物ルートは固定レーンへ移動し、接地補正はない。",
+      "problem": "横滑りに見える可能性があり、早すぎた・遅すぎた回避の理由が視覚で伝わりにくい。",
+      "proposal": "踏み出し、低い移動、着地の3段階を作る。無敵区間は輪郭や残像の短い変化で示し、色だけに頼らない。",
+      "acceptance": "回避開始・安全区間・着地が区別できる。左右の足が床を貫通せず、判定区間と見た目が一致する。",
+      "evidence": ["S05", "S14", "S07"],
+      "phase": 2,
+      "contracts": ["Q04"],
+      "harnessModules": [
+        "visual.motion-environment",
+        "domain.gameplay",
+        "domain.lifecycle"
+      ],
+      "checks": {
+        "integrity": ["Q04-I"],
+        "experience": ["Q04-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "C07",
+      "category": "プレイヤーの動作・攻撃",
+      "title": "防御・弾き・防御崩れを別の姿勢にする",
+      "priority": "P1",
+      "status": "改善提案",
+      "current": "防御時間、弾き、構え値のルールと通知は存在する。",
+      "problem": "刀を構える姿勢と一時的な光だけでは、受け止めた・弾いた・崩された結果を区別しづらい。",
+      "proposal": "防御は両手の安定した受け、弾きは刀を押し返す小さな反動、防御崩れは胴と膝が落ちる姿勢に分ける。",
+      "acceptance": "テキストを消しても3状態を識別できる。弾き後の反撃可能状態へ視線を誘導できる。",
+      "evidence": ["S05", "S07", "S14"],
+      "phase": 2,
+      "contracts": ["Q04"],
+      "harnessModules": [
+        "visual.motion-environment",
+        "domain.gameplay",
+        "domain.lifecycle"
+      ],
+      "checks": {
+        "integrity": ["Q04-I"],
+        "experience": ["Q04-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "C08",
+      "category": "プレイヤーの動作・攻撃",
+      "title": "被弾反応を動作優先順位で消さない",
+      "priority": "P1",
+      "status": "実装確認",
+      "current": "人物動作の選択で回避・攻撃・弾き・防御が被弾より先に選ばれる。",
+      "problem": "攻撃や防御中の被弾が姿勢へ出ず、HP減少だけに見える場合がある。",
+      "proposal": "攻撃等の基本姿勢へ上半身の被弾反応を重ねる。変位は表示用の子ノードへ限定し、判定ルートを動かさない。防御・ひるみ・敗北の優先度は本体状態から選び、演出完了から新しい中断や無敵を発生させない。",
+      "acceptance": "攻撃中・防御中・待機中の被弾が画面上で分かる。軽い被弾と敗北を混同しない。",
+      "evidence": ["S07", "S05"],
+      "phase": 2,
+      "contracts": ["Q04"],
+      "harnessModules": [
+        "visual.motion-environment",
+        "domain.gameplay",
+        "domain.lifecycle"
+      ],
+      "checks": {
+        "integrity": ["Q04-I"],
+        "experience": ["Q04-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "C09",
+      "category": "プレイヤーの動作・攻撃",
+      "title": "登場・納刀・勝利・敗北の動作をつなげる",
+      "priority": "P2",
+      "status": "実装確認",
+      "current": "spawn、sheath、defeatなどの姿勢はあるが、発動・終了条件は攻撃経路によって異なる。",
+      "problem": "終わりの姿勢や次の待機へのつながりが揃わず、戦闘の区切りが唐突になる可能性がある。",
+      "proposal": "技の完了から納刀、待機への流れを統一し、敵撃破とステージ勝利は別の短い終止動作にする。再開・次敵登場との時間も合わせる。",
+      "acceptance": "全4技の後に自然な待機へ戻る。敗北・勝利表示の直前に、その結果と一致した姿勢が見える。",
+      "evidence": ["S05", "S07", "S23"],
+      "phase": 2,
+      "contracts": ["Q04"],
+      "harnessModules": [
+        "visual.motion-environment",
+        "domain.gameplay",
+        "domain.lifecycle"
+      ],
+      "checks": {
+        "integrity": ["Q04-I"],
+        "experience": ["Q04-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "C10",
+      "category": "プレイヤーの動作・攻撃",
+      "title": "待機を戦闘へ備える姿勢にする",
+      "priority": "P2",
+      "status": "改善提案",
+      "current": "待機にも姿勢の変化はあるが、敵の狙いと自身の状態を受けた構えの比較はしていない。",
+      "problem": "腕と胴が無目的に揺れるだけでは、剣士が敵に備えている印象が弱い。",
+      "proposal": "敵へ向いた足、両手の位置、呼吸を基本にし、構えが低い時のわずかな疲労と反撃可能時の返しの構えを加える。",
+      "acceptance": "動作が小さくても戦闘中と登場前を区別できる。待機の揺れが次の予兆やボタンの合図と競合しない。",
+      "evidence": ["S05", "S07"],
+      "phase": 2,
+      "contracts": ["Q04"],
+      "harnessModules": [
+        "visual.motion-environment",
+        "domain.gameplay",
+        "domain.lifecycle"
+      ],
+      "checks": {
+        "integrity": ["Q04-I"],
+        "experience": ["Q04-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "D01",
+      "category": "敵全体の造形・動作",
+      "title": "敵にも動く関節と固有の重心を持たせる",
+      "priority": "P1",
+      "status": "実装確認",
+      "current": "7種類の基本形状と装飾を切り替える共通ルート構成で、腕・脚・翼の関節は持たない。",
+      "problem": "敵種を増やしても、体全体の平行移動・回転だけでは攻撃の個性が育たない。",
+      "proposal": "通常敵は胴・攻撃部・支持部、ボスは系統に合う関節と重心を作る。既存AttackPlanと行動時刻を受け取る共通の姿勢接口を定め、まず影面と牙嶺を本編で仕上げる。確認できた生成規則から残り15種へ広げる。",
+      "acceptance": "各敵が、静止画の形とエフェクトなしの攻撃動作の両方で識別できる。",
+      "evidence": ["S01", "S07"],
+      "phase": 2,
+      "contracts": ["Q03"],
+      "harnessModules": ["visual.shape", "visual.foundation"],
+      "checks": {
+        "integrity": ["Q03-I"],
+        "experience": ["Q03-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "D02",
+      "category": "敵全体の造形・動作",
+      "title": "発光で敵の材質を一色に上書きしない",
+      "priority": "P1",
+      "status": "実装確認",
+      "current": "setEnemyGlowが体、目、牙、冠、翼、石門を同じenemy_glow／boss_glowへ置換する。再現でも同材質だった。",
+      "problem": "目・牙・装甲などの役割と色の差が失われ、敵の造形が平面的になる。",
+      "proposal": "体・目・牙・武器の基本材質を保持し、予兆発光は部位別に重ねる。共有材質の書換えが他の部位や次の敵へ漏れないよう、所有者と初期化を定める。予兆終了・撃破・再挑戦で元の状態へ戻す。",
+      "acceptance": "予兆中でも目・牙・体の区別が残る。通常敵とボスで色だけに頼らない材質差が見える。",
+      "evidence": ["S01", "S07", "S19"],
+      "phase": 2,
+      "contracts": ["Q05"],
+      "harnessModules": ["visual.surface-light", "visual.foundation"],
+      "checks": {
+        "integrity": ["Q05-I"],
+        "experience": ["Q05-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "D03",
+      "category": "敵全体の造形・動作",
+      "title": "待機中の回転を無制限に蓄積しない",
+      "priority": "P1",
+      "status": "実装確認",
+      "current": "待機で敵ルートのY回転に毎フレーム値を加え、石像系も同じ回転を受ける。",
+      "problem": "長い待機で背中を向ける、予兆開始時に向きが戻るなど、不自然な姿勢切り替えにつながる。",
+      "proposal": "敵を向く基準角から小さく往復する動きへ変更する。呼吸、揺れ、視線を系統ごとに設定し、石門や仏像は支持構造を固定する。",
+      "acceptance": "30秒待機しても正面と攻撃方向が一致する。石造の土台は回転しない。",
+      "evidence": ["S07"],
+      "phase": 2,
+      "contracts": ["Q06"],
+      "harnessModules": [
+        "visual.shape",
+        "visual.motion-environment",
+        "domain.enemy-ai",
+        "domain.content"
+      ],
+      "checks": {
+        "integrity": ["Q06-I"],
+        "experience": ["Q06-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "D04",
+      "category": "敵全体の造形・動作",
+      "title": "被弾・ひるみ・消滅に方向と段階をつける",
+      "priority": "P1",
+      "status": "実装確認",
+      "current": "被弾はルートを全方向へ1.12倍に拡大する表現が中心。撃破後は一定時間を置いて次の敵へ切り替わる。",
+      "problem": "膨らむ反応は斬撃方向を伝えず、撃破と次敵登場の間も分かりにくい。",
+      "proposal": "斬撃方向へ小さく反り、構えが崩れる反応を重ねる。撃破は姿勢崩れ→霧へ解ける→次敵の出現を明確に区切る。",
+      "acceptance": "当たり、ひるみ、撃破を別々に読み取れる。撃破中の敵を攻撃対象と誤認しない。",
+      "evidence": ["S07", "S23"],
+      "phase": 2,
+      "contracts": ["Q06"],
+      "harnessModules": [
+        "visual.shape",
+        "visual.motion-environment",
+        "domain.enemy-ai",
+        "domain.content"
+      ],
+      "checks": {
+        "integrity": ["Q06-I"],
+        "experience": ["Q06-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "E01",
+      "category": "通常敵7種の個別改善",
+      "title": "影面：面と左側の予兆を主役にする",
+      "priority": "P1",
+      "status": "改善提案",
+      "current": "左攻撃を教える敵で、基本体は多面体。共通の目・刀・槍を使う。",
+      "problem": "名前の「面」と左攻撃の関係を、体の形や構えだけでは読み取りにくい。",
+      "proposal": "顔面を大きな裂けた面にし、左肩・左腕を引く予兆と左から入る一撃を作る。面の奥の目は予兆中だけ狭く光らせる。",
+      "acceptance": "文字なしで影面と左攻撃を識別できる。予兆→左の危険範囲→振り抜きの方向が一致する。",
+      "evidence": ["S01", "S07"],
+      "phase": 3,
+      "contracts": ["Q06"],
+      "harnessModules": [
+        "visual.shape",
+        "visual.motion-environment",
+        "domain.enemy-ai",
+        "domain.content"
+      ],
+      "checks": {
+        "integrity": ["Q06-I"],
+        "experience": ["Q06-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "E02",
+      "category": "通常敵7種の個別改善",
+      "title": "角岩：角と右側の突進を結びつける",
+      "priority": "P1",
+      "status": "改善提案",
+      "current": "右攻撃を教える敵で、基本体は円柱。岩の重量を表す支持部の動作はない。",
+      "problem": "形状の違いと攻撃の違いが結びつかず、右側を警戒する学習につながりにくい。",
+      "proposal": "片側の太い角、岩の肩、短い支持脚を作る。右肩を下げて溜め、短く突進し、地面に重く戻る。",
+      "acceptance": "準備姿勢だけで右側の攻撃を予測できる。岩の形と重い戻りで他の通常敵と区別できる。",
+      "evidence": ["S01", "S07"],
+      "phase": 3,
+      "contracts": ["Q06"],
+      "harnessModules": [
+        "visual.shape",
+        "visual.motion-environment",
+        "domain.enemy-ai",
+        "domain.content"
+      ],
+      "checks": {
+        "integrity": ["Q06-I"],
+        "experience": ["Q06-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "E03",
+      "category": "通常敵7種の個別改善",
+      "title": "鳴壺：口と傾きで左右の交代を見せる",
+      "priority": "P1",
+      "status": "改善提案",
+      "current": "左右交互の攻撃を行い、基本体は球形。",
+      "problem": "壺らしい口・胴・底が弱く、左右の攻撃が同じ体の平行移動に見えやすい。",
+      "proposal": "割れた壺の口と細い首を作り、攻撃側へ口が向いてから吐く・打つ動きにする。左右で体の傾きと口の向きを反転する。",
+      "acceptance": "次の左右を壺の口と傾きから読める。振り戻しも含め、球形の浮遊物と混同しない。",
+      "evidence": ["S01", "S07"],
+      "phase": 3,
+      "contracts": ["Q06"],
+      "harnessModules": [
+        "visual.shape",
+        "visual.motion-environment",
+        "domain.enemy-ai",
+        "domain.content"
+      ],
+      "checks": {
+        "integrity": ["Q06-I"],
+        "experience": ["Q06-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "E04",
+      "category": "通常敵7種の個別改善",
+      "title": "逆鉾：三手の順番を構えで記憶できるようにする",
+      "priority": "P1",
+      "status": "改善提案",
+      "current": "右・右・左のパターンを持ち、基本体は箱形。",
+      "problem": "順番のルールが身体の構えへ十分に現れず、文字や床表示への依存が強い。",
+      "proposal": "鉾を持つ腕と胴を設け、現行の三手の攻撃順に引き・短い返し・反転する構えを対応させる。三手は既存の攻撃列として見せ、予告のない三連撃や追加ヒットを新設しない。",
+      "acceptance": "既存の三手それぞれの予兆が異なり、方向転換を視認できる。攻撃回数・間隔・対象レーンを変更前と照合し、各攻撃後の待機も読める。",
+      "evidence": ["S01", "S07", "S26"],
+      "phase": 3,
+      "contracts": ["Q06"],
+      "harnessModules": [
+        "visual.shape",
+        "visual.motion-environment",
+        "domain.enemy-ai",
+        "domain.content"
+      ],
+      "checks": {
+        "integrity": ["Q06-I"],
+        "experience": ["Q06-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "E05",
+      "category": "通常敵7種の個別改善",
+      "title": "霧猿：追尾と狙いの固定を動きで示す",
+      "priority": "P1",
+      "status": "改善提案",
+      "current": "追尾型で、基本体はトーラス。猿の手足や頭を関節で動かす構成はない。",
+      "problem": "プレイヤーを狙い直している時間と、避けるべき確定後の時間を身体から読み取れない。",
+      "proposal": "長い腕、低い腰、頭と尾を作り、狙い中は頭と肩が人物を追う。攻撃確定時に視線を止めて、その位置へ跳びかかる。",
+      "acceptance": "追尾は予告時間55%未満だけ動き、固定後に視線・危険帯・攻撃先が一致する。新しい追尾や跳躍判定を足さず、狙い直し→固定→攻撃を色なしでも区別できる。",
+      "evidence": ["S01", "S07"],
+      "phase": 3,
+      "contracts": ["Q06"],
+      "harnessModules": [
+        "visual.shape",
+        "visual.motion-environment",
+        "domain.enemy-ai",
+        "domain.content"
+      ],
+      "checks": {
+        "integrity": ["Q06-I"],
+        "experience": ["Q06-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "E06",
+      "category": "通常敵7種の個別改善",
+      "title": "鉄輪：二撃目を残った輪で予告する",
+      "priority": "P1",
+      "status": "改善提案",
+      "current": "二連撃型で、基本体は円柱。共通の槍が攻撃を表す。",
+      "problem": "一撃で終わったように見えると、二撃目の被弾が不意打ちに感じられる。",
+      "proposal": "大小二つの鉄輪を攻撃部にし、一撃目の間も二つ目を持ち上げたままにする。二撃目後だけ両輪を下げる。",
+      "acceptance": "一撃目後に「まだ続く」と読める。二撃目後の隙が待機姿勢への移行で明確になる。",
+      "evidence": ["S01", "S07"],
+      "phase": 3,
+      "contracts": ["Q06"],
+      "harnessModules": [
+        "visual.shape",
+        "visual.motion-environment",
+        "domain.enemy-ai",
+        "domain.content"
+      ],
+      "checks": {
+        "integrity": ["Q06-I"],
+        "experience": ["Q06-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "E07",
+      "category": "通常敵7種の個別改善",
+      "title": "骨灯：重い攻撃の溜めを骨と灯で見せる",
+      "priority": "P1",
+      "status": "改善提案",
+      "current": "重攻撃型で、基本体は多面体。灯りと骨格を独立して動かす仕組みはない。",
+      "problem": "長い予兆を待つ理由や、防御への圧力を見た目から理解しづらい。",
+      "proposal": "骨の枠と内側の灯を作る。枠を縮めて灯が集まる溜めから、骨の腕を開いて重く打ち下ろす。大きな戻りを残す。",
+      "acceptance": "通常敵の中で最も重い予兆と戻りに見える。灯の明るさだけでなく骨の姿勢でも溜めを判断できる。",
+      "evidence": ["S01", "S07"],
+      "phase": 3,
+      "contracts": ["Q06"],
+      "harnessModules": [
+        "visual.shape",
+        "visual.motion-environment",
+        "domain.enemy-ai",
+        "domain.content"
+      ],
+      "checks": {
+        "integrity": ["Q06-I"],
+        "experience": ["Q06-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "F01",
+      "category": "ボス10種の個別改善",
+      "title": "牙嶺：四肢と牙で二段攻撃を成立させる",
+      "priority": "P1",
+      "status": "改善提案",
+      "current": "獣系・二連撃。トーラスの体と牙などの装飾、ルートの低い前進を組み合わせる。",
+      "problem": "四肢の支えと頭の振りがなく、牙を使う獣の攻撃に見えにくい。",
+      "proposal": "四足、肩、首、顎を持たせ、前足で支えて一撃目を噛み、二撃目は首を返す。牙は頭へ固定し、二撃を別の軌道にする。",
+      "acceptance": "足が接地し、牙の先が実際の危険方向へ進む。二撃目まで頭の溜めを保つ。",
+      "evidence": ["S01", "S07"],
+      "phase": 3,
+      "contracts": ["Q07"],
+      "harnessModules": [
+        "visual.shape",
+        "visual.motion-environment",
+        "domain.enemy-ai",
+        "domain.content"
+      ],
+      "checks": {
+        "integrity": ["Q07-I"],
+        "experience": ["Q07-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "F02",
+      "category": "ボス10種の個別改善",
+      "title": "鎧熊：装甲・肩・踏み込みで重さを見せる",
+      "priority": "P1",
+      "status": "改善提案",
+      "current": "獣型・重量役。肩・耳を持つ共通構成で、重い初撃後に牙の追撃を持つ。",
+      "problem": "熊の巨体と装甲の重さが、通常敵の拡大表示に近づく。",
+      "proposal": "太い前腕・短い脚・厚い胸・装甲を作る。支持足と肩で重い初撃を示し、初撃後も顎と牙の溜めを残して既存の追撃へつなぐ。二撃目が終わってから体を起こす。",
+      "acceptance": "装甲と体を区別でき、支持点と影が一致する。初撃後を安全な戻りに見せず、追撃予告と二撃目後の隙が読める。既存の攻撃列と間隔を維持する。",
+      "evidence": ["S01", "S07"],
+      "phase": 3,
+      "contracts": ["Q07"],
+      "harnessModules": [
+        "visual.shape",
+        "visual.motion-environment",
+        "domain.enemy-ai",
+        "domain.content"
+      ],
+      "checks": {
+        "integrity": ["Q07-I"],
+        "experience": ["Q07-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "F03",
+      "category": "ボス10種の個別改善",
+      "title": "沼喰：低い口と膨張で交互攻撃を見せる",
+      "priority": "P1",
+      "status": "改善提案",
+      "current": "怪物系・左右交互。多面体の体に目や輪の装飾を追加する共通構成。",
+      "problem": "名前から期待される口・湿った低い体と、交互攻撃の関連が薄い。",
+      "proposal": "低く広い胴・口・左右の攻撃部を作り、現行の左右交互と予告中の範囲拡大に収縮→膨張を対応させる。口と体を同じ危険側へ偏らせ、触手は表示上の攻撃部として使う。触手専用の新判定を追加しない。",
+      "acceptance": "左右の溜め、膨らむ予告、有効範囲を区別できる。前後半・端レーンでAttackPlanと危険帯が一致し、口・体・攻撃部が共通槍だけに見えない。",
+      "evidence": ["S01", "S07"],
+      "phase": 3,
+      "contracts": ["Q07"],
+      "harnessModules": [
+        "visual.shape",
+        "visual.motion-environment",
+        "domain.enemy-ai",
+        "domain.content"
+      ],
+      "checks": {
+        "integrity": ["Q07-I"],
+        "experience": ["Q07-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "F04",
+      "category": "ボス10種の個別改善",
+      "title": "百眼：多数の視線で追尾と固定を示す",
+      "priority": "P1",
+      "status": "改善提案",
+      "current": "怪物系・追尾。円柱の体に怪物系共通の目3つと輪を使う。",
+      "problem": "百眼という個性が弱く、狙いの固定が単なる発光になりやすい。",
+      "proposal": "大小の目に中心眼と周囲眼の役割を与え、予告55%未満の追尾は人物へ視線を集める。固定後は中心眼と輪の姿勢を止め、既存の範囲拡大と命中時刻に沿って開く。眼の数を増やすだけを完成条件にしない。",
+      "acceptance": "目の集合から追尾段階が分かる。予兆確定後の狙いと実際の攻撃先が一致する。",
+      "evidence": ["S01", "S07"],
+      "phase": 3,
+      "contracts": ["Q07"],
+      "harnessModules": [
+        "visual.shape",
+        "visual.motion-environment",
+        "domain.enemy-ai",
+        "domain.content"
+      ],
+      "checks": {
+        "integrity": ["Q07-I"],
+        "experience": ["Q07-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "F05",
+      "category": "ボス10種の個別改善",
+      "title": "鬼将：鎧と刀の構えで人型の駆け引きを作る",
+      "priority": "P1",
+      "status": "改善提案",
+      "current": "人型・左始動のパターン。箱形の体と冠・肩・帯。予兆の55%地点にフェイント処理がある。",
+      "problem": "関節のない体では刀を振る動作やフェイントを身体から読むのが難しい。",
+      "proposal": "肘、肩、腰、膝を設け、鎧の面を分ける。初段の構えを一度浅く止めてから向きを変え、確定後の攻撃だけ大きく振る。",
+      "acceptance": "予告55%で一度だけ危険側が返る現行フェイントに構えが同期する。確定後の危険側を刀・床・案内が同時に示し、見た目だけ別方向へ振らない。",
+      "evidence": ["S01", "S07"],
+      "phase": 3,
+      "contracts": ["Q07"],
+      "harnessModules": [
+        "visual.shape",
+        "visual.motion-environment",
+        "domain.enemy-ai",
+        "domain.content"
+      ],
+      "checks": {
+        "integrity": ["Q07-I"],
+        "experience": ["Q07-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "F06",
+      "category": "ボス10種の個別改善",
+      "title": "白面：細い輪郭と最小限の動きで差を作る",
+      "priority": "P1",
+      "status": "改善提案",
+      "current": "人型・右始動のパターン。球形の体に鬼将と同じ系統の装飾とフェイント処理を使う。",
+      "problem": "鬼将との差が基本形状・色・順番へ偏り、別の剣士としての印象が弱い。",
+      "proposal": "細長い面と細い胴、長い袖を作る。鬼将より小さな構えから短く鋭く動き、面の向きと手首でフェイントを見せる。",
+      "acceptance": "輪郭と動作で鬼将と区別できる。予告55%の一度のフェイントと確定先が一致し、小さい面・刀の変化も本編のiPhone実サイズで読める。",
+      "evidence": ["S01", "S07"],
+      "phase": 3,
+      "contracts": ["Q07"],
+      "harnessModules": [
+        "visual.shape",
+        "visual.motion-environment",
+        "domain.enemy-ai",
+        "domain.content"
+      ],
+      "checks": {
+        "integrity": ["Q07-I"],
+        "experience": ["Q07-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "F07",
+      "category": "ボス10種の個別改善",
+      "title": "天狗鴉：翼の折り畳みと羽ばたきで攻撃する",
+      "priority": "P1",
+      "status": "改善提案",
+      "current": "鳥系・左右交互。多面体の体に箱形の翼・嘴・尾を追加し、上下移動を行う。",
+      "problem": "翼が羽ばたかず、飛ぶ敵としての支持と攻撃の準備が弱い。",
+      "proposal": "翼の根元と先端に関節を作る。左右巡回と既存の急降下を翼の畳み・滑空・開きへ結び、着地後の追撃が終わるまで再び溜めを残す。上下移動と支持影を合わせ、飛行経路や攻撃数を増やさない。",
+      "acceptance": "左右の予告、急降下、着地、追撃後の戻りを翼と重心から読める。既存の目標レーンと攻撃列を維持し、着地直後を安全な待機と誤認しない。",
+      "evidence": ["S01", "S07"],
+      "phase": 3,
+      "contracts": ["Q07"],
+      "harnessModules": [
+        "visual.shape",
+        "visual.motion-environment",
+        "domain.enemy-ai",
+        "domain.content"
+      ],
+      "checks": {
+        "integrity": ["Q07-I"],
+        "experience": ["Q07-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "F08",
+      "category": "ボス10種の個別改善",
+      "title": "鶴骸：長い首と脚で鴉との形を分ける",
+      "priority": "P1",
+      "status": "改善提案",
+      "current": "鳥系・追尾。トーラスの体に鳥系共通の翼・嘴・尾を追加する。",
+      "problem": "鴉と同じ翼構成では、鶴の長い首・脚や骨の不気味さが伝わらない。",
+      "proposal": "長い首・細い脚・翼骨を作る。追尾中は首が人物を追い、固定後に首と翼を畳んで既存の急降下へつなぐ。着地後の追撃と回復を脚・首の姿勢で区切る。新しい嘴の射程や飛行待ちを追加しない。",
+      "acceptance": "首・脚・翼骨で天狗鴉と区別できる。追尾固定先、急降下先、着地後の追撃がAttackPlanと一致し、固定後に見た目だけ追い続けない。",
+      "evidence": ["S01", "S07"],
+      "phase": 3,
+      "contracts": ["Q07"],
+      "harnessModules": [
+        "visual.shape",
+        "visual.motion-environment",
+        "domain.enemy-ai",
+        "domain.content"
+      ],
+      "checks": {
+        "integrity": ["Q07-I"],
+        "experience": ["Q07-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "F09",
+      "category": "ボス10種の個別改善",
+      "title": "石門王：門自体を攻撃部にする",
+      "priority": "P1",
+      "status": "改善提案",
+      "current": "石造系・重攻撃。円柱の体に土台・柱・梁・紋を追加し、共通の刀と槍も残る。",
+      "problem": "石門の支持構造と武器が混在し、何が動いてどこが危険か分かりにくい。",
+      "proposal": "支持土台を固定し、梁・石板・紋を表示上の攻撃部にする。紋が集まる予兆から梁の動きと床の危険帯へつなぐ。後半の全域攻撃は現行ルールの安全条件をそのまま表示し、新しい衝撃波判定や破壊を足さない。",
+      "acceptance": "支持部と攻撃部を区別できる。前後半・中央・左右安定位置・回避途中・防御で、危険帯と実際の判定を照合する。「全域」という文言だけから安全な場所を推測せず記録する。",
+      "evidence": ["S01", "S07"],
+      "phase": 3,
+      "contracts": ["Q07"],
+      "harnessModules": [
+        "visual.shape",
+        "visual.motion-environment",
+        "domain.enemy-ai",
+        "domain.content"
+      ],
+      "checks": {
+        "integrity": ["Q07-I"],
+        "experience": ["Q07-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "F10",
+      "category": "ボス10種の個別改善",
+      "title": "巨仏：仏像の身体と掌で最終ボスの格を作る",
+      "priority": "P1",
+      "status": "改善提案",
+      "current": "石造系・重攻撃。多面体に石門王と同じ土台・柱・梁・紋を追加。後半の広い攻撃処理がある。",
+      "problem": "座像・顔・掌がなく、名前と最終ボスの存在感が共通の門装飾だけでは成立しにくい。",
+      "proposal": "座像の胴・頭・腕・掌を作り、静止した巨体から掌を動かす。前後半の既存攻撃計画を片掌・両掌・床の形へ対応させる。後半の全域攻撃の条件を表示へ写し、見栄えのために波の当たり判定を新設しない。",
+      "acceptance": "石門王と輪郭・動作・攻撃部が異なる。前後半の危険域と安全条件を実判定で照合し、掌の予兆から現在の危険側を読める。最大サイズでも必要情報が画面に残る。",
+      "evidence": ["S01", "S07"],
+      "phase": 3,
+      "contracts": ["Q07"],
+      "harnessModules": [
+        "visual.shape",
+        "visual.motion-environment",
+        "domain.enemy-ai",
+        "domain.content"
+      ],
+      "checks": {
+        "integrity": ["Q07-I"],
+        "experience": ["Q07-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "G01",
+      "category": "敵の攻撃・予兆・判定表示",
+      "title": "危険線と攻撃範囲を床面より上に表示する",
+      "priority": "P0",
+      "status": "実装確認",
+      "current": "危険線の上端約0.053、範囲の上端約0.038に対し、同位置の石段上端は約0.500。足元範囲も上端約0.060に対し床約0.260。",
+      "problem": "危険情報の形状が床の下にあり、床に隠れる原因になる。実機での隠れ方は別途確認が必要。",
+      "proposal": "床高さから危険線・範囲を配置する。平坦な戦闘床と高さ参照を共通化し、必要なら床へ沿う表示に変更する。",
+      "acceptance": "全レーン・全攻撃で危険表示の上面が床面を越える。実描画でも石段に隠れず、人物の足と競合しない。",
+      "evidence": ["S02", "S03", "S19"],
+      "phase": 1,
+      "contracts": ["Q02"],
+      "harnessModules": [
+        "visual.shape",
+        "visual.surface-light",
+        "visual.motion-environment"
+      ],
+      "checks": {
+        "integrity": ["Q02-I"],
+        "experience": ["Q02-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "G02",
+      "category": "敵の攻撃・予兆・判定表示",
+      "title": "槍の先端と伸びる軸の位置を一致させる",
+      "priority": "P0",
+      "status": "実装確認",
+      "current": "伸長時の槍軸の前端は約−6.346、穂先中心は約−4.855で、差は約1.491。穂先が伸びた軸の途中へ入り込む配置をNullEngineで再現した。",
+      "problem": "槍軸と穂先の伸びが対応せず、攻撃の先端と進行を読み違えるおそれがある。画面上での見え方は実描画が必要。",
+      "proposal": "槍の基点・軸方向・伸長長さ・穂先の後端接続点を定め、軸端から穂先位置を算出する。共通槍を使う敵へ一括適用し、系統固有の攻撃部へ替える場合も同じ接続と攻撃計画の境界を守る。",
+      "acceptance": "最大伸長と途中の全段階で穂先が軸端に接続する。先端が危険範囲の有効部分を示す。",
+      "evidence": ["S07", "S19"],
+      "phase": 1,
+      "contracts": ["Q03"],
+      "harnessModules": ["visual.shape", "visual.foundation"],
+      "checks": {
+        "integrity": ["Q03-I"],
+        "experience": ["Q03-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "G03",
+      "category": "敵の攻撃・予兆・判定表示",
+      "title": "危険側を色と形の両方で伝える",
+      "priority": "P1",
+      "status": "実装確認",
+      "current": "左・右・中央の予兆は主に青・紫・橙の色分けを使う。",
+      "problem": "小画面、低画質、色の識別が難しい条件では、危険側の判読が遅れる。",
+      "proposal": "左・右は大きな方向形状と位置、中央は両側へ広がる形状を追加する。色に加え敵の構えと床表示を一致させる。",
+      "acceptance": "グレースケールでも危険側を判別できる。色名を知らなくても左右と広範囲を識別できる。",
+      "evidence": ["S03", "S07"],
+      "phase": 2,
+      "contracts": ["Q13"],
+      "harnessModules": [
+        "visual.motion-environment",
+        "domain.gameplay",
+        "domain.lifecycle",
+        "domain.accessibility"
+      ],
+      "checks": {
+        "integrity": ["Q13-I"],
+        "experience": ["Q13-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "G04",
+      "category": "敵の攻撃・予兆・判定表示",
+      "title": "点滅より時間が読める予兆にする",
+      "priority": "P1",
+      "status": "実装確認",
+      "current": "予兆は105msごとに状態を切り替え、往復周期として約4.76Hzの点滅となる。",
+      "problem": "残り時間を点滅回数で読むのは難しく、強い点滅は視覚的な負担にもなる。適合性の判定には面積・輝度の測定が必要。",
+      "proposal": "外周が閉じる、帯が満ちる、武器が引かれる等の連続変化へ置き換える。確定時だけ短い変化を入れ、抑制設定では点滅を避ける。",
+      "acceptance": "予兆開始・確定・有効区間が連続して読める。画面全体が点滅せず、設定を変えても必要情報が残る。",
+      "evidence": ["S03", "S07", "S15"],
+      "phase": 2,
+      "contracts": ["Q13"],
+      "harnessModules": [
+        "visual.motion-environment",
+        "domain.gameplay",
+        "domain.lifecycle",
+        "domain.accessibility"
+      ],
+      "checks": {
+        "integrity": ["Q13-I"],
+        "experience": ["Q13-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "G05",
+      "category": "敵の攻撃・予兆・判定表示",
+      "title": "二連撃・フェイント・後半変化を先に知らせる",
+      "priority": "P1",
+      "status": "改善提案",
+      "current": "二連撃、フェイント、ボス後半の攻撃変化は既にある。",
+      "problem": "初段の終了が全体の終了に見える、フェイントが判定の理不尽さに見えるなどの原因になる。",
+      "proposal": "二撃目の溜めを初撃後に残し、フェイント55%で危険側と構えを同時に更新する。後半移行は現在状態の姿勢・輪郭・短い表示で示す。演出のための停止や攻撃間隔の延長を足さず、次の予告を隠さない。",
+      "acceptance": "初見で攻撃の継続と段階変化が分かる。移行演出が次の予兆を隠さない。",
+      "evidence": ["S07", "S14"],
+      "phase": 2,
+      "contracts": ["Q07"],
+      "harnessModules": [
+        "visual.shape",
+        "visual.motion-environment",
+        "domain.enemy-ai",
+        "domain.content"
+      ],
+      "checks": {
+        "integrity": ["Q07-I"],
+        "experience": ["Q07-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "G06",
+      "category": "敵の攻撃・予兆・判定表示",
+      "title": "見た目の範囲と被弾判定の境界を照合する",
+      "priority": "P1",
+      "status": "要実機確認",
+      "current": "レーン、回避区間、危険範囲はルールと描画で別々に扱う。描画した境界の実機照合は未実施。",
+      "problem": "見た目では安全なのに被弾する、武器が当たっているのに無傷に見える可能性が残る。",
+      "proposal": "現行AttackPlanと判定関数から、対象レーン・広域・有効区間を開発時に表示する。各境界の内外、左右端、中央、回避途中を実行して製品の危険帯と照合する。怪物の膨張、石造の後半全域は見た目の倍率だけから安全範囲を推定しない。",
+      "acceptance": "通常敵7種・ボス10種の前後半で、安全側と危険側の判定が表示と一致する。低画質でも境界を失わない。",
+      "evidence": ["S03", "S07", "S14"],
+      "phase": 2,
+      "contracts": ["Q01"],
+      "harnessModules": [
+        "visual.camera",
+        "domain.ui-input",
+        "visual.foundation"
+      ],
+      "checks": {
+        "integrity": ["Q01-I"],
+        "experience": ["Q01-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "H01",
+      "category": "ステージ・世界観",
+      "title": "5章に実際の景観差を持たせる",
+      "priority": "P1",
+      "status": "実装確認",
+      "current": "章名は5種類あるが、石段・鳥居・霧を作る同じ舞台を使い続ける。",
+      "problem": "進行しても背景が変わらず、旅の距離やボスの場所の意味が弱い。",
+      "proposal": "現行5章の順序と名前を維持し、霧ノ峠の山影、岩戸の回廊の岩壁、天狗の稜線の空、無明の奥宮の柱、修験成就の広場を景観案として比較する。まず1区画を本編で仕上げる。装飾の乱数種は戦闘・敵順の乱数から分離する。",
+      "acceptance": "各章の代表画像を並べて場所を識別できる。章ごとの背景差が危険表示の読みやすさを損なわない。",
+      "evidence": ["S02", "S23"],
+      "phase": 3,
+      "contracts": ["Q08"],
+      "harnessModules": [
+        "visual.motion-environment",
+        "domain.content",
+        "domain.gameplay"
+      ],
+      "checks": {
+        "integrity": ["Q08-I"],
+        "experience": ["Q08-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "H02",
+      "category": "ステージ・世界観",
+      "title": "戦闘床・中景・遠景の情報量を分ける",
+      "priority": "P2",
+      "status": "改善提案",
+      "current": "石段、鳥居、霧が同じ戦闘画面に置かれている。",
+      "problem": "戦闘の足元へ背景の線が重なると、床の危険帯と武器の軌跡を追いにくい。",
+      "proposal": "手前は平らで低密度、中景は章を示す鳥居・岩・柱、遠景は山と霧に分ける。敵の輪郭の後ろに細い高コントラスト線を置かない。",
+      "acceptance": "背景だけで場所が分かり、戦闘中は人物・敵・危険帯へ自然に視線が向く。",
+      "evidence": ["S02", "S13"],
+      "phase": 3,
+      "contracts": ["Q08"],
+      "harnessModules": [
+        "visual.motion-environment",
+        "domain.content",
+        "domain.gameplay"
+      ],
+      "checks": {
+        "integrity": ["Q08-I"],
+        "experience": ["Q08-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "H03",
+      "category": "ステージ・世界観",
+      "title": "鳥居の梁の重複を取り除く",
+      "priority": "P2",
+      "status": "実装確認",
+      "current": "左右の柱を作るループ内で中央の横梁と上梁も作るため、同じ位置に各2本ある。",
+      "problem": "無駄な描画と、同一面の重なりによるちらつきの原因になる。",
+      "proposal": "柱だけを左右ループで生成し、横梁と上梁は一度ずつ作る。背景生成も部材の数と位置を確認できる構造へ整理する。",
+      "acceptance": "横梁・上梁が各1本になり、重なる面がない。斜めカメラでも継ぎ目がちらつかない。",
+      "evidence": ["S02", "S19"],
+      "phase": 3,
+      "contracts": ["Q05"],
+      "harnessModules": ["visual.surface-light", "visual.foundation"],
+      "checks": {
+        "integrity": ["Q05-I"],
+        "experience": ["Q05-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "H04",
+      "category": "ステージ・世界観",
+      "title": "平坦な戦闘床と登山の景観を接続する",
+      "priority": "P0",
+      "status": "実装確認",
+      "current": "人物と危険表示はほぼ一定のY座標だが、戦闘位置に高さの異なる石段がある。",
+      "problem": "人物、武器、表示の高さが別々になり、接地と判定の読みやすさを同時に崩している。",
+      "proposal": "戦闘は一つの高さの踊り場にし、登山の石段は進入路・奥の景観へ移す。床高さは人物・敵・接触影・危険帯の共通参照とする。",
+      "acceptance": "同じ床高さの定義から全要素が配置される。全3レーンと大型ボスの足元で埋まりが再発しない。",
+      "evidence": ["S02", "S03", "S04", "S19"],
+      "phase": 1,
+      "contracts": ["Q02"],
+      "harnessModules": [
+        "visual.shape",
+        "visual.surface-light",
+        "visual.motion-environment"
+      ],
+      "checks": {
+        "integrity": ["Q02-I"],
+        "experience": ["Q02-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "H05",
+      "category": "ステージ・世界観",
+      "title": "霧を奥行き表現へ使い、足元の情報を残す",
+      "priority": "P1",
+      "status": "実装確認",
+      "current": "画質設定で霧の有無が変わり、背景の見え方も変化する。",
+      "problem": "高画質では予兆が霧へ溶け、低画質では奥の構造が急に目立つ可能性がある。",
+      "proposal": "戦闘手前の霧を弱め、奥へ濃くする。低画質は霧を省く代わりに背景の明度を抑え、同じ情報優先度を保つ。",
+      "acceptance": "高・標準・軽量の比較で危険表示の読みやすさが同等。遠景が敵より強くならない。",
+      "evidence": ["S02", "S15", "S13"],
+      "phase": 3,
+      "contracts": ["Q05"],
+      "harnessModules": ["visual.surface-light", "visual.foundation"],
+      "checks": {
+        "integrity": ["Q05-I"],
+        "experience": ["Q05-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "H06",
+      "category": "ステージ・世界観",
+      "title": "章名・幕・背景・進行を一致させる",
+      "priority": "P1",
+      "status": "実装確認",
+      "current": "章データが変化しても、画面には固定の「序章」や「霧ノ峠 第一幕」の表示がある。",
+      "problem": "現在地と進行表示が食い違い、ステージが変わっているのか分からない。",
+      "proposal": "章・戦闘番号・現在の場所を一つの進行データから表示する。固定の舞台名を実際の景観と対応させる。",
+      "acceptance": "各章の開始、報酬後、再開後に場所と進行表示が一致する。タイトルへ戻ると戦闘中の章名を残さない。",
+      "evidence": ["S09", "S23"],
+      "phase": 3,
+      "contracts": ["Q08"],
+      "harnessModules": [
+        "visual.motion-environment",
+        "domain.content",
+        "domain.gameplay"
+      ],
+      "checks": {
+        "integrity": ["Q08-I"],
+        "experience": ["Q08-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "H07",
+      "category": "ステージ・世界観",
+      "title": "章と敵の登場を短い視線誘導で見せる",
+      "priority": "P2",
+      "status": "改善提案",
+      "current": "敵の入れ替えと章の移行はあるが、舞台が変わる導入の表現は共通構成に留まる。",
+      "problem": "場所と敵の格が変わる瞬間が弱く、連戦が同じ画面の繰り返しに感じられる。",
+      "proposal": "既存の章開始・敵切替時間内で、通常敵は短い出現、ボスは輪郭と名前を示し、操作開始の合図へつなぐ。視線誘導は任意のカメラ補正とし、OS動作抑制では静止表示を使う。新たな待ち時間や自動停止を追加しない。",
+      "acceptance": "導入は最初の予兆前に終わる。再挑戦では短縮でき、OSの動作抑制時は静止表示へ替わる。",
+      "evidence": ["S23", "S13", "S09"],
+      "phase": 3,
+      "contracts": ["Q01"],
+      "harnessModules": [
+        "visual.camera",
+        "domain.ui-input",
+        "visual.foundation"
+      ],
+      "checks": {
+        "integrity": ["Q01-I"],
+        "experience": ["Q01-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "I01",
+      "category": "操作・入力フィードバック",
+      "title": "キーボードでも左右へ回避できるようにする",
+      "priority": "P0",
+      "status": "実装確認",
+      "current": "Jは斬り、Kは防御、Shiftは右回避へ固定。A・左矢印は移動しない。グローバルkeydownには入力欄・日本語変換中を除外する明示条件も見当たらない。実機IMEの不具合は未観測。",
+      "problem": "左回避が必要な攻撃に、キーボードの標準操作だけでは対応できない。",
+      "proposal": "A／左矢印とD／右矢印に左右回避を割り当て、Shiftの説明を実挙動と合わせる。入力欄・contenteditable・isComposing・停止／選択／結果を除外し、repeatと同時押しを検査する。ヘルプも同じ割当へ更新する。",
+      "acceptance": "キーボードだけで左右の危険側を避けられる。名前変換・確定Enter・欄内編集でゲームが動かず、停止画面の背後にも入力が漏れない。タッチと同じ意味の操作は判定・得点・時計が一致する。",
+      "evidence": ["S08", "S09", "S19"],
+      "phase": 1,
+      "contracts": ["Q09"],
+      "harnessModules": [
+        "domain.ui-input",
+        "domain.japanese",
+        "visual.motion-environment",
+        "domain.observability"
+      ],
+      "checks": {
+        "integrity": ["Q09-I"],
+        "experience": ["Q09-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "I02",
+      "category": "操作・入力フィードバック",
+      "title": "触れたことと技が受理されたことを区別する",
+      "priority": "P1",
+      "status": "実装確認",
+      "current": "ボタンの押下表示はあるが、技の受付・動作中の不受付は主に説明テキストで返す。",
+      "problem": "触れたのに動かない理由が分からず、連打や入力遅延への不信につながる。",
+      "proposal": "接触、ゲームが受理した技開始、動作中の不受付、確定した命中を別の反応にする。受付を成功演出として扱わず、取消しには命中効果を出さない。受信・受付・表示要求を開発時に記録し、異なる時計の値を直接差し引かない。",
+      "acceptance": "最初の接触で反応し、受理されたかがボタンと姿勢から分かる。拒否説明が画面中央を塞がない。",
+      "evidence": ["S09", "S08"],
+      "phase": 1,
+      "contracts": ["Q09"],
+      "harnessModules": [
+        "domain.ui-input",
+        "domain.japanese",
+        "visual.motion-environment",
+        "domain.observability"
+      ],
+      "checks": {
+        "integrity": ["Q09-I"],
+        "experience": ["Q09-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "I03",
+      "category": "操作・入力フィードバック",
+      "title": "短い先行入力を採用するか決める",
+      "priority": "P2",
+      "status": "改善提案",
+      "current": "動作中の入力を短時間保持する仕組みはなく、受け付けられない入力はその場で終わる。",
+      "problem": "戻りの終端を毎回厳密に触る必要があり、端末遅延と合わせて操作の硬さを感じやすい。",
+      "proposal": "80～100ms程度の先行入力を比較試作する。採用する場合は保持対象、失効、回避との優先度を仕様へ明記する。これは操作ルールを変える提案である。",
+      "acceptance": "押し続けや一回のタッチで複数発動しない。採用前後のタイミング許容と難度を比較し、採否を記録する。",
+      "evidence": ["S08", "S14"],
+      "phase": 1,
+      "contracts": ["Q09"],
+      "harnessModules": [
+        "domain.ui-input",
+        "domain.japanese",
+        "visual.motion-environment",
+        "domain.observability"
+      ],
+      "checks": {
+        "integrity": ["Q09-I"],
+        "experience": ["Q09-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。I03は操作ルール変更の比較案で、採用済みではない。"
+    },
+    {
+      "id": "I04",
+      "category": "操作・入力フィードバック",
+      "title": "反撃可能を斬りボタンへ直接知らせる",
+      "priority": "P1",
+      "status": "実装確認",
+      "current": "counterReadyは状態テキスト等で伝えるが、斬りボタンは通常の見た目を保つ。",
+      "problem": "反撃の機会に、視線を上部の説明から下部の操作へ往復させる必要がある。",
+      "proposal": "反撃可能時に斬りボタンへ「反撃」と短い外周表示を出す。残り時間を縮む枠で示し、失効時に自然に戻す。",
+      "acceptance": "弾き直後に次の操作がボタンから分かる。期限、通常斬りへの復帰、抑制設定でも表示が一致する。",
+      "evidence": ["S09", "S14"],
+      "phase": 1,
+      "contracts": ["Q09"],
+      "harnessModules": [
+        "domain.ui-input",
+        "domain.japanese",
+        "visual.motion-environment",
+        "domain.observability"
+      ],
+      "checks": {
+        "integrity": ["Q09-I"],
+        "experience": ["Q09-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "I05",
+      "category": "操作・入力フィードバック",
+      "title": "親指の届き方と誤操作を実機で調整する",
+      "priority": "P1",
+      "status": "要実機確認",
+      "current": "タッチ領域、スワイプ判定、クリック重複防止は実装済み。片手・両手での到達性と押し間違いは未検証。",
+      "problem": "サイズを満たしても、片手では防御や一時停止へ届きにくい可能性がある。",
+      "proposal": "左右どちらの手でも斬り・防御へ届く配置を比較する。回避スワイプの開始領域とブラウザの端操作の重なりを調整する。",
+      "acceptance": "小型iPhoneと通常サイズで、10分間の片手・両手操作を行い、押し間違いと端スワイプの干渉を記録する。",
+      "evidence": ["S09", "S10", "S11"],
+      "phase": 1,
+      "contracts": ["Q09"],
+      "harnessModules": [
+        "domain.ui-input",
+        "domain.japanese",
+        "visual.motion-environment",
+        "domain.observability"
+      ],
+      "checks": {
+        "integrity": ["Q09-I"],
+        "experience": ["Q09-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "I06",
+      "category": "操作・入力フィードバック",
+      "title": "回転・複数タッチ・ブラウザ操作から安定して戻る",
+      "priority": "P1",
+      "status": "要実機確認",
+      "current": "最初の指を追うスワイプ処理やタッチ対策はある。iPhoneの回転・拡大・通知復帰をまとめた検証記録はない。",
+      "problem": "戦闘途中で操作位置が変わる、指が残った扱いになるなどの問題を机上検証だけでは除外できない。",
+      "proposal": "開始指の予約処理を土台に、pointercancel・lostpointercapture・領域外終了・blur・回転・破棄で押下が残らないことを確認する。一本の終了が別の指を奪わず、離脱時だけ全入力を解除する。通知・バー・ソフトキーボード変化後に実受付を再確認する。",
+      "acceptance": "復帰後に古い技が発動しない。表示と受付位置が安全領域に収まり、二本指の一方の取消しで他方を失わない。通常のキーボード／支援技術clickも二重入力対策で消されない。",
+      "evidence": ["S09", "S16", "S13"],
+      "phase": 1,
+      "contracts": ["Q09"],
+      "harnessModules": [
+        "domain.ui-input",
+        "domain.japanese",
+        "visual.motion-environment",
+        "domain.observability"
+      ],
+      "checks": {
+        "integrity": ["Q09-I"],
+        "experience": ["Q09-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "I07",
+      "category": "操作・入力フィードバック",
+      "title": "再開までの700msを見える待ち時間にする",
+      "priority": "P1",
+      "status": "実装確認",
+      "current": "一時停止から再開した直後は700msの保護時間があるが、その進行を画面へ明示していない。",
+      "problem": "再開直後に反応しない時間が、入力の不具合に見える可能性がある。",
+      "proposal": "「再開」の短い円形進行や3段階の合図を入れ、戦闘が再び進む瞬間を示す。演出は敵と操作ボタンを隠さない。",
+      "acceptance": "待ち時間の終わりが分かり、敵の時計と入力受付が同じ瞬間に再開する。連続停止でも二重に進まない。",
+      "evidence": ["S23", "S09"],
+      "phase": 1,
+      "contracts": ["Q12"],
+      "harnessModules": [
+        "domain.loading",
+        "domain.compatibility",
+        "domain.lifecycle"
+      ],
+      "checks": {
+        "integrity": ["Q12-I"],
+        "experience": ["Q12-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "J01",
+      "category": "ゲーム全体のUI・UX",
+      "title": "タイトルの人物紹介が潰れないレイアウトにする",
+      "priority": "P0",
+      "status": "画像確認",
+      "current": "WebGL非対応を表示した1363×936のブラウザで、人物紹介の高さは閉じた状態で約84px、追加設定を開くと約2pxになった。通常起動とiPhoneは未確認。",
+      "problem": "最初の画面でキャラクターを見せられず、設定を開いた時の画面品質も大きく落ちる。",
+      "proposal": "人物枠の最小高さと縮小禁止を設定し、縦の余裕がない場合はタイトル全体を一方向にスクロールさせる。設定とエラーを別の可変領域へ置く。",
+      "acceptance": "正常・読込中・エラー・設定展開の各状態で人物枠が潰れない。小型縦画面でも開始ボタンへ到達できる。",
+      "evidence": ["S09", "S10", "S11", "S20", "S25"],
+      "phase": 1,
+      "contracts": ["Q10"],
+      "harnessModules": [
+        "domain.ui-input",
+        "domain.japanese",
+        "domain.accessibility",
+        "domain.game-design"
+      ],
+      "checks": {
+        "integrity": ["Q10-I"],
+        "experience": ["Q10-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "J02",
+      "category": "ゲーム全体のUI・UX",
+      "title": "タイトルの人物表現を本編と揃える",
+      "priority": "P1",
+      "status": "実装確認",
+      "current": "タイトルはCSSで作る簡略人物、本編はコード生成の3D人物。人物の代替テキストにも実装説明が含まれる。",
+      "problem": "開始前に期待する見た目と本編に差があり、人物の魅力より作り方が前に出る。",
+      "proposal": "同じ3D人物の固定ポーズ、または同じ輪郭を忠実に再現した軽量表現を使う。代替テキストは人物・構え・装備を説明する。",
+      "acceptance": "タイトルと本編で笠・服・刀の形が一致する。読み上げはゲームの人物を説明し、実装事情を読まない。",
+      "evidence": ["S09", "S10", "S04"],
+      "phase": 4,
+      "contracts": ["Q10"],
+      "harnessModules": [
+        "domain.ui-input",
+        "domain.japanese",
+        "domain.accessibility",
+        "domain.game-design"
+      ],
+      "checks": {
+        "integrity": ["Q10-I"],
+        "experience": ["Q10-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "J03",
+      "category": "ゲーム全体のUI・UX",
+      "title": "開始ボタンを最も強い操作にする",
+      "priority": "P1",
+      "status": "画像確認",
+      "current": "確認画面では開始ボタン幅が約150pxに対し、共有ボタンは約1303pxあり、補助操作が大きい。",
+      "problem": "初めて来た人に、最初に押すべき操作が視覚上伝わりにくい。",
+      "proposal": "開始・続きからを主要操作にし、共有・ランキング・詳細設定は小さな補助操作へまとめる。モード選択から開始までの順を明確にする。",
+      "acceptance": "最初の視線が主要操作へ向く。名前を入力した後、推奨設定のままなら1回の主要操作でゲームへ進める。",
+      "evidence": ["S09", "S10", "S20", "S25"],
+      "phase": 1,
+      "contracts": ["Q10"],
+      "harnessModules": [
+        "domain.ui-input",
+        "domain.japanese",
+        "domain.accessibility",
+        "domain.game-design"
+      ],
+      "checks": {
+        "integrity": ["Q10-I"],
+        "experience": ["Q10-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "J04",
+      "category": "ゲーム全体のUI・UX",
+      "title": "戦闘HUDを判断に必要な順へ整理する",
+      "priority": "P1",
+      "status": "実装確認",
+      "current": "HP、構え、敵情報、手順、進行などの複数カードが並び、構えなどが上下に重複する。",
+      "problem": "情報量が多く、敵の予兆と操作より文字へ視線が流れやすい。",
+      "proposal": "常時表示はHP・構え・敵HP・危険側・次の操作を中心にする。説明は状態変化時の一行へ、詳細は停止画面へ移す。",
+      "acceptance": "同じ値の重複がなく、危険側と反撃機会を一目で読める。人物・武器の有効領域がHUDに隠れない。",
+      "evidence": ["S09", "S10", "S11"],
+      "phase": 1,
+      "contracts": ["Q10"],
+      "harnessModules": [
+        "domain.ui-input",
+        "domain.japanese",
+        "domain.accessibility",
+        "domain.game-design"
+      ],
+      "checks": {
+        "integrity": ["Q10-I"],
+        "experience": ["Q10-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "J05",
+      "category": "ゲーム全体のUI・UX",
+      "title": "内部分類をプレイヤー向けの言葉に替える",
+      "priority": "P1",
+      "status": "実装確認",
+      "current": "「左右教材型」「操作役」など開発上の分類や、「修験」「構え」「振り終わり」などの用語を表示する。",
+      "problem": "敵の役割や次の操作が、説明を読まないと理解しづらい。",
+      "proposal": "敵の説明は「左から一撃」「二撃目に注意」など具体的な行動へ変える。構えは短い説明を初回だけ添え、世界観の用語は必要な箇所へ残す。",
+      "acceptance": "通常敵7種の説明が各一つの注意と操作を示す。初回の防御・弾き・反撃を用語辞典なしで理解できる。",
+      "evidence": ["S01", "S09"],
+      "phase": 4,
+      "contracts": ["Q10"],
+      "harnessModules": [
+        "domain.ui-input",
+        "domain.japanese",
+        "domain.accessibility",
+        "domain.game-design"
+      ],
+      "checks": {
+        "integrity": ["Q10-I"],
+        "experience": ["Q10-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "J06",
+      "category": "ゲーム全体のUI・UX",
+      "title": "一時停止の操作と設定を整理する",
+      "priority": "P1",
+      "status": "実装確認",
+      "current": "再開、リタイア、最初から、タイトルに加え、音量や画質などの設定を同じ画面へ並べる。",
+      "problem": "再開したいだけでも選択肢が多く、終了系の似た言葉を選び間違えやすい。",
+      "proposal": "再開を一番上の主操作にし、設定はまとまりを分ける。「最初から」「タイトル」は何が失われるかを短く示す。重い確認は必要な終了操作だけにする。",
+      "acceptance": "再開・今回終了・やり直しの違いが分かる。設定変更後も元の停止画面と再開操作へ戻れる。",
+      "evidence": ["S09", "S11"],
+      "phase": 4,
+      "contracts": ["Q11"],
+      "harnessModules": [
+        "domain.ui-input",
+        "domain.accessibility",
+        "domain.lifecycle"
+      ],
+      "checks": {
+        "integrity": ["Q11-I"],
+        "experience": ["Q11-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "J07",
+      "category": "ゲーム全体のUI・UX",
+      "title": "章報酬の効果と現在状態を比較できるようにする",
+      "priority": "P1",
+      "status": "実装確認",
+      "current": "章の間で報酬を選ぶ仕組みと、回復・能力変化の状態はある。",
+      "problem": "効果の量、上限、持続、現在の状態が離れていると、選択の根拠が弱い。",
+      "proposal": "カードに効果量・持続・現在値からの変化を同じ順で記載する。回復が余る場合や一時効果の期限を先に示し、選択した結果を短く返す。",
+      "acceptance": "全報酬で量・持続・現在値からの変化が読める。満HP・上限・文字拡大・再開後でも正しい。一度の選択が一度だけ適用され、表示完了や復帰で報酬を再適用しない。",
+      "evidence": ["S09", "S14", "S23"],
+      "phase": 4,
+      "contracts": ["Q10"],
+      "harnessModules": [
+        "domain.ui-input",
+        "domain.japanese",
+        "domain.accessibility",
+        "domain.game-design"
+      ],
+      "checks": {
+        "integrity": ["Q10-I"],
+        "experience": ["Q10-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "J08",
+      "category": "ゲーム全体のUI・UX",
+      "title": "勝利・敗北・リタイアの結果を明確にする",
+      "priority": "P1",
+      "status": "実装確認",
+      "current": "結果は勝利の「敵影断つ」、敗北の「霧に沈む」などの演出文と記録を表示する。",
+      "problem": "雰囲気の文だけでは、全戦完了・途中敗北・自分で終了の区別や達成量が伝わりにくい。",
+      "proposal": "演出文の下に「完走」「敗北」「リタイア」を明示し、到達戦、総得点、主要な上達指標、再挑戦をこの順に置く。",
+      "acceptance": "3種類の終了理由が混同されない。再挑戦のモードと難度を確認してから戻れる。",
+      "evidence": ["S09", "S14"],
+      "phase": 4,
+      "contracts": ["Q14"],
+      "harnessModules": [
+        "domain.sharing",
+        "domain.ui-input",
+        "domain.security",
+        "domain.japanese"
+      ],
+      "checks": {
+        "integrity": ["Q14-I"],
+        "experience": ["Q14-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "J09",
+      "category": "ゲーム全体のUI・UX",
+      "title": "結果の二重スクロールと共有の手間を減らす",
+      "priority": "P1",
+      "status": "実装確認",
+      "current": "結果とランキング内部にスクロールがあり、共有文は複数行欄。既存shareOrCopyはAbortError時に終了し、コピーへ勝手に進まない。ランキング取得には古い要求を無視する保護がある。",
+      "problem": "指で動かす場所が分かりにくく、共有と順位確認が長い結果画面に埋もれる。",
+      "proposal": "主要操作を上部へ置き、結果のスクロールを一方向へ整理する。取消し時にコピーしない既存挙動を保持し、成功・取消し・コピー成功・失敗を区別する。共有の遅延完了が次の画面へ文言を出さないよう世代を照合する。「共有しました」を外部への投稿確認と混同しない表示へ調整する。",
+      "acceptance": "iPhoneで共有成功／取消し／非対応／コピー成功／失敗の導線が成立する。文面・URL・勝負結果が一致し、取消しでコピーしない。送信完了が古い結果へ混入せず、ランキングの既存重複・世代保護を維持する。",
+      "evidence": ["S09", "S11", "S21", "S28"],
+      "phase": 4,
+      "contracts": ["Q14"],
+      "harnessModules": [
+        "domain.sharing",
+        "domain.ui-input",
+        "domain.security",
+        "domain.japanese"
+      ],
+      "checks": {
+        "integrity": ["Q14-I"],
+        "experience": ["Q14-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "J10",
+      "category": "ゲーム全体のUI・UX",
+      "title": "起動失敗と続きからの案内を状態別に出す",
+      "priority": "P1",
+      "status": "実装確認",
+      "current": "初回の実描画成功まで開始を待つ処理、読込失敗・再試行、古い初期化の無効化、保存復帰は実装済み。WebGL非対応状態を観測した。描画中のコンテキスト喪失に対するアプリ側の案内は明示されず、エンジン側処理との分担は未確認。",
+      "problem": "端末非対応で再試行を繰り返す、続きからでどの戦闘へ戻るか分からない状態が残る。",
+      "proposal": "既存起動を保ち、非対応・一時失敗・読込中・描画中の喪失を利用者の状態で案内する。Babylon.jsが行う復旧とアプリの停止・再開を照合し、古い試行の完了を無効にする。続きからは安全保存地点のモード・難度・章・次戦を示す。",
+      "acceptance": "非対応で無限再試行を促さず、一時失敗後は名前と選択を維持する。喪失・復帰で入力や攻撃を重複発動しない。再読込は既存の安全地点から戻り、途中の攻撃や完了結果を再送しない。",
+      "evidence": ["S16", "S24", "S09", "S26"],
+      "phase": 4,
+      "contracts": ["Q12"],
+      "harnessModules": [
+        "domain.loading",
+        "domain.compatibility",
+        "domain.lifecycle"
+      ],
+      "checks": {
+        "integrity": ["Q12-I"],
+        "experience": ["Q12-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "J11",
+      "category": "ゲーム全体のUI・UX",
+      "title": "既存の安全稽古と序盤案内を読みやすくする",
+      "priority": "P1",
+      "status": "改善提案",
+      "current": "非ランキングの安全稽古3体、失敗時の体力・構え回復、初期十番勝負の固定敵順、序盤案内は実装済み。画面内の複数の案内と用語を読む負担が残る。",
+      "problem": "初回から読み物が多いと、敵の予兆と操作の対応を覚えにくい。",
+      "proposal": "既存の稽古と正式勝負で、その時の敵・課題に合う一行へ案内を絞る。成功後は次の必要情報へ更新し、停止画面から再確認できるようにする。稽古の省略、課題未達でも出る斬撃、固定の敵順と記録条件を保持する。",
+      "acceptance": "初回の案内がその場の一行動を示す。安全稽古は記録せず、失敗を正式勝負へ持ち越さない。既存の3手順・5体目牙嶺・10体目鎧熊を維持し、必須の新導入モードや時間停止を追加しない。",
+      "evidence": ["S09", "S01", "S14", "S26"],
+      "phase": 4,
+      "contracts": ["Q10"],
+      "harnessModules": [
+        "domain.ui-input",
+        "domain.japanese",
+        "domain.accessibility",
+        "domain.game-design"
+      ],
+      "checks": {
+        "integrity": ["Q10-I"],
+        "experience": ["Q10-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "K01",
+      "category": "効果・演出",
+      "title": "命中・弾き・着地の効果を実際の接触点へ置く",
+      "priority": "P1",
+      "status": "改善提案",
+      "current": "火花、線、光、衝撃などの効果は存在するが、共通位置とルート基準の配置が中心。",
+      "problem": "刀と敵、敵武器と防御、足と床の接触が離れると、形だけで何が起きたか読みにくい。",
+      "proposal": "通常の飛刃は確定命中位置、防御は受けた位置、着地は床上の支持点から効果を出す。確定イベントを唯一の発生元にして、命中・弾き・着地の形と寿命を分ける。刀が遠い敵へ直接触れたことを捏造せず、同じ命中の再配送で効果を二重にしない。",
+      "acceptance": "エフェクトの中心が接触部へ一致する。左右回避後や大型ボスでも位置が外れない。",
+      "evidence": ["S22", "S06", "S07"],
+      "phase": 2,
+      "contracts": ["Q02"],
+      "harnessModules": [
+        "visual.shape",
+        "visual.surface-light",
+        "visual.motion-environment"
+      ],
+      "checks": {
+        "integrity": ["Q02-I"],
+        "experience": ["Q02-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "K02",
+      "category": "効果・演出",
+      "title": "大きな演出の優先度と終了時刻を揃える",
+      "priority": "P1",
+      "status": "実装確認",
+      "current": "ボス撃破の画面演出は約2.6秒、次敵への移行は約1.4秒。決め技などの演出は独立した表示経路を持つ。",
+      "problem": "次の敵の予兆が前の演出に隠れる、重要な演出同士が重なるおそれがある。",
+      "proposal": "被弾・弾き・強撃・撃破・結果の表示優先度と最大占有を定め、次の敵の予告前に遮る演出を短縮・退場させる。次戦時刻や戦闘時計を演出に合わせて遅らせない。結果遷移は本体へ従い、演出の完了待ちで止めない。",
+      "acceptance": "次敵の最初の予兆が読める。撃破と決め技が同時でも、画面中央を複数の表示が奪わない。",
+      "evidence": ["S09", "S11", "S23", "S26"],
+      "phase": 2,
+      "contracts": ["Q13"],
+      "harnessModules": [
+        "visual.motion-environment",
+        "domain.gameplay",
+        "domain.lifecycle",
+        "domain.accessibility"
+      ],
+      "checks": {
+        "integrity": ["Q13-I"],
+        "experience": ["Q13-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "K03",
+      "category": "効果・演出",
+      "title": "カメラ揺れに強さと方向を反映する",
+      "priority": "P2",
+      "status": "実装確認",
+      "current": "衝撃イベントには方向・強さがあるが、3Dカメラの揺れは固定振幅の正弦波が中心。抑制は主に継続時間を短くする。",
+      "problem": "軽い接触と重い被弾が似た揺れになり、抑制設定でも瞬間の強い動きを減らしにくい。",
+      "proposal": "衝撃の方向・強さで小さな単発変位と減衰を決める。抑制では振幅そのものを小さくし、完全オフでも命中情報を残す。",
+      "acceptance": "方向・強さを小さな揺れで読める。揺れを解除すると元のカメラへ戻り、連続命中・回転・停止で補正が累積しない。抑制／オフでも命中情報と入力受付は残る。",
+      "evidence": ["S07", "S15"],
+      "phase": 2,
+      "contracts": ["Q13"],
+      "harnessModules": [
+        "visual.motion-environment",
+        "domain.gameplay",
+        "domain.lifecycle",
+        "domain.accessibility"
+      ],
+      "checks": {
+        "integrity": ["Q13-I"],
+        "experience": ["Q13-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "K04",
+      "category": "効果・演出",
+      "title": "効果の時計・取消し・破棄を統一する",
+      "priority": "P1",
+      "status": "実装確認",
+      "current": "一部の効果の破棄は実時間のsetTimeout、戦闘の進行は専用時計を使う。",
+      "problem": "停止中に効果だけ消えるなど、再開時に動作と効果がずれる原因になる。",
+      "proposal": "骨格・戦闘に属する効果はRunClockの寿命を使い、読込や純UIの進行だけ表示時計／実時間へ分ける。勝負世代・対象・イベントを照合して古い通知を捨て、再利用時は透明度・変形・時刻を初期化する。演出乱数はゲーム用乱数を消費しない。",
+      "acceptance": "停止中に戦闘効果だけ先へ進まず、再開で古い命中をまとめて再生しない。再挑戦・敗北・破棄で粒子・購読・タイマーが残らず、表示終了からHP・得点を再確定しない。",
+      "evidence": ["S22", "S23", "S26"],
+      "phase": 2,
+      "contracts": ["Q13"],
+      "harnessModules": [
+        "visual.motion-environment",
+        "domain.gameplay",
+        "domain.lifecycle",
+        "domain.accessibility"
+      ],
+      "checks": {
+        "integrity": ["Q13-I"],
+        "experience": ["Q13-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "K05",
+      "category": "効果・演出",
+      "title": "演出を減らしても命中と危険を残す",
+      "priority": "P1",
+      "status": "実装確認",
+      "current": "minimal設定では一部の効果を早い段階で生成しない経路がある。",
+      "problem": "軽量化で必要な命中・弾きの合図まで弱まると、快適さと判断のしやすさが両立しない。",
+      "proposal": "必須情報と装飾を分け、必須の接触点、危険側、反撃可能、被弾は軽量な一つの形で残す。粒子や長い残像から減らす。",
+      "acceptance": "全設定で攻撃成功・弾き・被弾・反撃機会を判別できる。軽量設定で追加の説明を必要としない。",
+      "evidence": ["S15", "S22", "S07"],
+      "phase": 2,
+      "contracts": ["Q13"],
+      "harnessModules": [
+        "visual.motion-environment",
+        "domain.gameplay",
+        "domain.lifecycle",
+        "domain.accessibility"
+      ],
+      "checks": {
+        "integrity": ["Q13-I"],
+        "experience": ["Q13-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "K06",
+      "category": "効果・演出",
+      "title": "ダメージ数値と一時通知の位置を整理する",
+      "priority": "P1",
+      "status": "改善提案",
+      "current": "戦闘には数値、敵の状態、助言、強い演出が同じ短時間に表示される。",
+      "problem": "複数の通知が重なると、敵の予兆や反撃操作より読み物が優先される。",
+      "proposal": "数値は被弾部付近へ短く、一時通知は固定の一行領域へ置く。同じ種類は更新し、撃破・反撃可能など重要な通知へ優先度を付ける。",
+      "acceptance": "連続命中・弾き・撃破が重なっても敵の顔と予兆を隠さない。必須通知は消えず、補助通知が列を作らない。",
+      "evidence": ["S09", "S11", "S22"],
+      "phase": 2,
+      "contracts": ["Q13"],
+      "harnessModules": [
+        "visual.motion-environment",
+        "domain.gameplay",
+        "domain.lifecycle",
+        "domain.accessibility"
+      ],
+      "checks": {
+        "integrity": ["Q13-I"],
+        "experience": ["Q13-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "L01",
+      "category": "読みやすさ・端末品質・検証",
+      "title": "小さな文字と設定ボタンを読みやすくする",
+      "priority": "P0",
+      "status": "実装確認",
+      "current": "HUDに7～10px級の文字指定があり、一部の設定ボタンは高さ34px、タイトル側は40px。主要操作の44pxは既にある。",
+      "problem": "iPhoneでは説明や数値が読みにくく、設定を押し間違えやすい。",
+      "proposal": "必須文字は14〜16 CSS pxを比較候補にし、縮小より情報量を整理する。ハーネスUI02の標準操作領域44 CSS px以上、余裕があれば48を適用候補にする。透明領域が隣の操作を奪わないよう実座標で押す。",
+      "acceptance": "必須文字と設定を実サイズで読み分けられる。44pxはハーネス方針、48pxと14〜16pxは比較目安であり、WCAG適合とは別。文字200%拡大でも開始・閉じるへ届き、実受付先が見た目と一致する。",
+      "evidence": ["S10", "S11", "S12"],
+      "phase": 1,
+      "contracts": ["Q10"],
+      "harnessModules": [
+        "domain.ui-input",
+        "domain.japanese",
+        "domain.accessibility",
+        "domain.game-design"
+      ],
+      "checks": {
+        "integrity": ["Q10-I"],
+        "experience": ["Q10-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "L02",
+      "category": "読みやすさ・端末品質・検証",
+      "title": "文字・操作・危険表示のコントラストを測る",
+      "priority": "P1",
+      "status": "要実機確認",
+      "current": "暗い半透明カードや発光色を使うが、実際の背景を含めたコントラストの測定記録はない。",
+      "problem": "色の指定だけでは、霧・敵・画質設定と重なったときの読みやすさを保証できない。",
+      "proposal": "通常文字4.5:1・必要な操作形状3:1を該当条件に沿って確認する。透明HUDと動く背景は複数の不利な場面で測り、文字サイズ・背景・状態を記録する。色に方向形状を添え、点滅は画面全体の合成面積・明るさも確認する。",
+      "acceptance": "測定した画面と値を残す。色を消しても危険側を判断でき、低画質・明るい場所でも文字が読める。",
+      "evidence": ["S10", "S11", "S12"],
+      "phase": 4,
+      "contracts": ["Q10"],
+      "harnessModules": [
+        "domain.ui-input",
+        "domain.japanese",
+        "domain.accessibility",
+        "domain.game-design"
+      ],
+      "checks": {
+        "integrity": ["Q10-I"],
+        "experience": ["Q10-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "L03",
+      "category": "読みやすさ・端末品質・検証",
+      "title": "ダイアログと動きを抑える設定を一貫させる",
+      "priority": "P1",
+      "status": "実装確認",
+      "current": "roleとaria-modalはあるが、フォーカス移動・閉じ込め・背景のinert指定はない。CSSの動作抑制は3D側へ連動しない。",
+      "problem": "停止・報酬・結果で背景の操作へ移る、OSの設定に反して3Dが大きく動く可能性がある。",
+      "proposal": "ダイアログへフォーカスを移し、背景を操作対象から外し、閉じたら元へ戻す。日本語変換をゲーム入力から分離する。OSとゲームの動作抑制を3Dにも渡し、危険・命中・現在の選択は形で残す。",
+      "acceptance": "キーボードとVoiceOverの実操作で焦点の逸脱・背後の技発動がない。200%文字とフォント代替でも選択・閉じるを失わない。動作抑制で揺れを減らしても判定・得点・敵順は一致する。実読み上げ未確認をラベル確認だけで合格にしない。",
+      "evidence": ["S09", "S12", "S15", "S16"],
+      "phase": 4,
+      "contracts": ["Q11"],
+      "harnessModules": [
+        "domain.ui-input",
+        "domain.accessibility",
+        "domain.lifecycle"
+      ],
+      "checks": {
+        "integrity": ["Q11-I"],
+        "experience": ["Q11-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "L04",
+      "category": "読みやすさ・端末品質・検証",
+      "title": "iPhoneで長時間の描画と入力を測る",
+      "priority": "P1",
+      "status": "要実機確認",
+      "current": "画質3段階・DPR上限は実装済み。既存品質計画はiPhone 17 Proで30分、リトライを含む60fps、フレーム処理p95 20ms以下を目標とする。今回の実機FPS・熱・遅延は未測定。",
+      "problem": "初回に滑らかでも、連戦の粒子・大ボス・熱で動作や操作が悪化する可能性がある。",
+      "proposal": "初回起動、通常、最大ボス＋効果、再挑戦反復、30分連戦を分けて測る。フレーム間隔とCPU処理時間のp50/p95/p99・標本数、取得可能な資源数、熱・操作反応を記録する。高い負荷の原因から直し、必須情報を残す。",
+      "acceptance": "既存計画のiPhone 17 Pro・30分・60fps・フレーム処理p95 20ms以下を条件付きで照合する。処理時間だけで60fps達成とせず、GPU値を測れなければ未測定とする。30fpsへ目標を下げて合格にせず、低速代替案は別の仕様判断として扱う。",
+      "evidence": ["S15", "S16", "S22", "S27"],
+      "phase": 4,
+      "contracts": ["Q15"],
+      "harnessModules": [
+        "domain.performance",
+        "domain.testing",
+        "domain.observability",
+        "visual.foundation"
+      ],
+      "checks": {
+        "integrity": ["Q15-I"],
+        "experience": ["Q15-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "L05",
+      "category": "読みやすさ・端末品質・検証",
+      "title": "ソース文字列の検査だけで見た目を合格にしない",
+      "priority": "P1",
+      "status": "実装確認",
+      "current": "既存のUI契約や人物テストは有用だが、ソース構造の確認が中心。今回136テスト成功でも床や槍の問題を検出しなかった。",
+      "problem": "構造があることと、画面で接地・予兆・命中が成立することを混同しやすい。",
+      "proposal": "床・足・槍・命中姿勢を実シーンで実行し、壊れた条件も検出できる検査を必要箇所だけ追加する。機能・整合性と体験品質を別の検査IDで管理する。画像と連続動作を本編条件で実際に確認し、未実行・環境阻害を合格へ数えない。",
+      "acceptance": "B04・G01・G02・C01の再発を検出できる。タイトル画像、技の連続動作、実入力を別々に評価し、対象commit・条件・実在する証拠を残す。136テスト成功を視覚合格へ読み替えない。",
+      "evidence": ["S17", "S18", "S19"],
+      "phase": 4,
+      "contracts": ["Q15"],
+      "harnessModules": [
+        "domain.performance",
+        "domain.testing",
+        "domain.observability",
+        "visual.foundation"
+      ],
+      "checks": {
+        "integrity": ["Q15-I"],
+        "experience": ["Q15-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    },
+    {
+      "id": "L06",
+      "category": "読みやすさ・端末品質・検証",
+      "title": "本編と同じ経路で17種と全動作を比較する",
+      "priority": "P2",
+      "status": "改善提案",
+      "current": "敵や攻撃を見るには通常の進行を通る必要があり、同じ時刻で比較する画面はない。",
+      "problem": "細かな姿勢や低画質の違いを再現しにくく、修正の確認に時間がかかる。",
+      "proposal": "比較を助ける必要がある場合だけ、実際の本編生成・材質・光・動作を再利用する開発用の選択／時刻固定を設ける。別の展示用モデルで合格しない。コード・依存・種・入力・時刻・カメラ・画質・CSS／描画寸法・ブラウザ・準備完了を揃えて比較する。",
+      "acceptance": "全17種と前後半、人物の全動作を同条件で比較でき、本編の連続動作も確認する。比較画面作成をP0修正の必須先行作業にせず、本番の記録・ランキングへ検査入力を送らない。初回画像を承認済み基準へ自動昇格させない。",
+      "evidence": ["S01", "S05", "S07"],
+      "phase": 4,
+      "contracts": ["Q15"],
+      "harnessModules": [
+        "domain.performance",
+        "domain.testing",
+        "domain.observability",
+        "visual.foundation"
+      ],
+      "checks": {
+        "integrity": ["Q15-I"],
+        "experience": ["Q15-E"]
+      },
+      "implementationBoundary": "該当Q契約の責務・維持条件を適用。改善案は未実装。"
+    }
+  ],
+  "references": {
+    "S01": {
+      "title": "敵定義・生成部品",
+      "path": "client/src/game/scene.ts",
+      "url": "https://github.com/chameleonjp-lab/mamonokiri/blob/14f17c89da689aa71e54813ee49c362347b691a2/client/src/game/scene.ts#L134-L633"
+    },
+    "S02": {
+      "title": "照明・床・石段・鳥居",
+      "path": "client/src/game/scene.ts",
+      "url": "https://github.com/chameleonjp-lab/mamonokiri/blob/14f17c89da689aa71e54813ee49c362347b691a2/client/src/game/scene.ts#L650-L762"
+    },
+    "S03": {
+      "title": "危険線・範囲表示",
+      "path": "client/src/game/scene.ts",
+      "url": "https://github.com/chameleonjp-lab/mamonokiri/blob/14f17c89da689aa71e54813ee49c362347b691a2/client/src/game/scene.ts#L763-L869"
+    },
+    "S04": {
+      "title": "人物の生成部品",
+      "path": "client/src/game/proceduralCharacter.ts",
+      "url": "https://github.com/chameleonjp-lab/mamonokiri/blob/14f17c89da689aa71e54813ee49c362347b691a2/client/src/game/proceduralCharacter.ts#L158-L744"
+    },
+    "S05": {
+      "title": "人物の姿勢・動作",
+      "path": "client/src/game/proceduralCharacter.ts",
+      "url": "https://github.com/chameleonjp-lab/mamonokiri/blob/14f17c89da689aa71e54813ee49c362347b691a2/client/src/game/proceduralCharacter.ts#L745-L1056"
+    },
+    "S06": {
+      "title": "斬撃・ダメージ時刻",
+      "path": "client/src/game/scene.ts",
+      "url": "https://github.com/chameleonjp-lab/mamonokiri/blob/14f17c89da689aa71e54813ee49c362347b691a2/client/src/game/scene.ts#L2220-L2430"
+    },
+    "S07": {
+      "title": "敵攻撃・更新・人物動作選択",
+      "path": "client/src/game/scene.ts",
+      "url": "https://github.com/chameleonjp-lab/mamonokiri/blob/14f17c89da689aa71e54813ee49c362347b691a2/client/src/game/scene.ts#L2950-L3720"
+    },
+    "S08": {
+      "title": "操作・キーボード",
+      "path": "client/src/game/scene.ts",
+      "url": "https://github.com/chameleonjp-lab/mamonokiri/blob/14f17c89da689aa71e54813ee49c362347b691a2/client/src/game/scene.ts#L2810-L2935"
+    },
+    "S09": {
+      "title": "画面・ダイアログ・操作UI",
+      "path": "client/src/App.tsx",
+      "url": "https://github.com/chameleonjp-lab/mamonokiri/blob/14f17c89da689aa71e54813ee49c362347b691a2/client/src/App.tsx#L621-L1622"
+    },
+    "S10": {
+      "title": "タイトル・基礎スタイル",
+      "path": "client/src/index.css",
+      "url": "https://github.com/chameleonjp-lab/mamonokiri/blob/14f17c89da689aa71e54813ee49c362347b691a2/client/src/index.css#L1-L206"
+    },
+    "S11": {
+      "title": "戦闘・結果・モバイルスタイル",
+      "path": "client/src/index.css",
+      "url": "https://github.com/chameleonjp-lab/mamonokiri/blob/14f17c89da689aa71e54813ee49c362347b691a2/client/src/index.css#L207-L747"
+    },
+    "S12": {
+      "title": "後半スタイル・動作抑制",
+      "path": "client/src/index.css",
+      "url": "https://github.com/chameleonjp-lab/mamonokiri/blob/14f17c89da689aa71e54813ee49c362347b691a2/client/src/index.css#L748-L1054"
+    },
+    "S13": {
+      "title": "カメラ・レーン",
+      "path": "client/src/game/arena.ts",
+      "url": "https://github.com/chameleonjp-lab/mamonokiri/blob/14f17c89da689aa71e54813ee49c362347b691a2/client/src/game/arena.ts#L1-L66"
+    },
+    "S14": {
+      "title": "時間・攻撃・報酬ルール",
+      "path": "client/src/game/rules.ts",
+      "url": "https://github.com/chameleonjp-lab/mamonokiri/blob/14f17c89da689aa71e54813ee49c362347b691a2/client/src/game/rules.ts#L1-L617"
+    },
+    "S15": {
+      "title": "画質・設定",
+      "path": "client/src/game/config.ts",
+      "url": "https://github.com/chameleonjp-lab/mamonokiri/blob/14f17c89da689aa71e54813ee49c362347b691a2/client/src/game/config.ts#L1-L133"
+    },
+    "S16": {
+      "title": "描画起動・エラー",
+      "path": "client/src/components/GameCanvas.tsx",
+      "url": "https://github.com/chameleonjp-lab/mamonokiri/blob/14f17c89da689aa71e54813ee49c362347b691a2/client/src/components/GameCanvas.tsx#L1-L161"
+    },
+    "S17": {
+      "title": "UI契約の既存テスト",
+      "path": "client/src/responsive-ui-contract.test.ts",
+      "url": "https://github.com/chameleonjp-lab/mamonokiri/blob/14f17c89da689aa71e54813ee49c362347b691a2/client/src/responsive-ui-contract.test.ts#L1-L107"
+    },
+    "S18": {
+      "title": "人物の既存テスト",
+      "path": "client/src/game/proceduralCharacter.test.ts",
+      "url": "https://github.com/chameleonjp-lab/mamonokiri/blob/14f17c89da689aa71e54813ee49c362347b691a2/client/src/game/proceduralCharacter.test.ts#L1-L106"
+    },
+    "S19": {
+      "title": "再現した形状・入力・命中の数値",
+      "path": "audits/visual-quality-20261001/geometry-evidence.json",
+      "url": "audits/visual-quality-20261001/geometry-evidence.json"
+    },
+    "S20": {
+      "title": "タイトルのエラー状態の実画像",
+      "path": "audits/visual-quality-20261001/title-failure-desktop.jpg",
+      "url": "audits/visual-quality-20261001/title-failure-desktop.jpg"
+    },
+    "S21": {
+      "title": "ランキング・記録送信",
+      "path": "client/src/App.tsx",
+      "url": "https://github.com/chameleonjp-lab/mamonokiri/blob/14f17c89da689aa71e54813ee49c362347b691a2/client/src/App.tsx#L282-L376"
+    },
+    "S22": {
+      "title": "効果と実時間の破棄",
+      "path": "client/src/game/scene.ts",
+      "url": "https://github.com/chameleonjp-lab/mamonokiri/blob/14f17c89da689aa71e54813ee49c362347b691a2/client/src/game/scene.ts#L870-L1065"
+    },
+    "S23": {
+      "title": "進行・停止・章報酬・入替え",
+      "path": "client/src/game/scene.ts",
+      "url": "https://github.com/chameleonjp-lab/mamonokiri/blob/14f17c89da689aa71e54813ee49c362347b691a2/client/src/game/scene.ts#L1750-L2219"
+    },
+    "S24": {
+      "title": "開始・再開・タイトル状態",
+      "path": "client/src/App.tsx",
+      "url": "https://github.com/chameleonjp-lab/mamonokiri/blob/14f17c89da689aa71e54813ee49c362347b691a2/client/src/App.tsx#L462-L619"
+    },
+    "S25": {
+      "title": "タイトルの開閉・実寸のDOM記録",
+      "path": "audits/visual-quality-20261001/browser-evidence.json",
+      "url": "audits/visual-quality-20261001/browser-evidence.json"
+    },
+    "S26": {
+      "title": "現行仕様：飛刃・稽古・固定レーン・時計・復帰",
+      "path": "docs/CURRENT_SPEC.md",
+      "url": "https://github.com/chameleonjp-lab/mamonokiri/blob/14f17c89da689aa71e54813ee49c362347b691a2/docs/CURRENT_SPEC.md"
+    },
+    "S27": {
+      "title": "既存品質計画：実機60fps・30分と未確認範囲",
+      "path": "docs/QUALITY_PLAN_STATUS.md",
+      "url": "https://github.com/chameleonjp-lab/mamonokiri/blob/14f17c89da689aa71e54813ee49c362347b691a2/docs/QUALITY_PLAN_STATUS.md"
+    },
+    "S28": {
+      "title": "共有成功・取消し・コピーの既存経路",
+      "path": "client/src/App.tsx",
+      "url": "https://github.com/chameleonjp-lab/mamonokiri/blob/14f17c89da689aa71e54813ee49c362347b691a2/client/src/App.tsx"
+    }
+  },
+  "webReferences": [
+    [
+      "W01",
+      "W3C：文字のコントラスト（1.4.3、AA）",
+      "https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html",
+      "通常文字4.5:1、大きな文字3:1。例外があるため、すべてのゲーム画面へ一律に適用した判定ではない。"
+    ],
+    [
+      "W02",
+      "W3C：文字以外のコントラスト（1.4.11、AA）",
+      "https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast.html",
+      "必要なUI形状や意味を伝える図形の3:1を、操作と危険表示の調整の参考にする。"
+    ],
+    [
+      "W03",
+      "W3C：ターゲットサイズ強化（2.5.5、AAA）",
+      "https://www.w3.org/WAI/WCAG22/Understanding/target-size-enhanced.html",
+      "44×44 CSS pxは強化基準で、AAの最低要件と混同しない。本報告の44～48pxは親指操作向けの提案。"
+    ],
+    [
+      "W04",
+      "W3C：操作によるアニメーション（2.3.3、AAA）",
+      "https://www.w3.org/WAI/WCAG22/Understanding/animation-from-interactions.html",
+      "不要な動きを抑制できる設計の参考。戦闘の意味を伝える必須動作と装飾を分ける。"
+    ]
+  ],
+  "revisionDate": "2026-10-02",
+  "revisionSummary": "ハーネス2.6.0の24モジュールと照合。88件を15の共通実装契約・30の検査へ結び、飛刃・稽古・性能目標・共有取消しを現行仕様へ修正。",
+  "harness": {
+    "repository": "chameleonjp-lab/chameleonjp-browser-game-harness",
+    "commit": "c60683b504b68262dae8b4fc723b416077def8b5",
+    "hubVersion": "2.6.0",
+    "mode": "plan",
+    "runtime": "work",
+    "engine": "other",
+    "actualEngine": "Babylon.js 9.20.1",
+    "adoptionStatus": "参照版の記録。ゲームへのハーネス全面採用や美術案の承認を意味しない。"
+  },
+  "implementationContracts": [
+    {
+      "id": "Q01",
+      "title": "カメラと実際に見える戦闘領域",
+      "issueIds": ["A01", "A02", "A03", "A08", "G06", "H07"],
+      "modules": ["visual.camera", "domain.ui-input", "visual.foundation"],
+      "dependsOn": [],
+      "implementation": "arena.tsとGameCanvasの責務を使い、CSS矩形・描画バッファ・DPR・安全領域を分ける。HUDと操作を除いた領域に全身・最大ボス・危険帯を投影し、基準カメラへ一時補正を加える。",
+      "integrity": "全3レーン、最大ボス、画面回転・短い高さ・0寸法復帰で必要頂点の投影と入力変換を検査。戦闘座標と判定を不変にする。",
+      "experience": "本編カメラで縦横の連続戦闘を見る。刀・全身・危険側が読め、左右の操作を画面の方向へ対応づけられる。",
+      "baseline": {
+        "result": "not_run",
+        "reason": "改修後の受入検査は計画段階で未実行。",
+        "evidence": []
+      },
+      "integrityCheck": "Q01-I",
+      "experienceCheck": "Q01-E"
+    },
+    {
+      "id": "Q02",
+      "title": "共通床・接地・危険帯",
+      "issueIds": ["A04", "B04", "G01", "H04", "K01"],
+      "modules": [
+        "visual.shape",
+        "visual.surface-light",
+        "visual.motion-environment"
+      ],
+      "dependsOn": ["Q01"],
+      "implementation": "scene.tsの戦闘床を一つの基準へ統一し、人物足底・敵支持点・危険帯・接触影・着地効果が同じ高さを読む。石段は戦闘面と分ける。",
+      "integrity": "左・中央・右の足底と床面、危険帯の上下境界、各動作の支持点を実シーンで測る。許容誤差と表示用浮かせ量は設計値として明記する。",
+      "experience": "待機・回避・着地・重い攻撃を高／軽量で見る。足が沈まず、浮遊と接地を区別でき、影で床との距離が分かる。",
+      "baseline": {
+        "result": "fail",
+        "reason": "草履上端0.073＜床0.260、危険線上端0.053＜床0.500を観測。接地の受入条件を満たさない。",
+        "evidence": ["S19"]
+      },
+      "integrityCheck": "Q02-I",
+      "experienceCheck": "Q02-E"
+    },
+    {
+      "id": "Q03",
+      "title": "向き・接続点・変換",
+      "issueIds": ["B01", "B02", "B03", "B06", "G02", "D01"],
+      "modules": ["visual.shape", "visual.foundation"],
+      "dependsOn": ["Q02"],
+      "implementation": "proceduralCharacterの前方軸・足元原点・手の握り点・刀の親ノード・関節を定める。槍は基点から軸端と穂先後端を求める。表示子ノードの変形を判定ルートへ混ぜない。",
+      "integrity": "全4技の代表時刻と左右レーンで手／柄・軸／穂先接続、前方内積、親子変換を検査。誤った接続配置が検査で落ちることも確かめる。",
+      "experience": "本編の実サイズと正面・側面の診断で握り・面の向き・袖と刀の貫通を見る。拡大展示だけで完成にしない。",
+      "baseline": {
+        "result": "fail",
+        "reason": "最大伸長で槍軸端と穂先中心に約1.491の差があり、穂先が軸の途中へ入る。",
+        "evidence": ["S19"]
+      },
+      "integrityCheck": "Q03-I",
+      "experienceCheck": "Q03-E"
+    },
+    {
+      "id": "Q04",
+      "title": "攻撃時刻と姿勢の単一基準",
+      "issueIds": [
+        "B05",
+        "C01",
+        "C02",
+        "C03",
+        "C04",
+        "C05",
+        "C06",
+        "C07",
+        "C08",
+        "C09",
+        "C10"
+      ],
+      "modules": [
+        "visual.motion-environment",
+        "domain.gameplay",
+        "domain.lifecycle"
+      ],
+      "dependsOn": ["Q03"],
+      "implementation": "rules.tsの技時刻とscene.tsの確定状態をproceduralCharacterへ渡す。基本姿勢→遷移補間→二次動作→一時反応の順を決め、ゲーム時刻と表示時刻を分ける。通常の飛刃60msと他技の命中を維持する。",
+      "integrity": "同じ種・意味上の入力・RunClockで全技、full/minimal、停止／再開を比較し、HP・構え・得点・位置・乱数・時刻が一致する。反撃90ms前後の姿勢を検査する。",
+      "experience": "エフェクトを抑えた連続動作で準備・放出／有効・戻り・受け・被弾を読める。映像保存の有無でなく、実際の動作を見て評価する。",
+      "baseline": {
+        "result": "fail",
+        "reason": "反撃100msでHPが減る一方、全体0.24までの抜き姿勢が残る。",
+        "evidence": ["S19"]
+      },
+      "integrityCheck": "Q04-I",
+      "experienceCheck": "Q04-E"
+    },
+    {
+      "id": "Q05",
+      "title": "部位の材質と本編照明",
+      "issueIds": ["A05", "A06", "A07", "D02", "H03", "H05"],
+      "modules": ["visual.surface-light", "visual.foundation"],
+      "dependsOn": ["Q01"],
+      "implementation": "体・布・金属・骨・石・眼の材質責務を定め、予告発光で全身を上書きしない。照明、霧、色出力、明るさ変換の担当を整理し、現行コード生成・Babylon.jsを土台にする。",
+      "integrity": "予告開始／終了、敵切替、再挑戦で材質の初期化と共有範囲を照合。装飾乱数でゲームRNGを進めず、画質差で判定を変えない。",
+      "experience": "にじみ等を外した診断と本編照明を比較し、布・刀・牙・石と背景を区別する。白飛び・黒潰れ・点滅を実画像で見る。",
+      "baseline": {
+        "result": "not_run",
+        "reason": "改修後の受入検査は計画段階で未実行。",
+        "evidence": []
+      },
+      "integrityCheck": "Q05-I",
+      "experienceCheck": "Q05-E"
+    },
+    {
+      "id": "Q06",
+      "title": "通常7種の役割を造形と動作へ写す",
+      "issueIds": [
+        "D03",
+        "D04",
+        "E01",
+        "E02",
+        "E03",
+        "E04",
+        "E05",
+        "E06",
+        "E07"
+      ],
+      "modules": [
+        "visual.shape",
+        "visual.motion-environment",
+        "domain.enemy-ai",
+        "domain.content"
+      ],
+      "dependsOn": ["Q03", "Q04", "Q05"],
+      "implementation": "影面=左、角岩=右、鳴壺=交互、逆鉾=三手、霧猿=追尾、鉄輪=二撃、骨灯=重量を現行定義へ対応。AttackPlan・予告時刻・支持構造から姿勢を作り、形だけの色違いを脱する。",
+      "integrity": "既存の敵ID・順序・攻撃列・対象レーン・周期を照合。追尾55%の固定、二撃後の待機、被弾・撃破による取消しを検査し、新AIを足さない。",
+      "experience": "色と名前を隠した輪郭、通常カメラの予告・攻撃・戻りを比較する。役割差が姿勢で分かり、初撃後と攻撃終了を誤認しない。",
+      "baseline": {
+        "result": "not_run",
+        "reason": "改修後の受入検査は計画段階で未実行。",
+        "evidence": []
+      },
+      "integrityCheck": "Q06-I",
+      "experienceCheck": "Q06-E"
+    },
+    {
+      "id": "Q07",
+      "title": "ボス10種の系統と前後半",
+      "issueIds": [
+        "F01",
+        "F02",
+        "F03",
+        "F04",
+        "F05",
+        "F06",
+        "F07",
+        "F08",
+        "F09",
+        "F10",
+        "G05"
+      ],
+      "modules": [
+        "visual.shape",
+        "visual.motion-environment",
+        "domain.enemy-ai",
+        "domain.content"
+      ],
+      "dependsOn": ["Q06"],
+      "implementation": "獣は牙／肩と追撃、怪物は膨張と眼、人型は一度のフェイント、鳥は急降下と着地後追撃、石造は支持部と全域を使う。既存前後半を表示へ写し、専用造形と攻撃部を作る。",
+      "integrity": "全10種の前後半、各攻撃の中央・端・回避途中・防御でAttackPlanと判定を照合。人型55%反転、追撃列、石造全域の実安全条件を残す。",
+      "experience": "本編で系統と個体を輪郭・重心・予告から区別する。後半変化を粒子に埋めず、最大サイズでも攻撃部と危険帯が読める。",
+      "baseline": {
+        "result": "not_run",
+        "reason": "改修後の受入検査は計画段階で未実行。",
+        "evidence": []
+      },
+      "integrityCheck": "Q07-I",
+      "experienceCheck": "Q07-E"
+    },
+    {
+      "id": "Q08",
+      "title": "5章の景観・到達と進行",
+      "issueIds": ["H01", "H02", "H06"],
+      "modules": [
+        "visual.motion-environment",
+        "domain.content",
+        "domain.gameplay"
+      ],
+      "dependsOn": ["Q02", "Q05"],
+      "implementation": "既存章名・出現順・報酬境界から背景と場所表示を生成する。戦闘面は共通にし、章は大きな地形・柱・空・明暗で区別する。装飾生成は別の種と再利用する静的結果を使う。",
+      "integrity": "10／25／50体、章報酬前後、安全保存からの再開、最終50体目の結果で章・景観・表示を照合。背景種変更で敵順／戦闘RNGが変わらない。",
+      "experience": "各章を通常カメラで見て形と奥行きの違いを読める。手前装飾が人物・予告・着地を遮らず、低画質でも章の手掛かりが残る。",
+      "baseline": {
+        "result": "not_run",
+        "reason": "改修後の受入検査は計画段階で未実行。",
+        "evidence": []
+      },
+      "integrityCheck": "Q08-I",
+      "experienceCheck": "Q08-E"
+    },
+    {
+      "id": "Q09",
+      "title": "実入力と受付・取消し",
+      "issueIds": ["I01", "I02", "I03", "I04", "I05", "I06"],
+      "modules": [
+        "domain.ui-input",
+        "domain.japanese",
+        "visual.motion-environment",
+        "domain.observability"
+      ],
+      "dependsOn": [],
+      "implementation": "Appのpointer受付とsceneの技受付を一つの意味上の操作へ結ぶ。開始指・取消し・二重入力を維持し、IMEと入力欄からキーを除外する。接触・受理・確定命中を分ける。先行入力I03は採否を決める別案。",
+      "integrity": "左右PCキー、二本指、領域外終了、lostpointercapture、blur、repeat、変換Enter、支援技術clickを操作する。タッチとPCで同じ意味の入力結果を照合。",
+      "experience": "片手／両手で届き方、押し間違い、反撃合図、拒否理由を確認。DOM寸法だけでタップ成功や即応性を合格にしない。",
+      "baseline": {
+        "result": "fail",
+        "reason": "A／左矢印で左回避せず、Shiftが右へ固定。タッチの操作感は未確認。",
+        "evidence": ["S19"]
+      },
+      "integrityCheck": "Q09-I",
+      "experienceCheck": "Q09-E"
+    },
+    {
+      "id": "Q10",
+      "title": "画面階層・日本語・文字と操作領域",
+      "issueIds": [
+        "J01",
+        "J02",
+        "J03",
+        "J04",
+        "J05",
+        "J07",
+        "J11",
+        "L01",
+        "L02"
+      ],
+      "modules": [
+        "domain.ui-input",
+        "domain.japanese",
+        "domain.accessibility",
+        "domain.game-design"
+      ],
+      "dependsOn": [],
+      "implementation": "タイトル→名前→開始→戦闘→停止→報酬→結果を既存導線で整える。主要操作と必須情報を先にし、44px以上の標準領域と実受付を照合。長い名前・説明・代替フォント・200%文字を扱う。",
+      "integrity": "読込／正常／失敗・設定開閉、長い日本語、IME、フォント準備／失敗、文字200%、短い高さで欠損と隣接受付を確認。名前の20文字処理を無断で別規則へ変えない。",
+      "experience": "一行動に一つの案内を対応させ、危険側・反撃・開始／再挑戦が一目で分かるか実操作する。既存稽古を改善し、必須の新モードへ置き換えない。",
+      "baseline": {
+        "result": "fail",
+        "reason": "WebGL非対応の設定展開時に人物枠が約2pxへ縮む。正常起動の3D表示へは一般化しない。",
+        "evidence": ["S20", "S25"]
+      },
+      "integrityCheck": "Q10-I",
+      "experienceCheck": "Q10-E"
+    },
+    {
+      "id": "Q11",
+      "title": "停止・モーダルとアクセシビリティ",
+      "issueIds": ["J06", "L03"],
+      "modules": [
+        "domain.ui-input",
+        "domain.accessibility",
+        "domain.lifecycle"
+      ],
+      "dependsOn": ["Q09", "Q10"],
+      "implementation": "停止／報酬／結果の背後で戦闘操作を止め、フォーカス移動・閉じた後の復帰を揃える。色と形、OSとゲームの動作抑制、必要な説明スクロールを両立する。",
+      "integrity": "複数停止理由、ダイアログ内外、背景キー、変換、200%文字、OS動作抑制を検査。演出量で判定・時間・得点を変えない。",
+      "experience": "キーボードとVoiceOverで主要操作の意味と焦点を実確認する。ラベルだけで読み上げ合格とせず、抑制設定でも必要情報を読める。",
+      "baseline": {
+        "result": "not_run",
+        "reason": "改修後の受入検査は計画段階で未実行。",
+        "evidence": []
+      },
+      "integrityCheck": "Q11-I",
+      "experienceCheck": "Q11-E"
+    },
+    {
+      "id": "Q12",
+      "title": "準備・失敗・中断からの復帰",
+      "issueIds": ["I07", "J10"],
+      "modules": ["domain.loading", "domain.compatibility", "domain.lifecycle"],
+      "dependsOn": ["Q09", "Q10"],
+      "implementation": "既存の初回描画成功待ち・試行世代・安全保存・700ms再開保護を使う。非対応／一時失敗／描画中喪失を分け、Babylon.jsの復旧とアプリ側の停止・案内の責務を確認する。",
+      "integrity": "準備中開始、連続再試行と遅い旧完了、描画喪失、bfcache、通知、停止理由重複、安全保存再読込を検査。復帰で新勝負や結果再送をしない。",
+      "experience": "名前や選択を失わず、状態と次の行動を日本語で読める。700msの終わりと入力再開が一致し、非対応時に無意味な再試行を誘わない。",
+      "baseline": {
+        "result": "not_run",
+        "reason": "改修後の受入検査は計画段階で未実行。",
+        "evidence": []
+      },
+      "integrityCheck": "Q12-I",
+      "experienceCheck": "Q12-E"
+    },
+    {
+      "id": "Q13",
+      "title": "確定イベントと演出の寿命",
+      "issueIds": ["G03", "G04", "K02", "K03", "K04", "K05", "K06"],
+      "modules": [
+        "visual.motion-environment",
+        "domain.gameplay",
+        "domain.lifecycle",
+        "domain.accessibility"
+      ],
+      "dependsOn": ["Q04", "Q05"],
+      "implementation": "本体の確定イベントに反応する表示経路へ揃える。勝負・対象・イベント・世代を照合し、画面占有・寿命・同時数を制限する。カメラ揺れは基準へ収束させ、装飾終了から採点しない。",
+      "integrity": "同じイベントの再配送と別の正当イベント、低頻度描画、停止・撃破・次敵・再挑戦を照合。full/minimalで判定・得点・ゲームRNGを同じに保ち、残存数を測る。",
+      "experience": "密集戦闘の連続出力を見て、危険・選択・被弾・反撃が残ることを確認。点滅は効果単体の頻度でなく合成面積と明るさも見る。",
+      "baseline": {
+        "result": "not_run",
+        "reason": "改修後の受入検査は計画段階で未実行。",
+        "evidence": []
+      },
+      "integrityCheck": "Q13-I",
+      "experienceCheck": "Q13-E"
+    },
+    {
+      "id": "Q14",
+      "title": "結果・共有・記録の意味",
+      "issueIds": ["J08", "J09"],
+      "modules": [
+        "domain.sharing",
+        "domain.ui-input",
+        "domain.security",
+        "domain.japanese"
+      ],
+      "dependsOn": ["Q10", "Q11"],
+      "implementation": "現行結果と共有文・公開URLを一つの結果から作る。AbortErrorでコピーしない既存経路、ランキング重複と旧要求防止を保持する。共有Promise成功を外部投稿確認へ言い換えない。",
+      "integrity": "勝利／敗北／リタイア／稽古、共有成功／取消し／非対応／コピー失敗、遅い完了後の画面切替を検査。検査は外部投稿や本番ランキング書込をしない。",
+      "experience": "結果から再挑戦と共有へ迷わず到達できる。成功／取消し／失敗の文言、スクロール、共有文の長さをiPhoneで確認し、開発者IDを見せない。",
+      "baseline": {
+        "result": "not_run",
+        "reason": "改修後の受入検査は計画段階で未実行。",
+        "evidence": []
+      },
+      "integrityCheck": "Q14-I",
+      "experienceCheck": "Q14-E"
+    },
+    {
+      "id": "Q15",
+      "title": "性能・比較条件と完成判断",
+      "issueIds": ["L04", "L05", "L06"],
+      "modules": [
+        "domain.performance",
+        "domain.testing",
+        "domain.observability",
+        "visual.foundation"
+      ],
+      "dependsOn": [],
+      "implementation": "既存起動／検査を使い、必要箇所だけ実行検査を補う。コード・依存・場面・種・入力・時刻・カメラ・画質・CSS／描画寸法・ブラウザ・フォント準備を固定する。本編と別の展示物を正本にしない。",
+      "integrity": "初回／通常／最大負荷／再挑戦／30分を分け、60fpsとCPU処理p95≤20msの既存目標を個別に測る。p50/p95/p99、標本数、資源残存、取得できないGPU値を区別する。",
+      "experience": "通常の連続プレイで描写・読み合い・入力反応・熱の悪化を確認する。画像比較は差分検出として使い、美しさや本人承認の自動採点にしない。",
+      "baseline": {
+        "result": "not_run",
+        "reason": "改修後の受入検査は計画段階で未実行。",
+        "evidence": []
+      },
+      "integrityCheck": "Q15-I",
+      "experienceCheck": "Q15-E"
+    }
+  ],
+  "harnessReferences": {
+    "core.contract": {
+      "path": "core/contract.md",
+      "version": "1.1.0",
+      "url": "https://github.com/chameleonjp-lab/chameleonjp-browser-game-harness/blob/c60683b504b68262dae8b4fc723b416077def8b5/core/contract.md"
+    },
+    "core.execution": {
+      "path": "core/execution.md",
+      "version": "1.3.0",
+      "url": "https://github.com/chameleonjp-lab/chameleonjp-browser-game-harness/blob/c60683b504b68262dae8b4fc723b416077def8b5/core/execution.md"
+    },
+    "adapter.work": {
+      "path": "adapters/chatgpt-work.md",
+      "version": "1.1.0",
+      "url": "https://github.com/chameleonjp-lab/chameleonjp-browser-game-harness/blob/c60683b504b68262dae8b4fc723b416077def8b5/adapters/chatgpt-work.md"
+    },
+    "domain.testing": {
+      "path": "domains/testing.md",
+      "version": "1.1.0",
+      "url": "https://github.com/chameleonjp-lab/chameleonjp-browser-game-harness/blob/c60683b504b68262dae8b4fc723b416077def8b5/domains/testing.md"
+    },
+    "domain.observability": {
+      "path": "domains/observability.md",
+      "version": "1.1.0",
+      "url": "https://github.com/chameleonjp-lab/chameleonjp-browser-game-harness/blob/c60683b504b68262dae8b4fc723b416077def8b5/domains/observability.md"
+    },
+    "domain.lifecycle": {
+      "path": "domains/lifecycle.md",
+      "version": "1.0.0",
+      "url": "https://github.com/chameleonjp-lab/chameleonjp-browser-game-harness/blob/c60683b504b68262dae8b4fc723b416077def8b5/domains/lifecycle.md"
+    },
+    "domain.loading": {
+      "path": "domains/loading.md",
+      "version": "1.0.1",
+      "url": "https://github.com/chameleonjp-lab/chameleonjp-browser-game-harness/blob/c60683b504b68262dae8b4fc723b416077def8b5/domains/loading.md"
+    },
+    "domain.compatibility": {
+      "path": "domains/compatibility.md",
+      "version": "1.0.1",
+      "url": "https://github.com/chameleonjp-lab/chameleonjp-browser-game-harness/blob/c60683b504b68262dae8b4fc723b416077def8b5/domains/compatibility.md"
+    },
+    "domain.code": {
+      "path": "domains/code.md",
+      "version": "1.1.0",
+      "url": "https://github.com/chameleonjp-lab/chameleonjp-browser-game-harness/blob/c60683b504b68262dae8b4fc723b416077def8b5/domains/code.md"
+    },
+    "domain.gameplay": {
+      "path": "domains/gameplay-state.md",
+      "version": "1.1.0",
+      "url": "https://github.com/chameleonjp-lab/chameleonjp-browser-game-harness/blob/c60683b504b68262dae8b4fc723b416077def8b5/domains/gameplay-state.md"
+    },
+    "domain.ui-input": {
+      "path": "domains/ui-input.md",
+      "version": "1.1.0",
+      "url": "https://github.com/chameleonjp-lab/chameleonjp-browser-game-harness/blob/c60683b504b68262dae8b4fc723b416077def8b5/domains/ui-input.md"
+    },
+    "visual.foundation": {
+      "path": "domains/visual/foundation.md",
+      "version": "1.1.0",
+      "url": "https://github.com/chameleonjp-lab/chameleonjp-browser-game-harness/blob/c60683b504b68262dae8b4fc723b416077def8b5/domains/visual/foundation.md"
+    },
+    "visual.shape": {
+      "path": "domains/visual/shape.md",
+      "version": "1.1.0",
+      "url": "https://github.com/chameleonjp-lab/chameleonjp-browser-game-harness/blob/c60683b504b68262dae8b4fc723b416077def8b5/domains/visual/shape.md"
+    },
+    "visual.surface-light": {
+      "path": "domains/visual/surface-light.md",
+      "version": "1.0.0",
+      "url": "https://github.com/chameleonjp-lab/chameleonjp-browser-game-harness/blob/c60683b504b68262dae8b4fc723b416077def8b5/domains/visual/surface-light.md"
+    },
+    "visual.motion-environment": {
+      "path": "domains/visual/motion-environment.md",
+      "version": "1.1.0",
+      "url": "https://github.com/chameleonjp-lab/chameleonjp-browser-game-harness/blob/c60683b504b68262dae8b4fc723b416077def8b5/domains/visual/motion-environment.md"
+    },
+    "visual.camera": {
+      "path": "domains/visual/camera.md",
+      "version": "1.0.0",
+      "url": "https://github.com/chameleonjp-lab/chameleonjp-browser-game-harness/blob/c60683b504b68262dae8b4fc723b416077def8b5/domains/visual/camera.md"
+    },
+    "domain.performance": {
+      "path": "domains/performance.md",
+      "version": "1.1.0",
+      "url": "https://github.com/chameleonjp-lab/chameleonjp-browser-game-harness/blob/c60683b504b68262dae8b4fc723b416077def8b5/domains/performance.md"
+    },
+    "domain.security": {
+      "path": "domains/security.md",
+      "version": "1.1.0",
+      "url": "https://github.com/chameleonjp-lab/chameleonjp-browser-game-harness/blob/c60683b504b68262dae8b4fc723b416077def8b5/domains/security.md"
+    },
+    "domain.game-design": {
+      "path": "domains/game-design.md",
+      "version": "1.0.0",
+      "url": "https://github.com/chameleonjp-lab/chameleonjp-browser-game-harness/blob/c60683b504b68262dae8b4fc723b416077def8b5/domains/game-design.md"
+    },
+    "domain.content": {
+      "path": "domains/content.md",
+      "version": "1.0.0",
+      "url": "https://github.com/chameleonjp-lab/chameleonjp-browser-game-harness/blob/c60683b504b68262dae8b4fc723b416077def8b5/domains/content.md"
+    },
+    "domain.accessibility": {
+      "path": "domains/accessibility.md",
+      "version": "1.0.0",
+      "url": "https://github.com/chameleonjp-lab/chameleonjp-browser-game-harness/blob/c60683b504b68262dae8b4fc723b416077def8b5/domains/accessibility.md"
+    },
+    "domain.japanese": {
+      "path": "domains/japanese.md",
+      "version": "1.0.0",
+      "url": "https://github.com/chameleonjp-lab/chameleonjp-browser-game-harness/blob/c60683b504b68262dae8b4fc723b416077def8b5/domains/japanese.md"
+    },
+    "domain.sharing": {
+      "path": "domains/sharing.md",
+      "version": "1.0.0",
+      "url": "https://github.com/chameleonjp-lab/chameleonjp-browser-game-harness/blob/c60683b504b68262dae8b4fc723b416077def8b5/domains/sharing.md"
+    },
+    "domain.enemy-ai": {
+      "path": "domains/enemy-ai.md",
+      "version": "1.0.0",
+      "url": "https://github.com/chameleonjp-lab/chameleonjp-browser-game-harness/blob/c60683b504b68262dae8b4fc723b416077def8b5/domains/enemy-ai.md"
+    }
+  }
+}

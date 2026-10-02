@@ -1,0 +1,150 @@
+{
+  "baselineCommit": "14f17c89da689aa71e54813ee49c362347b691a2",
+  "method": "Babylon.js 9.20.1 NullEngine; bounds and live scene events, no rendered-pixel assertions",
+  "terrain": [
+    {
+      "name": "attack_warning_line",
+      "bounds": {
+        "min": [-0.625, 0.02699999910593033, 2.3650000953674315],
+        "max": [0.625, 0.052999999105930326, 2.435000095367432]
+      },
+      "floorTopAtCenter": 0.5000000143051148,
+      "topBelowFloor": true,
+      "minBelowFloorBy": 0.47300001519918444
+    },
+    {
+      "name": "enemy_attack_area",
+      "bounds": {
+        "min": [-0.825, 0.01250000037252903, 1.1999999046325684],
+        "max": [0.825, 0.03750000037252903, 3.4999999046325683]
+      },
+      "floorTopAtCenter": 0.5000000143051148,
+      "topBelowFloor": true,
+      "minBelowFloorBy": 0.48750001393258574
+    },
+    {
+      "name": "player_foot_attack_zone_-1",
+      "bounds": {
+        "min": [-1.2899999761581422, 0.030000001788139344, -0.7050000004470348],
+        "max": [-0.5099999761581421, 0.06000000178813934, 0.7449999995529651]
+      },
+      "floorTopAtCenter": 0.259999997317791,
+      "topBelowFloor": true,
+      "minBelowFloorBy": 0.22999999552965167
+    },
+    {
+      "name": "player_foot_attack_zone_0",
+      "bounds": {
+        "min": [-0.39, 0.030000001788139344, -0.7050000004470348],
+        "max": [0.39, 0.06000000178813934, 0.7449999995529651]
+      },
+      "floorTopAtCenter": 0.259999997317791,
+      "topBelowFloor": true,
+      "minBelowFloorBy": 0.22999999552965167
+    },
+    {
+      "name": "player_foot_attack_zone_1",
+      "bounds": {
+        "min": [0.5099999761581421, 0.030000001788139344, -0.7050000004470348],
+        "max": [1.2899999761581422, 0.06000000178813934, 0.7449999995529651]
+      },
+      "floorTopAtCenter": 0.259999997317791,
+      "topBelowFloor": true,
+      "minBelowFloorBy": 0.22999999552965167
+    },
+    {
+      "name": "left_zori",
+      "bounds": {
+        "min": [
+          -1.2343710677325725, -0.012827786393463617, -0.26999999932944774
+        ],
+        "max": [-0.9328311665356159, 0.07315581548959017, 0.21000000067055224]
+      },
+      "floorTopAtCenter": 0.259999997317791,
+      "topBelowFloor": true,
+      "minBelowFloorBy": 0.2728277837112546
+    },
+    {
+      "name": "right_zori",
+      "bounds": {
+        "min": [
+          -0.867168845385313, -0.012827786393463617, -0.26999999932944774
+        ],
+        "max": [-0.5656289441883564, 0.07315581548959017, 0.21000000067055224]
+      },
+      "floorTopAtCenter": 0.259999997317791,
+      "topBelowFloor": true,
+      "minBelowFloorBy": 0.2728277837112546
+    }
+  ],
+  "keyboard": [
+    {
+      "key": "a",
+      "beforeX": 0.9,
+      "afterX": 0.9
+    },
+    {
+      "key": "ArrowLeft",
+      "beforeX": 0.9,
+      "afterX": 0.9
+    },
+    {
+      "key": "Shift",
+      "beforeX": -0.9,
+      "afterX": 0.9
+    }
+  ],
+  "spearAlignment": {
+    "extensionScale": 6.8500000000000005,
+    "shaftLocalFrontZ": -6.34625,
+    "tipLocalCenterZ": -4.855,
+    "difference": 1.49125
+  },
+  "counterSample": {
+    "hpBefore": 100,
+    "hp80": 100,
+    "hp100": 66,
+    "bladeLocalZAngleAt100Ms": -0.8948823524257831,
+    "normalizedHitProgress": 0.20454545454545456,
+    "drawPoseEndsAtProgress": 0.24
+  },
+  "enemyMaterial": [
+    {
+      "name": "wraith_body_shadow",
+      "material": "enemy_glow"
+    },
+    {
+      "name": "eye_l",
+      "material": "enemy_glow"
+    },
+    {
+      "name": "beast_fang_l",
+      "material": "enemy_glow"
+    },
+    {
+      "name": "human_crest",
+      "material": "enemy_glow"
+    },
+    {
+      "name": "bird_wing_l",
+      "material": "enemy_glow"
+    },
+    {
+      "name": "monument_base",
+      "material": "enemy_glow"
+    }
+  ],
+  "duplicateTorii": {
+    "crossbeams": 2,
+    "upperbeams": 2
+  },
+  "facing": {
+    "frontBasedOnEyeCoordinates": "local -Z",
+    "facingVector": [0.09714682281479489, 0, -0.9952700612481975],
+    "towardEnemy": [
+      0.1373775630479969, -0.030601309009376965, 0.9900459408824959
+    ],
+    "dot": -0.9720172904444989,
+    "note": "Geometry direction only; perceived orientation needs a rendered view."
+  }
+}

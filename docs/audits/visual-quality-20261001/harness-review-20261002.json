@@ -1,0 +1,274 @@
+{
+  "schemaVersion": 1,
+  "reviewDate": "2026-10-02",
+  "repository": "chameleonjp-lab/chameleonjp-browser-game-harness",
+  "commit": "c60683b504b68262dae8b4fc723b416077def8b5",
+  "hubVersion": "2.6.0",
+  "mode": "plan",
+  "runtime": "work",
+  "engine": "other",
+  "actualEngine": "Babylon.js 9.20.1",
+  "scope": "既存88項目の視覚・動作・操作・UI/UX計画を照合。ゲーム本体とハーネス本体は変更しない。",
+  "selectionFacts": {
+    "area": [
+      "character",
+      "material",
+      "lighting",
+      "environment",
+      "motion",
+      "vfx",
+      "camera",
+      "ui",
+      "input",
+      "performance",
+      "testing",
+      "accessibility",
+      "japanese",
+      "sharing",
+      "content",
+      "enemy-ai",
+      "state",
+      "lifecycle",
+      "loading",
+      "compatibility",
+      "observability",
+      "code",
+      "game-design"
+    ]
+  },
+  "adoptionStatus": "参照版の記録。ゲームへのハーネス全面採用や美術案の承認を意味しない。",
+  "modules": [
+    {
+      "id": "core.contract",
+      "path": "core/contract.md",
+      "version": "1.1.0",
+      "requires": [],
+      "fieldEvidence": [],
+      "url": "https://github.com/chameleonjp-lab/chameleonjp-browser-game-harness/blob/c60683b504b68262dae8b4fc723b416077def8b5/core/contract.md",
+      "snapshotSha256": "e0de5f030767311df64573550e1b75aa5cd6d82fe1cd8abcc6ed56da8f29c1ee"
+    },
+    {
+      "id": "core.execution",
+      "path": "core/execution.md",
+      "version": "1.3.0",
+      "requires": ["core.contract"],
+      "fieldEvidence": [],
+      "url": "https://github.com/chameleonjp-lab/chameleonjp-browser-game-harness/blob/c60683b504b68262dae8b4fc723b416077def8b5/core/execution.md",
+      "snapshotSha256": "231e1d470f261c4da5812daac40b01b4ff9e39f258ac9ff817dfabcc14ac111c"
+    },
+    {
+      "id": "adapter.work",
+      "path": "adapters/chatgpt-work.md",
+      "version": "1.1.0",
+      "requires": ["core.contract", "core.execution"],
+      "fieldEvidence": [],
+      "url": "https://github.com/chameleonjp-lab/chameleonjp-browser-game-harness/blob/c60683b504b68262dae8b4fc723b416077def8b5/adapters/chatgpt-work.md",
+      "snapshotSha256": "90c5e60634f4e4fba868350969544280cbbfb5a428292fab0380bb4f54d18899"
+    },
+    {
+      "id": "domain.testing",
+      "path": "domains/testing.md",
+      "version": "1.1.0",
+      "requires": ["core.contract", "core.execution"],
+      "fieldEvidence": [],
+      "url": "https://github.com/chameleonjp-lab/chameleonjp-browser-game-harness/blob/c60683b504b68262dae8b4fc723b416077def8b5/domains/testing.md",
+      "snapshotSha256": "2c07d731831bf2b614df240d1c4787c5a58feb16a63e728fa48821dfb6fa8716"
+    },
+    {
+      "id": "domain.observability",
+      "path": "domains/observability.md",
+      "version": "1.1.0",
+      "requires": ["core.contract", "core.execution", "domain.security"],
+      "fieldEvidence": [],
+      "url": "https://github.com/chameleonjp-lab/chameleonjp-browser-game-harness/blob/c60683b504b68262dae8b4fc723b416077def8b5/domains/observability.md",
+      "snapshotSha256": "c8b67b7b858bab317ae13ad826bcf71c50b0371932d0be0b2e83ed7455b55c6a"
+    },
+    {
+      "id": "domain.lifecycle",
+      "path": "domains/lifecycle.md",
+      "version": "1.0.0",
+      "requires": ["domain.gameplay"],
+      "fieldEvidence": [],
+      "url": "https://github.com/chameleonjp-lab/chameleonjp-browser-game-harness/blob/c60683b504b68262dae8b4fc723b416077def8b5/domains/lifecycle.md",
+      "snapshotSha256": "cbe48bd02296642ee0ff9af047afdab8e951bde6d73405a3f3d10c9fed8322c9"
+    },
+    {
+      "id": "domain.loading",
+      "path": "domains/loading.md",
+      "version": "1.0.1",
+      "requires": ["domain.lifecycle"],
+      "fieldEvidence": [],
+      "url": "https://github.com/chameleonjp-lab/chameleonjp-browser-game-harness/blob/c60683b504b68262dae8b4fc723b416077def8b5/domains/loading.md",
+      "snapshotSha256": "ff63e2d93b12b35704a195ce623c651f5b96340f19ec93f59c9383abe7942fbf"
+    },
+    {
+      "id": "domain.compatibility",
+      "path": "domains/compatibility.md",
+      "version": "1.0.1",
+      "requires": ["core.contract", "core.execution"],
+      "fieldEvidence": [],
+      "url": "https://github.com/chameleonjp-lab/chameleonjp-browser-game-harness/blob/c60683b504b68262dae8b4fc723b416077def8b5/domains/compatibility.md",
+      "snapshotSha256": "6e6549267190f192eeb9287bcec1c8af11c3f88aa52481372c6c547ac40a8eaf"
+    },
+    {
+      "id": "domain.code",
+      "path": "domains/code.md",
+      "version": "1.1.0",
+      "requires": ["core.contract", "core.execution"],
+      "fieldEvidence": [],
+      "url": "https://github.com/chameleonjp-lab/chameleonjp-browser-game-harness/blob/c60683b504b68262dae8b4fc723b416077def8b5/domains/code.md",
+      "snapshotSha256": "9ba79a8c934f4e1ca4927e046db46c7c067afde55d9f92b1a59964c115fa5eec"
+    },
+    {
+      "id": "domain.gameplay",
+      "path": "domains/gameplay-state.md",
+      "version": "1.1.0",
+      "requires": ["core.contract", "core.execution"],
+      "fieldEvidence": [],
+      "url": "https://github.com/chameleonjp-lab/chameleonjp-browser-game-harness/blob/c60683b504b68262dae8b4fc723b416077def8b5/domains/gameplay-state.md",
+      "snapshotSha256": "58e921b04508f9254b560f3ee514d1837b158751c7e536459e3266f332606c24"
+    },
+    {
+      "id": "domain.ui-input",
+      "path": "domains/ui-input.md",
+      "version": "1.1.0",
+      "requires": ["core.contract", "core.execution"],
+      "fieldEvidence": [],
+      "url": "https://github.com/chameleonjp-lab/chameleonjp-browser-game-harness/blob/c60683b504b68262dae8b4fc723b416077def8b5/domains/ui-input.md",
+      "snapshotSha256": "13c908b67badea71c80787a84f3b55deb88d10362502cb432ae9ab5f43931564"
+    },
+    {
+      "id": "visual.foundation",
+      "path": "domains/visual/foundation.md",
+      "version": "1.1.0",
+      "requires": ["core.contract", "core.execution"],
+      "fieldEvidence": [],
+      "url": "https://github.com/chameleonjp-lab/chameleonjp-browser-game-harness/blob/c60683b504b68262dae8b4fc723b416077def8b5/domains/visual/foundation.md",
+      "snapshotSha256": "c78398dbeca4bd992c38e95008b5cf46be44fe93a28108cefda85152ada59b6d"
+    },
+    {
+      "id": "visual.shape",
+      "path": "domains/visual/shape.md",
+      "version": "1.1.0",
+      "requires": ["visual.foundation"],
+      "fieldEvidence": [],
+      "url": "https://github.com/chameleonjp-lab/chameleonjp-browser-game-harness/blob/c60683b504b68262dae8b4fc723b416077def8b5/domains/visual/shape.md",
+      "snapshotSha256": "d9b4c10c2b1b24931625f726cd2b07db8a442b14e0692d058f080f7c51532517"
+    },
+    {
+      "id": "visual.surface-light",
+      "path": "domains/visual/surface-light.md",
+      "version": "1.0.0",
+      "requires": ["visual.foundation"],
+      "fieldEvidence": [],
+      "url": "https://github.com/chameleonjp-lab/chameleonjp-browser-game-harness/blob/c60683b504b68262dae8b4fc723b416077def8b5/domains/visual/surface-light.md",
+      "snapshotSha256": "862165dcef60a7d15b004d4018fcf3c06c3d5e4cd8cd06cf1f325807b02f2310"
+    },
+    {
+      "id": "visual.motion-environment",
+      "path": "domains/visual/motion-environment.md",
+      "version": "1.1.0",
+      "requires": ["visual.foundation"],
+      "fieldEvidence": [],
+      "url": "https://github.com/chameleonjp-lab/chameleonjp-browser-game-harness/blob/c60683b504b68262dae8b4fc723b416077def8b5/domains/visual/motion-environment.md",
+      "snapshotSha256": "109b62fd1b6757ae603d529c3a02e93efd5f99af5824b49e92a6cb2da3ce23cf"
+    },
+    {
+      "id": "visual.camera",
+      "path": "domains/visual/camera.md",
+      "version": "1.0.0",
+      "requires": ["visual.foundation"],
+      "fieldEvidence": [],
+      "url": "https://github.com/chameleonjp-lab/chameleonjp-browser-game-harness/blob/c60683b504b68262dae8b4fc723b416077def8b5/domains/visual/camera.md",
+      "snapshotSha256": "e98ef997ac18675865c085e7f59ee571c9fa0c5a5d2a3ad638d6e5724a7a0ab2"
+    },
+    {
+      "id": "domain.performance",
+      "path": "domains/performance.md",
+      "version": "1.1.0",
+      "requires": ["core.contract", "core.execution"],
+      "fieldEvidence": [],
+      "url": "https://github.com/chameleonjp-lab/chameleonjp-browser-game-harness/blob/c60683b504b68262dae8b4fc723b416077def8b5/domains/performance.md",
+      "snapshotSha256": "ae296aeac3c4b4d04359bc0b671ceba0b0d2ac91c78eef340440b458e5666108"
+    },
+    {
+      "id": "domain.security",
+      "path": "domains/security.md",
+      "version": "1.1.0",
+      "requires": ["core.contract", "core.execution"],
+      "fieldEvidence": [],
+      "url": "https://github.com/chameleonjp-lab/chameleonjp-browser-game-harness/blob/c60683b504b68262dae8b4fc723b416077def8b5/domains/security.md",
+      "snapshotSha256": "ccbb643758c027c39ec0a4b070b245414d33b6c66adc5d456798a14fd57ff4c9"
+    },
+    {
+      "id": "domain.game-design",
+      "path": "domains/game-design.md",
+      "version": "1.0.0",
+      "requires": ["domain.gameplay"],
+      "fieldEvidence": [],
+      "url": "https://github.com/chameleonjp-lab/chameleonjp-browser-game-harness/blob/c60683b504b68262dae8b4fc723b416077def8b5/domains/game-design.md",
+      "snapshotSha256": "b741090cd54830191ed335860f3b67ab09dc80e7e5712770314650ea3690b67a"
+    },
+    {
+      "id": "domain.content",
+      "path": "domains/content.md",
+      "version": "1.0.0",
+      "requires": ["domain.gameplay"],
+      "fieldEvidence": [],
+      "url": "https://github.com/chameleonjp-lab/chameleonjp-browser-game-harness/blob/c60683b504b68262dae8b4fc723b416077def8b5/domains/content.md",
+      "snapshotSha256": "04b699db5436f3f4406d9337c586b882bb17f76cd4d8cfa63fd70b174b2411ca"
+    },
+    {
+      "id": "domain.accessibility",
+      "path": "domains/accessibility.md",
+      "version": "1.0.0",
+      "requires": ["domain.ui-input"],
+      "fieldEvidence": [],
+      "url": "https://github.com/chameleonjp-lab/chameleonjp-browser-game-harness/blob/c60683b504b68262dae8b4fc723b416077def8b5/domains/accessibility.md",
+      "snapshotSha256": "001df9ae69ef870d8b2ba88baf98a4c6087f6a7903986ce68e91b14b7cf9a232"
+    },
+    {
+      "id": "domain.japanese",
+      "path": "domains/japanese.md",
+      "version": "1.0.0",
+      "requires": ["domain.ui-input", "domain.security"],
+      "fieldEvidence": [],
+      "url": "https://github.com/chameleonjp-lab/chameleonjp-browser-game-harness/blob/c60683b504b68262dae8b4fc723b416077def8b5/domains/japanese.md",
+      "snapshotSha256": "7269a11459cc09186afaaf691f7141010bed03383650a10887a473be88beb0e7"
+    },
+    {
+      "id": "domain.sharing",
+      "path": "domains/sharing.md",
+      "version": "1.0.0",
+      "requires": ["domain.ui-input", "domain.security"],
+      "fieldEvidence": [],
+      "url": "https://github.com/chameleonjp-lab/chameleonjp-browser-game-harness/blob/c60683b504b68262dae8b4fc723b416077def8b5/domains/sharing.md",
+      "snapshotSha256": "2f029026c82ad57aab6035f14242fff2a6802826671cdd189d5d90e42db6ddf9"
+    },
+    {
+      "id": "domain.enemy-ai",
+      "path": "domains/enemy-ai.md",
+      "version": "1.0.0",
+      "requires": ["domain.gameplay"],
+      "fieldEvidence": [],
+      "url": "https://github.com/chameleonjp-lab/chameleonjp-browser-game-harness/blob/c60683b504b68262dae8b4fc723b416077def8b5/domains/enemy-ai.md",
+      "snapshotSha256": "ddeb92da3cf4f0c40806525f12daf3cbc959eb025fb17a20d1ef42e5ca154a8c"
+    }
+  ],
+  "additionalReferences": [
+    "AGENTS.md",
+    "README.md",
+    "registry.json",
+    "governance/ROUTING.md",
+    "governance/PROJECT_STATE.md",
+    "references/visual/art-direction.md",
+    "references/visual/model-production.md"
+  ],
+  "excluded": {
+    "engine": "Three.js固有・PlayCanvas固有・Phaser固有の設定は対象外。Babylon.jsを維持。",
+    "audio": "音の変更を今回の視覚計画へ追加しない。",
+    "network": "ランキング契約・バックエンド・認証変更は対象外。共有画面の表示境界のみ参照。",
+    "newSystems": "新規物理・経路探索・Worker・外部素材・新保存方式は必要性の確認なしに追加しない。"
+  },
+  "evidenceLimit": "全選択モジュールのfield_evidenceは空。ハーネスの検査例はこのゲームの実行済み結果ではない。"
+}
