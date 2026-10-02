@@ -627,7 +627,7 @@ export async function createGameScene(
       zone.isVisible = visible;
       zone.position.x = laneX((index - 1) as Lane);
       zone.material = zoneMaterials[index];
-      const pulse = 0.84 + 0.16 * (0.5 + 0.5 * Math.sin(clock.nowMs * 0.035));
+      const pulse = 1;
       zoneMaterials[index].alpha = visible
         ? isPlayerInDangerLine(
             laneX((index - 1) as Lane),
@@ -645,6 +645,25 @@ export async function createGameScene(
   const recordAction = (accepted: boolean) => {
     actionReceipt = { action: requestedAction, accepted, at: clock.nowMs };
   };
+  const dangerChevrons = [-1, 1].map(side => {
+    const marker = MeshBuilder.CreateTube(
+      `danger_direction_${side}`,
+      {
+        path: [
+          new Vector3(-side * 0.15, 0, -0.18),
+          new Vector3(side * 0.15, 0, 0),
+          new Vector3(-side * 0.15, 0, 0.18),
+        ],
+        radius: 0.035,
+        tessellation: 6,
+      },
+      scene
+    );
+    marker.position.set(laneX(side as Lane), FLOOR_MARKER_Y + 0.02, 0.3);
+    marker.material = materials.cream;
+    marker.isVisible = false;
+    return marker;
+  });
   let slashProjectile: Mesh | null = null;
   let slashOrigin: Vector3 | null = null;
   let slashImpactAt = 0;
@@ -765,9 +784,10 @@ export async function createGameScene(
       scene
     );
     shadow.rotation.x = Math.PI / 2;
-    shadow.material = shadowMaterial;
+    const material = shadowMaterial.clone(`support_shadow_material_${i}`)!;
+    shadow.material = material;
     shadow.position.y = COMBAT_FLOOR_Y + 0.006;
-    return { root, shadow };
+    return { root, shadow, material };
   });
   const triggerImpact = (direction: number, strength = 0.08) => {
     if (effectLevel === "minimal" || osReducedMotion) return;
@@ -2362,6 +2382,9 @@ export async function createGameScene(
     clearEffects();
     contactUntil = 0;
     contact.isVisible = false;
+    dangerChevrons.forEach(marker => {
+      marker.isVisible = false;
+    });
     bladeTrail.isVisible = false;
     previousBladeTip = null;
     dodgeSafeMarker.isVisible = false;
@@ -2562,6 +2585,9 @@ export async function createGameScene(
     clearEffects();
     contactUntil = 0;
     contact.isVisible = false;
+    dangerChevrons.forEach(marker => {
+      marker.isVisible = false;
+    });
     bladeTrail.isVisible = false;
     previousBladeTip = null;
     dodgeSafeMarker.isVisible = false;
@@ -3076,6 +3102,12 @@ export async function createGameScene(
     const now = clock.nowMs;
     expireEffects(now);
     contact.isVisible = now < contactUntil;
+    dangerChevrons.forEach((marker, index) => {
+      const side = index === 0 ? -1 : 1;
+      marker.isVisible =
+        (warningLine.isVisible || attackArea.isVisible) &&
+        (bossAttack || dangerLane === 0 || dangerLane === side);
+    });
     const dodgeAge = now - dodgeStartAt;
     dodgeSafeMarker.isVisible =
       dodgeUntil > now &&
@@ -3083,13 +3115,16 @@ export async function createGameScene(
       dodgeAge <= DODGE_SAFE_END;
     dodgeSafeMarker.position.x = player.root.position.x;
     dodgeSafeMarker.position.z = player.root.position.z;
-    supportShadows.forEach(({ root, shadow }) => {
+    supportShadows.forEach(({ root, shadow, material }) => {
+      const lift = Math.max(
+        0,
+        root.position.y - (root === enemy.root ? 0.2 : 0.37)
+      );
+      material.alpha = 0.5 / (1 + lift * 1.8);
       shadow.position.x = root.position.x;
       shadow.position.z = root.position.z;
       shadow.scaling.setAll(
-        root === enemy.root
-          ? root.scaling.x * (1 + Math.max(0, root.position.y - 0.2) * 0.25)
-          : 1
+        (root === enemy.root ? root.scaling.x : 1) * (1 + lift * 0.25)
       );
     });
     if (shouldAdvanceCombatClock(paused, defeated, transitioning))
@@ -3358,7 +3393,9 @@ export async function createGameScene(
       }
       if (!enemyAttackAt || attackElapsed > enemyAttackDuration) {
         guardRing.isVisible = enemyGuardUntil > now;
-        guardRing.scaling.setAll(1 + 0.08 * Math.sin(now * 0.012));
+        guardRing.scaling.setAll(
+          osReducedMotion ? 1 : 1 + 0.08 * Math.sin(now * 0.012)
+        );
         if (
           enemyGuardUntil <= now &&
           enemyStaggerUntil <= now &&
