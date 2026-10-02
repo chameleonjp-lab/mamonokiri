@@ -12,7 +12,8 @@ export type PauseReason =
   | "pageshow"
   | "title"
   | "back"
-  | "frame-gap";
+  | "frame-gap"
+  | "context-lost";
 export type PauseRequest = {
   paused?: boolean;
   resumeGraceMs?: number;
@@ -21,7 +22,10 @@ export type PauseRequest = {
 export type SceneStatus =
   | { phase: "loading" }
   | { phase: "ready" }
-  | { phase: "error" };
+  | {
+      phase: "error";
+      reason?: "unsupported" | "initialization" | "context-lost";
+    };
 
 export type GameState = {
   mode: RunMode;
@@ -48,7 +52,14 @@ export type GameState = {
   enemyFamily: string;
   enemyAttackStyle: "left" | "right" | "alternate" | "wide" | "target";
   enemyPhase: string;
+  actionReceipt?: {
+    action: "slash" | "guard" | "dodge";
+    accepted: boolean;
+    at: number;
+  };
   counterReady: boolean;
+  counterRemainingMs?: number;
+  resumeRemainingMs?: number;
   counterPulse: number;
   stance: string;
   attackPhase: string;

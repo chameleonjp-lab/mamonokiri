@@ -1,7 +1,14 @@
+import { createFrameTelemetry } from "./frameTelemetry";
+import type { PlayerMotionSample } from "./proceduralCharacter";
+import type { EnemyVisualSample } from "./enemyVisual";
+import { DirectionalLight } from "@babylonjs/core/Lights/directionalLight";
+import { Viewport } from "@babylonjs/core/Maths/math.viewport";
+import { createEnemyVisual } from "./enemyVisual";
+import { createChapterVisual } from "./chapterVisual";
 // 墨霞の修験道：低ポリゴンの山伏と霧の石段。静けさを保ち、攻撃だけを朱で強調する。
 import { Engine } from "@babylonjs/core/Engines/engine";
 import { Scene } from "@babylonjs/core/scene";
-import { Vector3 } from "@babylonjs/core/Maths/math.vector";
+import { Vector3, Matrix } from "@babylonjs/core/Maths/math.vector";
 import { Color3, Color4 } from "@babylonjs/core/Maths/math.color";
 import { FreeCamera } from "@babylonjs/core/Cameras/freeCamera";
 import { Mesh } from "@babylonjs/core/Meshes/mesh";
@@ -78,6 +85,8 @@ import {
   writeRunCheckpoint,
 } from "./checkpoint";
 import {
+  COMBAT_FLOOR_Y,
+  FLOOR_MARKER_Y,
   CAMERA_BASE_POSITION,
   CAMERA_TARGET,
   COMBAT_MAX_X,
@@ -334,305 +343,56 @@ function makeEnemy(
   variant: EnemyVariant
 ) {
   const root = new Mesh("mountain_wraith", scene);
-  root.position = new Vector3(0, 0.2, 5.2);
-  const body0 = MeshBuilder.CreatePolyhedron(
-    "wraith_body_shadow",
-    { type: 1, size: 1.45 },
-    scene
-  );
-  body0.position.y = 1.05;
-  body0.scaling.y = 1.4;
-  body0.material = materials.stone;
-  body0.parent = root;
-  const body1 = MeshBuilder.CreateCylinder(
-    "wraith_body_rock",
-    { height: 1.8, diameterTop: 0.72, diameterBottom: 1.28, tessellation: 6 },
-    scene
-  );
-  body1.position.y = 1.05;
-  body1.material = materials.stone;
-  body1.parent = root;
-  const body2 = MeshBuilder.CreateSphere(
-    "wraith_body_vessel",
-    { diameter: 1.35, segments: 8 },
-    scene
-  );
-  body2.position.y = 1.05;
-  body2.scaling.y = 1.18;
-  body2.material = materials.stone;
-  body2.parent = root;
-  const body3 = MeshBuilder.CreateBox(
-    "wraith_body_spear",
-    { width: 1.1, height: 1.9, depth: 0.9 },
-    scene
-  );
-  body3.position.y = 1.05;
-  body3.rotation.z = 0.08;
-  body3.material = materials.stone;
-  body3.parent = root;
-  const body4 = MeshBuilder.CreateTorus(
-    "wraith_body_mist",
-    { diameter: 1.5, thickness: 0.38, tessellation: 8 },
-    scene
-  );
-  body4.position.y = 1.05;
-  body4.rotation.x = Math.PI / 2;
-  body4.material = materials.stone;
-  body4.parent = root;
-  const body5 = MeshBuilder.CreateCylinder(
-    "wraith_body_ring",
-    { height: 1.35, diameterTop: 1.38, diameterBottom: 0.86, tessellation: 8 },
-    scene
-  );
-  body5.position.y = 1.05;
-  body5.material = materials.stone;
-  body5.parent = root;
-  const body6 = MeshBuilder.CreatePolyhedron(
-    "wraith_body_lantern",
-    { type: 2, size: 1.45 },
-    scene
-  );
-  body6.position.y = 1.05;
-  body6.scaling.y = 1.2;
-  body6.material = materials.stone;
-  body6.parent = root;
-  const bodies = [body0, body1, body2, body3, body4, body5, body6];
-  bodies.forEach((body, index) => {
-    body.isVisible = index === variant.shape;
+  root.position.set(0, 0.2, 5.2);
+  const bodies = Array.from({ length: 7 }, (_, i) => {
+    const body = new Mesh(`enemy_shape_anchor_${i}`, scene);
+    body.parent = root;
+    body.isVisible = false;
+    return body;
   });
-  const body = bodies[variant.shape];
-  const eyeL = MeshBuilder.CreateSphere(
-    "eye_l",
-    { diameter: 0.1, segments: 6 },
-    scene
-  );
-  eyeL.position = new Vector3(-0.22, 1.35, -0.6);
-  eyeL.material = materials.amber;
-  eyeL.parent = root;
-  const eyeR = eyeL.clone("eye_r")!;
-  eyeR.position.x = 0.22;
-  eyeR.parent = root;
-  const blade = box(
-    scene,
-    "wraith_blade",
-    new Vector3(0.12, 1.25, 0.12),
-    new Vector3(0.68, 1.05, -0.1),
-    materials.iron
-  );
-  blade.rotation.z = -0.7;
+  const blade = new Mesh("enemy_weapon_anchor", scene);
   blade.parent = root;
-  const spearL = box(
-    scene,
-    "wraith_spear_l",
-    new Vector3(0.09, 0.09, 1.15),
-    new Vector3(-0.72, 1.08, -0.62),
-    materials.iron
-  );
-  spearL.parent = root;
-  const spearR = box(
-    scene,
-    "wraith_spear_r",
-    new Vector3(0.09, 0.09, 1.15),
-    new Vector3(0.72, 1.08, -0.62),
-    materials.iron
-  );
-  spearR.parent = root;
-  const spearTipL = MeshBuilder.CreateCylinder(
-    "wraith_spear_tip_l",
-    { height: 0.24, diameterTop: 0, diameterBottom: 0.18, tessellation: 4 },
-    scene
-  );
-  spearTipL.rotation.x = Math.PI / 2;
-  spearTipL.position = new Vector3(-0.72, 1.08, -1.28);
-  spearTipL.material = materials.iron;
-  spearTipL.parent = root;
-  const spearTipR = spearTipL.clone("wraith_spear_tip_r")!;
-  spearTipR.position.x = 0.72;
-  spearTipR.parent = root;
-  const beastFangL = MeshBuilder.CreateCylinder(
-    "beast_fang_l",
-    { height: 0.5, diameterTop: 0.02, diameterBottom: 0.16, tessellation: 6 },
-    scene
-  );
-  beastFangL.position = new Vector3(-0.28, 0.7, -0.72);
-  beastFangL.rotation.z = -0.32;
-  beastFangL.material = materials.cream;
-  beastFangL.parent = root;
-  const beastFangR = beastFangL.clone("beast_fang_r")!;
-  beastFangR.position.x = 0.28;
-  beastFangR.rotation.z = 0.32;
-  beastFangR.parent = root;
-  const bearShoulderL = box(
-    scene,
-    "beast_bear_shoulder_l",
-    new Vector3(0.46, 0.5, 0.62),
-    new Vector3(-0.55, 1.15, 0.02),
-    materials.iron
-  );
-  bearShoulderL.rotation.z = -0.18;
-  bearShoulderL.parent = root;
-  const bearShoulderR = bearShoulderL.clone("beast_bear_shoulder_r")!;
-  bearShoulderR.position.x = 0.55;
-  bearShoulderR.rotation.z = 0.18;
-  bearShoulderR.parent = root;
-  const bearEarL = MeshBuilder.CreateSphere(
-    "beast_bear_ear_l",
-    { diameter: 0.38, segments: 6 },
-    scene
-  );
-  bearEarL.position = new Vector3(-0.48, 1.62, 0.02);
-  bearEarL.material = materials.iron;
-  bearEarL.parent = root;
-  const bearEarR = bearEarL.clone("beast_bear_ear_r")!;
-  bearEarR.position.x = 0.48;
-  bearEarR.parent = root;
-  const beastFeatures = {
-    fang: [beastFangL, beastFangR],
-    bear: [bearShoulderL, bearShoulderR, bearEarL, bearEarR],
-  };
-  const monsterEyeL = MeshBuilder.CreateSphere(
-    "monster_eye_l",
-    { diameter: 0.16, segments: 6 },
-    scene
-  );
-  monsterEyeL.position = new Vector3(-0.34, 1.55, -0.68);
-  monsterEyeL.material = materials.amber;
-  monsterEyeL.parent = root;
-  const monsterEyeR = monsterEyeL.clone("monster_eye_r")!;
-  monsterEyeR.position.x = 0.34;
-  monsterEyeR.parent = root;
-  const monsterEyeTop = monsterEyeL.clone("monster_eye_top")!;
-  monsterEyeTop.position = new Vector3(0, 1.82, -0.56);
-  monsterEyeTop.scaling.setAll(0.78);
-  monsterEyeTop.parent = root;
-  const monsterEyeRing = MeshBuilder.CreateTorus(
-    "monster_eye_ring",
-    { diameter: 0.94, thickness: 0.055, tessellation: 12 },
-    scene
-  );
-  monsterEyeRing.position = new Vector3(0, 1.49, -0.62);
-  monsterEyeRing.material = materials.amber;
-  monsterEyeRing.parent = root;
-  const humanCrest = box(
-    scene,
-    "human_crest",
-    new Vector3(0.16, 0.48, 0.12),
-    new Vector3(0, 1.93, -0.34),
-    materials.gold
-  );
-  humanCrest.parent = root;
-  const humanShoulderL = box(
-    scene,
-    "human_shoulder_l",
-    new Vector3(0.46, 0.18, 0.34),
-    new Vector3(-0.5, 1.48, -0.03),
-    materials.iron
-  );
-  humanShoulderL.rotation.z = -0.12;
-  humanShoulderL.parent = root;
-  const humanShoulderR = humanShoulderL.clone("human_shoulder_r")!;
-  humanShoulderR.position.x = 0.5;
-  humanShoulderR.rotation.z = 0.12;
-  humanShoulderR.parent = root;
-  const humanSash = box(
-    scene,
-    "human_sash",
-    new Vector3(0.86, 0.1, 0.14),
-    new Vector3(0, 0.68, -0.67),
-    materials.cream
-  );
-  humanSash.rotation.z = -0.12;
-  humanSash.parent = root;
-  const birdWingL = box(
-    scene,
-    "bird_wing_l",
-    new Vector3(0.18, 0.78, 0.12),
-    new Vector3(-0.72, 1.35, -0.04),
-    materials.cream
-  );
-  birdWingL.rotation.z = -0.42;
-  birdWingL.parent = root;
-  const birdWingR = birdWingL.clone("bird_wing_r")!;
-  birdWingR.position.x = 0.72;
-  birdWingR.rotation.z = 0.42;
-  birdWingR.parent = root;
-  const birdBeak = MeshBuilder.CreateCylinder(
-    "bird_beak",
-    { height: 0.42, diameterTop: 0, diameterBottom: 0.2, tessellation: 4 },
-    scene
-  );
-  birdBeak.rotation.x = Math.PI / 2;
-  birdBeak.position = new Vector3(0, 1.48, -0.84);
-  birdBeak.material = materials.gold;
-  birdBeak.parent = root;
-  const birdTail = box(
-    scene,
-    "bird_tail",
-    new Vector3(0.16, 0.52, 0.12),
-    new Vector3(0, 0.58, 0.22),
-    materials.cream
-  );
-  birdTail.rotation.x = -0.26;
-  birdTail.parent = root;
-  const monumentBase = box(
-    scene,
-    "monument_base",
-    new Vector3(1.7, 0.22, 0.72),
-    new Vector3(0, 0.2, 0.02),
-    materials.stone
-  );
-  monumentBase.parent = root;
-  const monumentPillarL = box(
-    scene,
-    "monument_pillar_l",
-    new Vector3(0.22, 1.36, 0.34),
-    new Vector3(-0.65, 1.05, 0.04),
-    materials.stone
-  );
-  monumentPillarL.parent = root;
-  const monumentPillarR = monumentPillarL.clone("monument_pillar_r")!;
-  monumentPillarR.position.x = 0.65;
-  monumentPillarR.parent = root;
-  const monumentBeam = box(
-    scene,
-    "monument_beam",
-    new Vector3(1.72, 0.2, 0.4),
-    new Vector3(0, 1.78, 0.04),
-    materials.stone
-  );
-  monumentBeam.parent = root;
-  const monumentGlyph = MeshBuilder.CreateTorus(
-    "monument_glyph",
-    { diameter: 0.78, thickness: 0.07, tessellation: 10 },
-    scene
-  );
-  monumentGlyph.position = new Vector3(0, 1.2, -0.28);
-  monumentGlyph.material = materials.gold;
-  monumentGlyph.parent = root;
-  const familyFeatures = {
-    monster: [monsterEyeL, monsterEyeR, monsterEyeTop, monsterEyeRing],
-    human: [humanCrest, humanShoulderL, humanShoulderR, humanSash],
-    bird: [birdWingL, birdWingR, birdBeak, birdTail],
-    monument: [
-      monumentBase,
-      monumentPillarL,
-      monumentPillarR,
-      monumentBeam,
-      monumentGlyph,
-    ],
-  };
+  const spears = [-1, 1].map(side => {
+    const shaft = box(
+      scene,
+      `wraith_spear_${side < 0 ? "l" : "r"}`,
+      new Vector3(0.09, 0.09, 1.15),
+      new Vector3(side * 0.72, 1.08, -0.62),
+      materials.iron
+    );
+    shaft.parent = root;
+    return shaft;
+  });
+  const spearTips = [-1, 1].map(side => {
+    const tip = MeshBuilder.CreateCylinder(
+      `wraith_spear_tip_${side < 0 ? "l" : "r"}`,
+      { height: 0.24, diameterTop: 0, diameterBottom: 0.18, tessellation: 4 },
+      scene
+    );
+    tip.parent = root;
+    tip.rotation.x = -Math.PI / 2;
+    tip.position.set(side * 0.72, 1.08, -1.315);
+    tip.material = materials.iron;
+    return tip;
+  });
   return {
     root,
-    body,
+    body: bodies[variant.shape],
     bodies,
-    eyes: [eyeL, eyeR],
     blade,
-    spears: [spearL, spearR],
-    spearTips: [spearTipL, spearTipR],
-    beastFeatures,
-    familyFeatures,
+    spears,
+    spearTips,
+    eyes: [] as Mesh[],
+    beastFeatures: { fang: [] as Mesh[], bear: [] as Mesh[] },
+    familyFeatures: {
+      monster: [] as Mesh[],
+      human: [] as Mesh[],
+      bird: [] as Mesh[],
+      monument: [] as Mesh[],
+    },
   };
 }
+
 function announce(state: GameState) {
   window.dispatchEvent(new CustomEvent("yamabushi-state", { detail: state }));
 }
@@ -647,16 +407,35 @@ export async function createGameScene(
     safeStorage.getItem(SETTINGS_STORAGE_KEYS.performance)
   )
 ): Promise<GameHandle> {
+  const telemetry = createFrameTelemetry();
+  let frameStart = 0;
   const clock = new RunClock();
   const scene = new Scene(engine);
-  const pendingEffects = new Set<number>();
-  const scheduleEffect = (callback: () => void, delay: number) => {
-    const timer = window.setTimeout(() => {
-      pendingEffects.delete(timer);
-      callback();
-    }, delay);
-    pendingEffects.add(timer);
-    return timer;
+  const pendingEffects = new Map<
+    number,
+    { at: number; callback: () => void; cancel: () => void }
+  >();
+  let effectId = 0;
+  const scheduleEffect = (
+    callback: () => void,
+    delay: number,
+    cancel = callback
+  ) => {
+    const id = ++effectId;
+    pendingEffects.set(id, { at: clock.nowMs + delay, callback, cancel });
+    return id;
+  };
+  const clearEffects = () => {
+    const effects = Array.from(pendingEffects.values());
+    pendingEffects.clear();
+    effects.forEach(effect => effect.cancel());
+  };
+  const expireEffects = (now: number) => {
+    for (const [id, effect] of Array.from(pendingEffects.entries()))
+      if (effect.at <= now) {
+        pendingEffects.delete(id);
+        effect.callback();
+      }
   };
   scene.clearColor = new Color4(0.06, 0.075, 0.09, 1);
   scene.fogMode = Scene.FOGMODE_EXP2;
@@ -681,16 +460,39 @@ export async function createGameScene(
   );
   const cameraHome = cameraBasePosition.clone();
   const camera = new FreeCamera("camera", cameraHome.clone(), scene);
+  let viewportTop = 0;
+  let viewportBottom = 1;
   const updateCameraFraming = () => {
+    camera.viewport = new Viewport(
+      0,
+      1 - viewportBottom,
+      1,
+      viewportBottom - viewportTop
+    );
     const frame = cameraFrameForViewport(
       engine.getRenderWidth(),
-      engine.getRenderHeight()
+      engine.getRenderHeight() * (viewportBottom - viewportTop)
     );
     cameraHome.set(frame.position[0], frame.position[1], frame.position[2]);
     camera.position.copyFrom(cameraHome);
     camera.setTarget(cameraTarget);
     camera.fov = frame.fov;
   };
+  const viewportEvent = (event: Event) => {
+    const detail = (event as CustomEvent<{ top: number; bottom: number }>)
+      .detail;
+    if (
+      !detail ||
+      !Number.isFinite(detail.top) ||
+      !Number.isFinite(detail.bottom) ||
+      detail.bottom <= detail.top
+    )
+      return;
+    viewportTop = Math.max(0, Math.min(0.6, detail.top));
+    viewportBottom = Math.max(viewportTop + 0.2, Math.min(1, detail.bottom));
+    updateCameraFraming();
+  };
+  window.addEventListener("yamabushi-viewport", viewportEvent);
   updateCameraFraming();
   camera.minZ = 0.1;
   const light = new HemisphericLight(
@@ -698,22 +500,29 @@ export async function createGameScene(
     new Vector3(-0.2, 1, -0.4),
     scene
   );
-  light.intensity = 0.72;
+  light.intensity = 1.05;
+  const rim = new DirectionalLight(
+    "character_rim",
+    new Vector3(-0.4, -1, 0.3),
+    scene
+  );
+  rim.intensity = 0.65;
+  rim.diffuse = new Color3(0.85, 0.82, 0.7);
   light.diffuse = new Color3(0.62, 0.7, 0.78);
-  light.groundColor = new Color3(0.05, 0.06, 0.07);
+  light.groundColor = new Color3(0.22, 0.23, 0.25);
   const materials = {
     ink: mat(scene, "ink", INK),
     enemyGlow: mat(scene, "enemy_glow", new Color3(0.92, 0.48, 0.62), 0.42),
     bossGlow: mat(scene, "boss_glow", new Color3(0.62, 0.04, 0.22), 0.72),
     spearReady: mat(scene, "spear_ready", VERMILION, 0.95),
-    indigo: mat(scene, "indigo", new Color3(0.09, 0.12, 0.18)),
-    skin: mat(scene, "skin", new Color3(0.46, 0.31, 0.23)),
+    indigo: mat(scene, "indigo", new Color3(0.15, 0.21, 0.28)),
+    skin: mat(scene, "skin", new Color3(0.62, 0.43, 0.3)),
     gaiter: mat(scene, "gaiter", new Color3(0.75, 0.73, 0.65)),
     wood: mat(scene, "wood", new Color3(0.28, 0.16, 0.1)),
     steel: mat(scene, "steel", new Color3(0.68, 0.73, 0.75), 0.16),
     vermilion: mat(scene, "vermilion", VERMILION, 0.28),
     slash: mat(scene, "flying_slash", new Color3(0.95, 0.88, 0.7), 1),
-    stone: mat(scene, "stone", new Color3(0.12, 0.14, 0.16)),
+    stone: mat(scene, "stone", new Color3(0.23, 0.28, 0.3)),
     amber: mat(scene, "amber", new Color3(0.95, 0.45, 0.12), 0.8),
     iron: mat(scene, "iron", new Color3(0.22, 0.24, 0.25)),
     cream: mat(scene, "cream", new Color3(0.82, 0.76, 0.64)),
@@ -721,20 +530,31 @@ export async function createGameScene(
     hair: mat(scene, "hair", new Color3(0.025, 0.02, 0.018)),
     gold: mat(scene, "gold", new Color3(0.72, 0.45, 0.13), 0.14),
   };
+  for (const metal of [materials.steel, materials.iron, materials.gold]) {
+    metal.specularColor = new Color3(0.65, 0.65, 0.65);
+    metal.specularPower = 96;
+  }
+  materials.stone.specularColor.setAll(0.015);
+  materials.indigo.specularColor.setAll(0.025);
+  const backgroundMaterial = mat(
+    scene,
+    "background_stone",
+    new Color3(0.09, 0.13, 0.16)
+  );
   const ground = box(
     scene,
     "mountain_floor",
     new Vector3(22, 0.3, 30),
-    new Vector3(0, -0.15, 5),
-    materials.stone
+    new Vector3(0, COMBAT_FLOOR_Y - 0.15, 5),
+    backgroundMaterial
   );
   for (let i = 0; i < 8; i++)
     box(
       scene,
       `stone_step_${i}`,
       new Vector3(6.4 - i * 0.15, 0.28, 1.2),
-      new Vector3(0, i * 0.12, i * 1.15 - 0.6),
-      materials.stone
+      new Vector3(0, COMBAT_FLOOR_Y + i * 0.12, 10 + i * 1.15),
+      backgroundMaterial
     );
   for (const x of [-3.3, 3.3]) {
     box(
@@ -744,22 +564,35 @@ export async function createGameScene(
       new Vector3(x, 2.1, 9),
       materials.wood
     );
-    box(
-      scene,
-      "torii_crossbeam",
-      new Vector3(7.5, 0.32, 0.42),
-      new Vector3(0, 4, 9),
-      materials.wood
-    );
-    box(
-      scene,
-      "torii_upperbeam",
-      new Vector3(8.2, 0.25, 0.5),
-      new Vector3(0, 4.45, 9),
-      materials.vermilion
-    );
   }
+  box(
+    scene,
+    "torii_crossbeam",
+    new Vector3(7.5, 0.32, 0.42),
+    new Vector3(0, 4, 9),
+    materials.wood
+  );
+  box(
+    scene,
+    "torii_upperbeam",
+    new Vector3(8.2, 0.25, 0.5),
+    new Vector3(0, 4.45, 9),
+    materials.vermilion
+  );
   const player = makeProceduralPlayer(scene, materials);
+  const bladeTrail = MeshBuilder.CreateTube(
+    "blade_motion_trace",
+    {
+      path: [Vector3.Zero(), new Vector3(0, 0.01, 0)],
+      radius: 0.025,
+      tessellation: 4,
+      updatable: true,
+    },
+    scene
+  );
+  bladeTrail.material = materials.slash;
+  bladeTrail.isVisible = false;
+  let previousBladeTip: Vector3 | null = null;
   const attackAreaMaterial = mat(
     scene,
     "attack_area_red",
@@ -771,7 +604,7 @@ export async function createGameScene(
     scene,
     "enemy_attack_area",
     new Vector3(1.65, 0.025, 2.3),
-    new Vector3(0, 0.025, 2.35),
+    new Vector3(0, FLOOR_MARKER_Y, 2.35),
     attackAreaMaterial
   );
   attackArea.isVisible = false;
@@ -783,7 +616,7 @@ export async function createGameScene(
       scene,
       `player_foot_attack_zone_${lane}`,
       new Vector3(0.78, 0.03, 1.45),
-      new Vector3(laneX(lane as Lane), 0.045, 0.02),
+      new Vector3(laneX(lane as Lane), FLOOR_MARKER_Y, 0.02),
       zoneMaterials[index]
     );
     zone.isVisible = false;
@@ -796,13 +629,24 @@ export async function createGameScene(
       zone.material = zoneMaterials[index];
       const pulse = 0.84 + 0.16 * (0.5 + 0.5 * Math.sin(clock.nowMs * 0.035));
       zoneMaterials[index].alpha = visible
-        ? index - 1 === targetLane
+        ? isPlayerInDangerLine(
+            laneX((index - 1) as Lane),
+            targetLane as Lane,
+            bossAttack,
+            enemyHitWidth()
+          )
           ? 0.78 * pulse
           : 0.055
         : 0.11;
     });
   };
+  let actionReceipt: GameState["actionReceipt"];
+  let requestedAction: "slash" | "guard" | "dodge" = "slash";
+  const recordAction = (accepted: boolean) => {
+    actionReceipt = { action: requestedAction, accepted, at: clock.nowMs };
+  };
   let slashProjectile: Mesh | null = null;
+  let slashOrigin: Vector3 | null = null;
   let slashImpactAt = 0;
   let slashDirection = 1;
   let slashAngle = 0;
@@ -813,7 +657,21 @@ export async function createGameScene(
   let slashTargetX = 0;
   let slashTargetZ = 5.2;
   let currentVariant = ENEMY_VARIANTS[0];
+  const enemyHitWidth = () =>
+    currentVariant.family === "モンスター型"
+      ? bossPhase === 2
+        ? 1.48
+        : 1.3
+      : 0.8;
   const enemy = makeEnemy(scene, materials, currentVariant);
+  const enemyVisual = createEnemyVisual(scene, enemy.root, materials);
+  const enemyDisplayZ = () =>
+    currentVariant.family === "モニュメント型" ? 5.2 : enemy.root.position.z;
+  const setChapterVisual = createChapterVisual(scene, {
+    ...materials,
+    stone: backgroundMaterial,
+  });
+  setChapterVisual(1);
   const guardRingMaterial = mat(
     scene,
     "enemy_guard_ring",
@@ -834,7 +692,7 @@ export async function createGameScene(
     scene,
     "attack_warning_line",
     new Vector3(1.25, 0.026, 0.07),
-    new Vector3(0, 0.04, 2.4),
+    new Vector3(0, FLOOR_MARKER_Y, 2.4),
     materials.vermilion
   );
   warningLine.isVisible = false;
@@ -844,6 +702,9 @@ export async function createGameScene(
     right: mat(scene, "lane_right", new Color3(0.76, 0.28, 0.78), 0.55),
   };
   let shakeUntil = 0;
+  let shakeStrength = 0.08;
+  let shakeDirection = 1;
+  let osReducedMotion = false;
   let dangerLane = 0;
   const applyAttackPlan = (plan: AttackPlan) => {
     bossAttack = plan.isWide;
@@ -860,15 +721,58 @@ export async function createGameScene(
     warningLine.position.z = 2.4;
     warningLine.scaling.x = 0.75;
     attackArea.position.x = laneX(dangerLane as Lane);
-    attackArea.scaling.x = bossAttack
-      ? 1.65
-      : currentVariant.family === "モンスター型"
-        ? 1.2
-        : 1;
+    attackArea.scaling.x =
+      (bossAttack || dangerLane === 0
+        ? COMBAT_MAX_X * 2 + 1.6
+        : enemyHitWidth() * 2) / 1.65;
     attackAreaMaterial.alpha = bossAttack ? 0.34 : 0.24;
   };
+  const contactMaterial = mat(
+    scene,
+    "contact_information",
+    new Color3(0.95, 0.85, 0.65),
+    0.45
+  );
+  const contact = box(
+    scene,
+    "confirmed_contact",
+    new Vector3(0.28, 0.08, 0.08),
+    Vector3.Zero(),
+    contactMaterial
+  );
+  contact.isVisible = false;
+  const dodgeSafeMarker = MeshBuilder.CreateTorus(
+    "dodge_safe_interval",
+    { diameter: 0.9, thickness: 0.035, tessellation: 16 },
+    scene
+  );
+  dodgeSafeMarker.rotation.x = 0;
+  dodgeSafeMarker.material = materials.gaiter;
+  dodgeSafeMarker.position.y = COMBAT_FLOOR_Y + 0.06;
+  dodgeSafeMarker.isVisible = false;
+  let contactUntil = 0;
+  const showContact = (position: Vector3) => {
+    contact.position.copyFrom(position);
+    contact.isVisible = true;
+    contactUntil = clock.nowMs + 160;
+  };
+  const shadowMaterial = mat(scene, "support_shadow", INK);
+  shadowMaterial.alpha = 0.5;
+  const supportShadows = [player.root, enemy.root].map((root, i) => {
+    const shadow = MeshBuilder.CreateDisc(
+      `support_shadow_${i}`,
+      { radius: i ? 0.85 : 0.5, tessellation: 20 },
+      scene
+    );
+    shadow.rotation.x = Math.PI / 2;
+    shadow.material = shadowMaterial;
+    shadow.position.y = COMBAT_FLOOR_Y + 0.006;
+    return { root, shadow };
+  });
   const triggerImpact = (direction: number, strength = 0.08) => {
-    if (effectLevel === "minimal") return;
+    if (effectLevel === "minimal" || osReducedMotion) return;
+    shakeStrength = strength * (effectLevel === "reduced" ? 0.3 : 1);
+    shakeDirection = direction < 0 ? -1 : 1;
     const now = clock.nowMs;
     const duration = effectLevel === "reduced" ? 110 : 220;
     shakeUntil = now + duration;
@@ -889,7 +793,7 @@ export async function createGameScene(
         scene,
         `boss_reward_beam_${index}`,
         new Vector3(1.6, 0.045, 0.045),
-        new Vector3(enemy.root.position.x, 1.35, enemy.root.position.z - 0.9),
+        new Vector3(enemy.root.position.x, 1.35, enemyDisplayZ() - 0.9),
         index % 2 ? rewardMaterial : materials.gaiter
       );
       beam.rotation.z = (index * Math.PI) / 4;
@@ -902,6 +806,9 @@ export async function createGameScene(
     }, 1250);
   };
   const showCounterHit = (direction: number) => {
+    showContact(
+      new Vector3(enemy.root.position.x, 1.38, enemyDisplayZ() - 0.75)
+    );
     if (effectLevel === "minimal") return;
     const counterMaterial = mat(
       scene,
@@ -913,14 +820,14 @@ export async function createGameScene(
       scene,
       "counter_wave",
       new Vector3(1.7, 0.06, 0.06),
-      new Vector3(enemy.root.position.x, 1.38, enemy.root.position.z - 0.9),
+      new Vector3(enemy.root.position.x, 1.38, enemyDisplayZ() - 0.9),
       counterMaterial
     );
     const spark = box(
       scene,
       "counter_spark",
       new Vector3(0.8, 0.04, 0.04),
-      new Vector3(enemy.root.position.x, 1.18, enemy.root.position.z - 0.92),
+      new Vector3(enemy.root.position.x, 1.18, enemyDisplayZ() - 0.92),
       materials.steel
     );
     wave.rotation.z = direction * 0.34;
@@ -940,6 +847,9 @@ export async function createGameScene(
     );
   };
   const showGuardBreak = (direction: number) => {
+    showContact(
+      new Vector3(enemy.root.position.x, 1.38, enemyDisplayZ() - 0.75)
+    );
     if (effectLevel === "minimal") return;
     const breakMaterial = mat(
       scene,
@@ -951,14 +861,14 @@ export async function createGameScene(
       scene,
       "guard_break_a",
       new Vector3(1.9, 0.06, 0.06),
-      new Vector3(enemy.root.position.x, 1.36, enemy.root.position.z - 0.82),
+      new Vector3(enemy.root.position.x, 1.36, enemyDisplayZ() - 0.82),
       breakMaterial
     );
     const breakB = box(
       scene,
       "guard_break_b",
       new Vector3(1.45, 0.045, 0.045),
-      new Vector3(enemy.root.position.x, 1.12, enemy.root.position.z - 0.8),
+      new Vector3(enemy.root.position.x, 1.12, enemyDisplayZ() - 0.8),
       materials.gaiter
     );
     breakA.rotation.z = direction * 0.42;
@@ -973,6 +883,8 @@ export async function createGameScene(
     recoilUntil = clock.nowMs + 190;
     recoilDirection = direction < 0 ? -1 : 1;
     playParrySound(1, direction);
+    player.blade.computeWorldMatrix(true);
+    showContact(player.blade.getAbsolutePosition());
     if (effectLevel === "minimal") return;
     const guardMaterial = mat(
       scene,
@@ -1009,6 +921,9 @@ export async function createGameScene(
     impactAngle = direction * 0.42,
     impactScale = 1
   ) => {
+    showContact(
+      new Vector3(enemy.root.position.x, 1.3, enemyDisplayZ() - 0.75)
+    );
     triggerImpact(direction, 0.045);
     if (effectLevel === "minimal") return;
     const fxMaterial = mat(
@@ -1021,7 +936,7 @@ export async function createGameScene(
       scene,
       "enemy_hit_flash",
       new Vector3(1.25, 0.08, 0.05),
-      new Vector3(enemy.root.position.x, 1.3, enemy.root.position.z - 0.75),
+      new Vector3(enemy.root.position.x, 1.3, enemyDisplayZ() - 0.75),
       fxMaterial
     );
     flash.scaling.setAll(
@@ -1032,31 +947,25 @@ export async function createGameScene(
       scene,
       "enemy_hit_spark_a",
       new Vector3(0.55, 0.035, 0.035),
-      new Vector3(enemy.root.position.x, 1.45, enemy.root.position.z - 0.82),
+      new Vector3(enemy.root.position.x, 1.45, enemyDisplayZ() - 0.82),
       materials.gaiter
     );
     const sparkB = box(
       scene,
       "enemy_hit_spark_b",
       new Vector3(0.4, 0.03, 0.03),
-      new Vector3(enemy.root.position.x, 1.12, enemy.root.position.z - 0.8),
+      new Vector3(enemy.root.position.x, 1.12, enemyDisplayZ() - 0.8),
       materials.steel
     );
     sparkA.scaling.setAll(Math.max(1, impactScale));
     sparkB.scaling.setAll(Math.max(1, impactScale * 0.9));
     sparkA.rotation.z = -direction * 0.7;
     sparkB.rotation.z = direction * 0.9;
-    enemy.root.scaling = new Vector3(
-      (boss ? 1.38 : 1) * 1.12,
-      (boss ? 1.38 : 1) * 1.12,
-      (boss ? 1.38 : 1) * 1.12
-    );
     scheduleEffect(() => {
       flash.dispose();
       sparkA.dispose();
       sparkB.dispose();
       fxMaterial.dispose();
-      if (enemyHp > 0) enemy.root.scaling.setAll(boss ? 1.38 : 1);
     }, 180);
   };
   const chapterTitles = [
@@ -1367,7 +1276,8 @@ export async function createGameScene(
           "square",
           pan * 0.7
         ),
-      28
+      28,
+      () => {}
     );
   };
   const playFootstep = (power = 0.6) =>
@@ -1437,17 +1347,21 @@ export async function createGameScene(
   const playAmbientPulse = () => {
     if (ambientVolume <= 0.01) return;
     playTone(128, 74, 0.8, 0.012, "sine", -0.25, "ambient");
-    scheduleEffect(() => {
-      if (ambientVolume > 0.01)
-        playTone(176, 92, 0.62, 0.009, "triangle", 0.32, "ambient");
-    }, 180);
+    scheduleEffect(
+      () => {
+        if (ambientVolume > 0.01)
+          playTone(176, 92, 0.62, 0.009, "triangle", 0.32, "ambient");
+      },
+      180,
+      () => {}
+    );
   };
   const launchPlayerSlash = (now: number, direction: number) => {
     if (slashProjectile) return;
     const arcPath = Array.from({ length: 13 }, (_, index) => {
       const t = index / 12;
-      const x = (t - 0.5) * 1.7;
-      const y = 0.34 + Math.sin(t * Math.PI) * 0.62;
+      const x = t * 1.5;
+      const y = Math.sin(t * Math.PI) * 0.45;
       return new Vector3(x, y, 0);
     });
     slashProjectile = MeshBuilder.CreateTube(
@@ -1463,6 +1377,8 @@ export async function createGameScene(
     // A slash is short-lived, but its material is shared. Disposing a new
     // material for every swipe made the scene's material list grow forever.
     slashProjectile.material = materials.slash;
+    slashProjectile.isVisible = false;
+    slashOrigin = null;
     slashDirection = direction;
     slashBaseAngle = player.blade.rotation.z * 0.42 + direction * 0.18;
     slashAngle = slashBaseAngle;
@@ -1475,60 +1391,57 @@ export async function createGameScene(
     );
     slashImpactAt = playerAttackHitAt;
     slashTargetX = enemy.root.position.x;
-    slashTargetZ = enemy.root.position.z;
+    slashTargetZ = enemyDisplayZ();
     message = "飛刃、霧を裂く。振り終わりまで動けない。";
     announce(state());
   };
   const enemyMoveLimit = () => COMBAT_MAX_X;
   const setEnemyVariant = (variant: EnemyVariant) => {
     enemy.body = enemy.bodies[variant.shape];
-    enemy.bodies.forEach((body, index) => {
-      body.isVisible = index === variant.shape;
+    // Legacy attack meshes retain their state for diagnostics, but the display
+    // uses the articulated family attack parts and their original materials.
+    [
+      ...enemy.bodies,
+      ...enemy.eyes,
+      enemy.blade,
+      ...Object.values(enemy.beastFeatures).flat(),
+      ...Object.values(enemy.familyFeatures).flat(),
+    ].forEach(mesh => {
+      mesh.isVisible = false;
     });
-    enemy.beastFeatures.fang.forEach(feature => {
-      feature.isVisible = variant.beastStyle === "fang";
+    const usesSpear =
+      !variant.boss && ["影面", "角岩", "逆鉾"].includes(variant.name);
+    [...enemy.spears, ...enemy.spearTips].forEach(mesh => {
+      mesh.isVisible = usesSpear;
     });
-    enemy.beastFeatures.bear.forEach(feature => {
-      feature.isVisible = variant.beastStyle === "bear";
-    });
-    enemy.familyFeatures.monster.forEach(feature => {
-      feature.isVisible = variant.familyStyle === "monster";
-    });
-    enemy.familyFeatures.human.forEach(feature => {
-      feature.isVisible = variant.familyStyle === "human";
-    });
-    enemy.familyFeatures.bird.forEach(feature => {
-      feature.isVisible = variant.familyStyle === "bird";
-    });
-    enemy.familyFeatures.monument.forEach(feature => {
-      feature.isVisible = variant.familyStyle === "monument";
-    });
+    enemyVisual.configure(variant.name);
+    setChapterVisual(chapterForWave(wave));
   };
   const setEnemyGlow = (isBoss: boolean) => {
     const glow = isBoss ? materials.bossGlow : materials.enemyGlow;
-    enemy.bodies.forEach(body => {
-      body.material = glow;
-    });
     enemy.eyes.forEach(eye => {
       eye.material = glow;
     });
+    enemy.bodies.forEach(body => {
+      body.material = materials.stone;
+    });
     enemy.beastFeatures.fang.forEach(feature => {
-      feature.material = glow;
+      feature.material = materials.cream;
     });
     enemy.beastFeatures.bear.forEach(feature => {
-      feature.material = glow;
+      feature.material = materials.iron;
     });
     enemy.familyFeatures.monster.forEach(feature => {
-      feature.material = glow;
+      feature.material = materials.amber;
     });
     enemy.familyFeatures.human.forEach(feature => {
-      feature.material = glow;
+      feature.material = materials.iron;
     });
     enemy.familyFeatures.bird.forEach(feature => {
-      feature.material = glow;
+      feature.material = materials.cream;
     });
     enemy.familyFeatures.monument.forEach(feature => {
-      feature.material = glow;
+      feature.material = materials.stone;
     });
   };
   const setSpearState = (ready: boolean, extension = 0, activeSide = 0) => {
@@ -1547,7 +1460,8 @@ export async function createGameScene(
       const active = activeSide === 0 || side === activeSide;
       const amount = active ? extension : 0;
       tip.material = ready && active ? shaftMaterial : materials.iron;
-      tip.position.z = -1.28 - amount * 1.1;
+      const shaft = enemy.spears[index];
+      tip.position.z = shaft.position.z - (1.15 * shaft.scaling.z) / 2 - 0.12;
       tip.position.x = side * 0.72;
     });
   };
@@ -1649,7 +1563,13 @@ export async function createGameScene(
       rewardOptions,
       rewardEffects,
       climax,
+      actionReceipt:
+        actionReceipt && stateNow - actionReceipt.at < 250
+          ? actionReceipt
+          : undefined,
       counterReady: counterUntil > stateNow,
+      counterRemainingMs: Math.max(0, counterUntil - stateNow),
+      resumeRemainingMs: clock.remainingGraceMs,
       counterPulse,
       paused,
       pauseReason,
@@ -1737,6 +1657,7 @@ export async function createGameScene(
   setEnemyGlow(false);
   announce(state());
   const spawnNextEnemy = () => {
+    clearEffects();
     const spawnNow = clock.nowMs;
     wave += 1;
     const plannedTenEncounter =
@@ -1996,6 +1917,11 @@ export async function createGameScene(
     message = "修行を離れた。再起を選べる。";
     announce(state());
   };
+  const motionEvent = (event: Event) => {
+    osReducedMotion = !!(event as CustomEvent<{ reduced: boolean }>).detail
+      ?.reduced;
+    if (osReducedMotion) shakeUntil = 0;
+  };
   const effectsEvent = (event: Event) => {
     const next = (event as CustomEvent<{ level?: string }>).detail?.level;
     if (next === "full" || next === "reduced" || next === "minimal")
@@ -2029,10 +1955,12 @@ export async function createGameScene(
     return !paused && !transitioning && !defeated && clock.acceptingInput;
   };
   const announceActionMessage = (nextMessage: string) => {
+    recordAction(false);
     message = nextMessage;
     announce(state());
   };
   const performDodge = (direction: number) => {
+    requestedAction = "dodge";
     if (!prepareAction()) return;
     const now = clock.nowMs;
     if (
@@ -2047,6 +1975,7 @@ export async function createGameScene(
       announceActionMessage("まだ動作中。回避の終わりを待て。");
       return;
     }
+    recordAction(true);
     dodgeDirection = direction < 0 ? -1 : 1;
     dodgeStartAt = now;
     dodgeUntil = now + DODGE_DURATION;
@@ -2223,6 +2152,7 @@ export async function createGameScene(
     impactAngle = direction * 0.42,
     impactScale = 1
   ) => {
+    recordAction(true);
     const timing = attackTimingFor(kind);
     playerAttackKind = kind;
     playerAttackStartedAt = now;
@@ -2429,6 +2359,13 @@ export async function createGameScene(
     else if (playerAttackKind === "finisher") resolveFinisherAttack(now);
   };
   const resetRun = (event: Event) => {
+    clearEffects();
+    contactUntil = 0;
+    contact.isVisible = false;
+    bladeTrail.isVisible = false;
+    previousBladeTip = null;
+    dodgeSafeMarker.isVisible = false;
+    actionReceipt = undefined;
     clearRunCheckpoint();
     announceCheckpoint(false);
     clock.reset(performance.now());
@@ -2622,6 +2559,13 @@ export async function createGameScene(
   };
 
   const restoreCheckpoint = (checkpoint: RunCheckpoint) => {
+    clearEffects();
+    contactUntil = 0;
+    contact.isVisible = false;
+    bladeTrail.isVisible = false;
+    previousBladeTip = null;
+    dodgeSafeMarker.isVisible = false;
+    actionReceipt = undefined;
     const variants = checkpoint.boss ? BOSS_VARIANTS : ENEMY_VARIANTS;
     const restoredVariant = variants[checkpoint.variantIndex];
     if (!restoredVariant) {
@@ -2806,6 +2750,7 @@ export async function createGameScene(
   };
 
   const performSlash = () => {
+    requestedAction = "slash";
     if (!prepareAction()) return;
     const now = clock.nowMs;
     if (enemyHp <= 0) return;
@@ -2873,6 +2818,7 @@ export async function createGameScene(
   };
 
   const performGuard = () => {
+    requestedAction = "guard";
     if (!prepareAction()) return;
     const now = clock.nowMs;
     if (
@@ -2892,6 +2838,7 @@ export async function createGameScene(
       announce(state());
       return;
     }
+    recordAction(true);
     guardUntil = now + 520;
     guardStartedAt = now;
     player.root.scaling.y = 0.96;
@@ -2910,7 +2857,32 @@ export async function createGameScene(
 
   const keydown = (event: KeyboardEvent) => {
     const key = event.key.toLowerCase();
-    if (event.repeat) return;
+    if (
+      event.repeat ||
+      event.isComposing ||
+      event.altKey ||
+      event.ctrlKey ||
+      event.metaKey
+    )
+      return;
+    const target = event.target as HTMLElement | null;
+    if (
+      target?.closest?.(
+        "input, textarea, select, [contenteditable], [role=dialog]"
+      )
+    )
+      return;
+    if (paused || defeated || transitioning || rewardPending) return;
+    if (["a", "d", "arrowleft", "arrowright", "j", "k", "shift"].includes(key))
+      event.preventDefault();
+    if (key === "a" || key === "arrowleft") {
+      performDodge(-1);
+      return;
+    }
+    if (key === "d" || key === "arrowright") {
+      performDodge(1);
+      return;
+    }
     if (key === "r") {
       if (!paused && defeated)
         resetRun(
@@ -2939,6 +2911,7 @@ export async function createGameScene(
   window.addEventListener("yamabushi-pause", pauseEvent);
   window.addEventListener("yamabushi-reward", rewardEvent);
   window.addEventListener("yamabushi-effects", effectsEvent);
+  window.addEventListener("yamabushi-motion", motionEvent);
   window.addEventListener("yamabushi-audio", audioEvent);
   window.addEventListener("yamabushi-performance", performanceEvent);
   window.addEventListener("yamabushi-retire", retireEvent);
@@ -3035,12 +3008,90 @@ export async function createGameScene(
       kind,
       progress,
       timeSeconds: now / 1000,
+      reducedMotion: osReducedMotion || effectLevel === "minimal",
       direction,
       attackKind,
+      counterReady: counterUntil > now,
+      guardBroken: playerGuardBrokenUntil > now,
+      ...(playerHitUntil > now
+        ? {
+            hitProgress:
+              (now - playerHitStartedAt) /
+              Math.max(1, playerHitUntil - playerHitStartedAt),
+          }
+        : {}),
+    });
+  };
+  const updateBladeTrace = (now: number) => {
+    player.blade.computeWorldMatrix(true);
+    const tip = Vector3.TransformCoordinates(
+      new Vector3(0, 0.725, 0),
+      player.blade.getWorldMatrix()
+    );
+    const timing = playerAttackKind ? attackTimingFor(playerAttackKind) : null;
+    const elapsed = now - playerAttackStartedAt;
+    bladeTrail.isVisible =
+      !!timing &&
+      elapsed >= timing.startup * 0.45 &&
+      elapsed <= timing.startup + timing.active &&
+      !!previousBladeTip &&
+      Vector3.Distance(tip, previousBladeTip) > 0.005;
+    if (bladeTrail.isVisible && previousBladeTip)
+      MeshBuilder.CreateTube(
+        "blade_motion_trace",
+        { path: [previousBladeTip, tip], instance: bladeTrail },
+        scene
+      );
+    previousBladeTip = tip;
+  };
+  const updateEnemyMotion = (now: number) => {
+    enemyVisual.apply({
+      time: now,
+      lane: dangerLane,
+      windup: enemyAttackAt
+        ? Math.min(1, (now - enemyAttackAt) / warningDuration)
+        : 0,
+      strike: enemyAttackAt
+        ? Math.max(
+            0,
+            Math.min(1, (now - enemyAttackAt - warningDuration) / 260)
+          )
+        : 0,
+      recover: enemyAttackAt
+        ? Math.max(
+            0,
+            Math.min(1, (now - enemyAttackAt - warningDuration - 260) / 470)
+          )
+        : 0,
+      attacking: !!enemyAttackAt,
+      followUp: queuedAttackLanes.length > 0 || forcedAttackReadyAt > now,
+      phase: bossPhase,
+      staggered: enemyStaggerUntil > now,
+      defeated: enemyHp <= 0,
+      defeatProgress:
+        enemyHp <= 0 ? Math.min(1, (now - playerVictoryStartedAt) / 650) : 0,
     });
   };
   const update = (dt: number) => {
     const now = clock.nowMs;
+    expireEffects(now);
+    contact.isVisible = now < contactUntil;
+    const dodgeAge = now - dodgeStartAt;
+    dodgeSafeMarker.isVisible =
+      dodgeUntil > now &&
+      dodgeAge >= DODGE_SAFE_START &&
+      dodgeAge <= DODGE_SAFE_END;
+    dodgeSafeMarker.position.x = player.root.position.x;
+    dodgeSafeMarker.position.z = player.root.position.z;
+    supportShadows.forEach(({ root, shadow }) => {
+      shadow.position.x = root.position.x;
+      shadow.position.z = root.position.z;
+      shadow.scaling.setAll(
+        root === enemy.root
+          ? root.scaling.x * (1 + Math.max(0, root.position.y - 0.2) * 0.25)
+          : 1
+      );
+    });
     if (shouldAdvanceCombatClock(paused, defeated, transitioning))
       activePlayTimeMs += dt * 1000;
     if (
@@ -3080,7 +3131,10 @@ export async function createGameScene(
         Math.min(1.8, 0.65 + bladeAngularSpeed)
       );
     if (paused) {
-      if (paused && rewardPending) updatePlayerMotion(now);
+      if (paused && rewardPending) {
+        updatePlayerMotion(now);
+        updateEnemyMotion(now);
+      }
       return;
     }
     if (transitioning) {
@@ -3088,6 +3142,7 @@ export async function createGameScene(
       transitionRemaining -= dt * 1000;
       if (transitionRemaining <= 0) spawnNextEnemy();
       updatePlayerMotion(now);
+      updateEnemyMotion(now);
       return;
     }
     resolveScheduledPlayerAttack(now);
@@ -3118,8 +3173,11 @@ export async function createGameScene(
     }
     if (now < shakeUntil) {
       const pulse = (shakeUntil - now) / 220;
-      camera.position.x = cameraHome.x + Math.sin(now * 0.11) * pulse * 0.08;
-      camera.position.y = cameraHome.y + Math.cos(now * 0.13) * pulse * 0.04;
+      camera.position.x =
+        cameraHome.x +
+        Math.sin(now * 0.11) * pulse * shakeStrength * shakeDirection;
+      camera.position.y =
+        cameraHome.y + Math.cos(now * 0.13) * pulse * shakeStrength * 0.5;
     } else {
       camera.position.x = cameraHome.x;
       camera.position.y = cameraHome.y;
@@ -3161,23 +3219,36 @@ export async function createGameScene(
       player.rightArm.rotation.z = -0.16;
       player.torso.rotation.z = 0;
       player.blade.rotation.z = -0.65;
+      showContact(
+        new Vector3(
+          player.root.position.x,
+          COMBAT_FLOOR_Y + 0.08,
+          player.root.position.z
+        )
+      );
       dodgeStartAt = 0;
       dodgeUntil = 0;
     }
     if (slashProjectile && now < slashImpactAt) {
-      const travelDuration = attackTimingFor("normal").startup + 60;
-      const progress = Math.min(
-        1,
-        Math.max(0, (now - (slashImpactAt - travelDuration)) / travelDuration)
+      const releaseAt = slashImpactAt - 60;
+      slashProjectile.isVisible = now >= releaseAt;
+      if (now >= releaseAt && !slashOrigin) {
+        updatePlayerMotion(now);
+        player.blade.computeWorldMatrix(true);
+        slashOrigin = Vector3.TransformCoordinates(
+          new Vector3(0, 0.725, 0),
+          player.blade.getWorldMatrix()
+        );
+      }
+      const origin = slashOrigin ?? player.blade.getAbsolutePosition();
+      const travelProgress = Math.max(0, Math.min(1, (now - releaseAt) / 60));
+      slashProjectile.position.copyFrom(
+        Vector3.Lerp(
+          origin,
+          new Vector3(slashTargetX, 1.3, slashTargetZ - 0.75),
+          travelProgress
+        )
       );
-      const travelProgress = 1 - Math.pow(1 - progress, 3);
-      slashProjectile.position.x =
-        player.root.position.x +
-        (slashTargetX - player.root.position.x) * travelProgress;
-      slashProjectile.position.z =
-        player.root.position.z -
-        0.45 +
-        (slashTargetZ - player.root.position.z + 0.45) * travelProgress;
       slashAngle =
         slashBaseAngle +
         slashDirection * (0.12 + Math.sin(travelProgress * Math.PI) * 0.32);
@@ -3314,12 +3385,18 @@ export async function createGameScene(
           if (currentVariant.family === "モニュメント型") enemyTargetX = 0;
           enemy.root.position.x +=
             (enemyTargetX - enemy.root.position.x) * Math.min(1, dt * 2.4);
-          enemy.root.rotation.y += dt * 0.25;
+          enemy.root.rotation.y =
+            currentVariant.family === "モニュメント型"
+              ? 0
+              : Math.sin(now * 0.0015) * 0.06;
         }
         setSpearState(false);
         if (enemyGuardUntil > now) {
           enemy.blade.rotation.z = -0.35;
-          enemy.root.rotation.y = Math.sin(now * 0.02) * 0.08;
+          enemy.root.rotation.y =
+            currentVariant.family === "モニュメント型"
+              ? 0
+              : Math.sin(now * 0.02) * 0.08;
         }
       }
       if (enemyAttackAt && attackElapsed <= enemyAttackDuration) {
@@ -3369,7 +3446,12 @@ export async function createGameScene(
           warningLine.isVisible = true;
           if (attackElapsed >= 150) updateFootZones(true, dangerLane);
           else updateFootZones(false, 0);
-          const blink = Math.floor(attackElapsed / 105) % 2 === 0;
+          if (bossAttack || dangerLane === 0)
+            footZones.forEach((zone, index) => {
+              zone.isVisible = true;
+              zoneMaterials[index].alpha = 0.45;
+            });
+          const blink = true;
           setSpearState(
             blink,
             0.12 + 0.04 * (0.5 + 0.5 * Math.sin(now * 0.03)),
@@ -3377,16 +3459,13 @@ export async function createGameScene(
           );
           attackArea.isVisible = blink || attackElapsed > 210;
           attackArea.scaling.x =
-            currentVariant.family === "モンスター型"
-              ? 1 + windup * (bossPhase === 2 ? 0.85 : 0.65)
-              : bossAttack
-                ? 1.65
-                : 1;
-          attackAreaMaterial.alpha =
-            (blink ? 0.38 : 0.12) + (attackElapsed > 210 ? 0.14 : 0);
-          warningLine.scaling.x =
-            0.82 + 0.18 * (0.5 + 0.5 * Math.sin(now * 0.025));
-          enemy.root.rotation.y = -0.18 * windup;
+            (bossAttack || dangerLane === 0
+              ? COMBAT_MAX_X * 2 + 1.6
+              : enemyHitWidth() * 2) / 1.65;
+          attackAreaMaterial.alpha = 0.2 + windup * 0.25;
+          warningLine.scaling.x = 0.2 + windup * 0.8;
+          enemy.root.rotation.y =
+            currentVariant.family === "モニュメント型" ? 0 : -0.18 * windup;
           enemy.blade.rotation.z = -0.7 - 0.55 * windup;
           if (boss && currentVariant.family === "鳥型") {
             enemy.root.position.x +=
@@ -3408,7 +3487,10 @@ export async function createGameScene(
           if (boss && currentVariant.family === "鳥型") {
             enemy.root.position.y = 1.05 - 0.85 * strike;
           }
-          enemy.root.rotation.y = -0.18 + 0.5 * strike;
+          enemy.root.rotation.y =
+            currentVariant.family === "モニュメント型"
+              ? 0
+              : -0.18 + 0.5 * strike;
           enemy.blade.rotation.z = -1.25 + 2.35 * strike;
           const strikeMessage =
             currentVariant.family === "鳥型"
@@ -3421,24 +3503,23 @@ export async function createGameScene(
             announce(state());
           }
         } else {
-          attackArea.isVisible = recover < 0.55;
+          attackArea.isVisible = false;
+          updateFootZones(false, 0);
           attackAreaMaterial.alpha = Math.max(0, 0.52 * (1 - recover));
           setSpearState(false, Math.max(0, 1 - recover), spearAttackSide);
           enemy.root.position.z = 4.55 + 0.65 * recover;
           if (boss && currentVariant.family === "鳥型") {
             enemy.root.position.y = 0.2;
           }
-          enemy.root.rotation.y = 0.32 * (1 - recover);
+          enemy.root.rotation.y =
+            currentVariant.family === "モニュメント型"
+              ? 0
+              : 0.32 * (1 - recover);
           enemy.blade.rotation.z = 1.1 - 1.8 * recover;
         }
         if (!enemyAttackHit && attackElapsed >= warningDuration + 230) {
           enemyAttackHit = true;
-          const hitWidth =
-            currentVariant.family === "モンスター型"
-              ? bossPhase === 2
-                ? 1.48
-                : 1.3
-              : 0.8;
+          const hitWidth = enemyHitWidth();
           const inLine = isPlayerInDangerLine(
             player.root.position.x,
             dangerLane as -1 | 0 | 1,
@@ -3720,9 +3801,13 @@ export async function createGameScene(
       announce(state());
     }
     updatePlayerMotion(now);
+    updateBladeTrace(now);
+    updateEnemyMotion(now);
   };
   const advanceFrame = (realNow: number) => {
+    const previousGrace = clock.remainingGraceMs;
     const interrupted = clock.frame(realNow, update);
+    if (previousGrace > 0) announce(state());
     if (interrupted && !defeated && !rewardPending) {
       paused = true;
       pauseReason = "frame-gap";
@@ -3732,20 +3817,109 @@ export async function createGameScene(
       clock.resume(realNow);
     }
     if (paused && rewardPending) {
-      updatePlayerMotion(clock.nowMs + Math.min(1050, realNow - pauseVisualAt));
+      const visualNow = clock.nowMs + Math.min(1050, realNow - pauseVisualAt);
+      updatePlayerMotion(visualNow);
+      updateEnemyMotion(visualNow);
     }
   };
-  const observer = scene.onBeforeRenderObservable.add(() =>
-    advanceFrame(performance.now())
+  const observer = scene.onBeforeRenderObservable.add(() => {
+    frameStart = performance.now();
+    advanceFrame(frameStart);
+  });
+  const telemetryObserver = scene.onAfterRenderObservable.add(() =>
+    telemetry.record(frameStart, performance.now())
   );
+  // Development diagnostics reuse the production rig, scene and camera.
+  // Vite removes this entire branch from published builds.
+  const probeWindow = window as typeof window & {
+    mamonokiriVisualProbe?: {
+      player: (sample: PlayerMotionSample) => void;
+      enemy: (name: string, sample: EnemyVisualSample) => void;
+      chapter: (chapter: number) => void;
+      snapshot: () => unknown;
+    };
+  };
+  const projectedActorBounds = (root: typeof player.root | Mesh) => {
+    const viewport = camera.viewport.toGlobal(
+      engine.getRenderWidth(),
+      engine.getRenderHeight()
+    );
+    const points = root
+      .getChildMeshes()
+      .filter(
+        mesh =>
+          mesh.isVisible && mesh.visibility > 0 && mesh.getTotalVertices() > 0
+      )
+      .flatMap(mesh => {
+        mesh.computeWorldMatrix(true);
+        const box = mesh.getBoundingInfo().boundingBox;
+        return box.vectorsWorld.map(point =>
+          Vector3.Project(
+            point,
+            Matrix.Identity(),
+            scene.getTransformMatrix(),
+            viewport
+          )
+        );
+      });
+    return {
+      minX: Math.min(...points.map(p => (p.x - viewport.x) / viewport.width)),
+      maxX: Math.max(...points.map(p => (p.x - viewport.x) / viewport.width)),
+      minY: Math.min(...points.map(p => (p.y - viewport.y) / viewport.height)),
+      maxY: Math.max(...points.map(p => (p.y - viewport.y) / viewport.height)),
+    };
+  };
+  if (import.meta.env.DEV)
+    probeWindow.mamonokiriVisualProbe = {
+      player: sample => {
+        // Settle display interpolation without changing the requested phase.
+        player.applyMotion({ ...sample, timeSeconds: sample.timeSeconds - 1 });
+        player.applyMotion(sample);
+        scene.render();
+      },
+      enemy: (name, sample) => {
+        const variant = [...ENEMY_VARIANTS, ...BOSS_VARIANTS].find(
+          v => v.name === name
+        );
+        if (!variant) throw new Error("Unknown enemy");
+        setEnemyVariant(variant);
+        enemy.root.rotation.setAll(0);
+        enemy.root.position.set(0, 0.2, 5.2);
+        enemy.root.scaling.setAll(variant.boss ? 1.38 : 1);
+        enemyVisual.apply(sample);
+        scene.render();
+      },
+      chapter: chapter => {
+        setChapterVisual(chapter);
+        scene.render();
+      },
+      snapshot: () => ({
+        ...telemetry.snapshot(),
+        meshes: scene.meshes.length,
+        materials: scene.materials.length,
+        transforms: scene.transformNodes.length,
+        camera: camera.position.asArray(),
+        playerPosition: player.root.position.asArray(),
+        projectedBounds: {
+          player: projectedActorBounds(player.root),
+          enemy: projectedActorBounds(enemy.root),
+        },
+        viewport: camera.viewport,
+        buffer: [engine.getRenderWidth(), engine.getRenderHeight()],
+        quality: performanceTier,
+        effects: effectLevel,
+      }),
+    };
   return {
     scene,
     getState: state,
     dispose: () => {
-      pendingEffects.forEach(timer => window.clearTimeout(timer));
+      clearEffects();
       pendingEffects.clear();
       if (audioContext) void audioContext.close().catch(() => {});
       scene.onBeforeRenderObservable.remove(observer);
+      scene.onAfterRenderObservable.remove(telemetryObserver);
+      if (import.meta.env.DEV) delete probeWindow.mamonokiriVisualProbe;
       window.removeEventListener("keydown", keydown);
       window.removeEventListener("yamabushi-slash", slashEvent);
       window.removeEventListener("yamabushi-guard", guardEvent);
@@ -3753,6 +3927,8 @@ export async function createGameScene(
       window.removeEventListener("yamabushi-pause", pauseEvent);
       window.removeEventListener("yamabushi-reward", rewardEvent);
       window.removeEventListener("yamabushi-effects", effectsEvent);
+      window.removeEventListener("yamabushi-motion", motionEvent);
+      window.removeEventListener("yamabushi-viewport", viewportEvent);
       window.removeEventListener("yamabushi-audio", audioEvent);
       window.removeEventListener("yamabushi-performance", performanceEvent);
       window.removeEventListener("yamabushi-retire", retireEvent);

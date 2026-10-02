@@ -1,3 +1,6 @@
+import { CHAPTER_TITLES } from "@/game/chapterVisual";
+import { shareOrCopy as shareResult } from "@/game/sharing";
+import { useDialogFocus } from "@/hooks/useDialogFocus";
 // 墨霞の修験道：中央は剣戟の余白、情報は四隅へ。UIも能舞台のように静かに置く。
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import GameCanvas from "@/components/GameCanvas";
@@ -16,6 +19,7 @@ import {
 } from "@/game/config";
 import {
   DIFFICULTY_CONFIG,
+  chapterForWave,
   RESUME_GRACE_MS,
   RUN_MODE_CONFIG,
   type ChapterRewardKind,
@@ -84,30 +88,6 @@ function resultShareMessage(state: GameState, playerName: string): string {
   const resultLabel =
     state.enemyHp === 0 && state.wave >= state.modeLimit ? "勝利" : "挑戦終了";
   return `${playerName || "ななし"}さんの墨霞の剣結果：${resultLabel}、スコア${state.score}点、到達${state.wave}体目、最大連撃${state.maxCombo}、受け流し${state.parrySuccesses}回。\n${currentGameUrl()}\n#墨霞の剣 #ミニゲーム`;
-}
-
-async function shareOrCopy(
-  text: string,
-  setStatus: (message: string) => void
-): Promise<void> {
-  setStatus("");
-  if (navigator.share) {
-    try {
-      await navigator.share({ title: "墨霞の剣", text, url: currentGameUrl() });
-      setStatus("共有しました。");
-      return;
-    } catch (error: unknown) {
-      if (error instanceof DOMException && error.name === "AbortError") return;
-    }
-  }
-  try {
-    if (!navigator.clipboard?.writeText)
-      throw new Error("clipboard unavailable");
-    await navigator.clipboard.writeText(text);
-    setStatus("シェア文をコピーしました。");
-  } catch {
-    setStatus("シェア文をコピーできませんでした。長押しで選択してください。");
-  }
 }
 
 async function callRankingRpc(
@@ -199,6 +179,9 @@ function volumeLabel(value: number): string {
 }
 
 export default function App() {
+  const nameComposing = useRef(false);
+  const shellRef = useRef<HTMLElement>(null);
+  const shareGeneration = useRef(0);
   const [state, setState] = useState(initial);
   const [sceneStatus, setSceneStatus] = useState<SceneStatus>({
     phase: "loading",
@@ -468,6 +451,8 @@ export default function App() {
     } = {}
   ) => {
     if (sceneStatus.phase !== "ready") return;
+    shareGeneration.current += 1;
+    setShareStatus("");
     if (!playerName) {
       setNameMessage("プレイヤー名を入力してから始めてください。");
       setShowTitle(true);
@@ -539,6 +524,8 @@ export default function App() {
   };
 
   const openTitle = () => {
+    shareGeneration.current += 1;
+    setShareStatus("");
     setShowPause(false);
     setShowExitConfirm(false);
     setShowTitle(true);
@@ -553,6 +540,16 @@ export default function App() {
       resumeGraceMs: RESUME_GRACE_MS,
     });
   };
+
+  useEffect(() => {
+    if (
+      sceneStatus.phase === "error" &&
+      sceneStatus.reason === "context-lost"
+    ) {
+      setShowTitle(true);
+      titleOpenRef.current = true;
+    }
+  }, [sceneStatus]);
 
   useEffect(() => {
     const onState = (event: Event) => {
@@ -573,17 +570,14 @@ export default function App() {
       if (next.climax > previousClimax.current) {
         previousClimax.current = next.climax;
         setShowClimax(true);
-        window.setTimeout(() => setShowClimax(false), 2100);
       }
       if (next.counterPulse > previousCounter.current) {
         previousCounter.current = next.counterPulse;
         setShowCounter(true);
-        window.setTimeout(() => setShowCounter(false), 900);
       }
       if (next.bossDefeatPulse > previousBossVictory.current) {
         previousBossVictory.current = next.bossDefeatPulse;
         setShowBossVictory(true);
-        window.setTimeout(() => setShowBossVictory(false), 2600);
       }
     };
     const onCheckpoint = () => setSavedRun(readRunCheckpoint());
@@ -711,14 +705,81 @@ export default function App() {
     state.defeated ||
     state.rewardPending;
 
+  const modalKey = showExitConfirm
+    ? "exit"
+    : showTitle
+      ? "title"
+      : showPause
+        ? "pause"
+        : state.defeated
+          ? `result:${state.runId}`
+          : state.rewardPending
+            ? `reward:${state.rewardChapter}`
+            : "";
+  useDialogFocus(shellRef, modalKey);
+  useEffect(() => {
+    if (!showClimax) return;
+    const timer = window.setTimeout(() => setShowClimax(false), 550);
+    return () => window.clearTimeout(timer);
+  }, [showClimax, state.runId, state.wave]);
+  useEffect(() => {
+    if (!showCounter) return;
+    const timer = window.setTimeout(() => setShowCounter(false), 220);
+    return () => window.clearTimeout(timer);
+  }, [showCounter, state.runId, state.wave]);
+  useEffect(() => {
+    if (!showBossVictory) return;
+    const timer = window.setTimeout(() => setShowBossVictory(false), 600);
+    return () => window.clearTimeout(timer);
+  }, [showBossVictory, state.runId, state.wave]);
+  useEffect(() => {
+    setShowClimax(false);
+    setShowCounter(false);
+    setShowBossVictory(false);
+  }, [state.runId, state.wave, state.paused]);
+  useEffect(() => {
+    shareGeneration.current += 1;
+    setShareStatus("");
+    return () => {
+      shareGeneration.current += 1;
+    };
+  }, [modalKey]);
+  useEffect(() => {
+    const cancel = () => {
+      swipeStart.current = null;
+    };
+    window.addEventListener("blur", cancel);
+    window.addEventListener("resize", cancel);
+    return () => {
+      window.removeEventListener("blur", cancel);
+      window.removeEventListener("resize", cancel);
+    };
+  }, []);
+  const shareOrCopy = (text: string, setStatus: (message: string) => void) => {
+    const generation = ++shareGeneration.current;
+    return shareResult(
+      text,
+      currentGameUrl(),
+      setStatus,
+      () => generation === shareGeneration.current
+    );
+  };
+
   return (
     <main
       className={`game-shell ${handedness === "left" ? "is-left-handed" : ""} ${overlayOpen ? "is-overlay-open" : ""} performance-${performanceTier}`}
       onPointerDown={handlePointerDown}
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerCancel}
+      onLostPointerCapture={handlePointerCancel}
+      ref={shellRef}
     >
       <GameCanvas attempt={sceneAttempt} onStatusChange={setSceneStatus} />
+      {!!state.resumeRemainingMs && !overlayOpen && (
+        <div className="resume-progress" role="status">
+          再開準備… {Math.ceil(state.resumeRemainingMs / 100) / 10}秒
+        </div>
+      )}
       <div
         className={`threat-vignette ${state.enemyPhase === "予備" ? "is-warning" : ""}`}
         aria-hidden="true"
@@ -729,7 +790,7 @@ export default function App() {
         style={{ opacity: PERFORMANCE_CONFIG[performanceTier].grainOpacity }}
       />
 
-      {showClimax && (
+      {showClimax && !overlayOpen && effectLevel === "full" && (
         <div className="climax-fx" aria-live="assertive">
           <span className="slash slash-a" />
           <span className="slash slash-b" />
@@ -742,7 +803,7 @@ export default function App() {
           </div>
         </div>
       )}
-      {showCounter && (
+      {showCounter && !overlayOpen && effectLevel !== "minimal" && (
         <div className="counter-fx" aria-live="assertive">
           <span className="counter-ring" />
           <small>受け流し成功</small>
@@ -753,7 +814,7 @@ export default function App() {
           <span>受け流し・反撃加算</span>
         </div>
       )}
-      {showBossVictory && (
+      {showBossVictory && !overlayOpen && effectLevel === "full" && (
         <div className="boss-victory-fx" aria-live="assertive">
           <span className="victory-rays" />
           <small>峠の主を撃破</small>
@@ -817,8 +878,8 @@ export default function App() {
             <span>{state.enemyName}</span>
             <small>
               {state.boss
-                ? `${state.enemyFamily}・第${state.wave}体目のボス`
-                : `${state.enemyFamily}・${state.enemyEpithet} / ${state.wave}体目`}
+                ? `第${state.wave}体目のボス・${state.bossPhase === 2 ? "後半" : "前半"}`
+                : `${state.enemyEpithet} / ${state.wave}体目`}
             </small>
           </div>
           <span className={`enemy-phase phase-${state.enemyPhase}`}>
@@ -857,9 +918,7 @@ export default function App() {
           enemy
         />
         <div className="enemy-count">
-          {RUN_MODE_CONFIG[state.mode].label}・第{state.chapter}章　残敵{" "}
-          <strong>{String(state.remainingEnemies).padStart(2, "0")}</strong> /
-          {state.modeLimit}
+          残り <strong>{state.remainingEnemies}</strong>体
         </div>
       </section>
 
@@ -942,8 +1001,8 @@ export default function App() {
         <span>斬る</span>
         <span className="control-key">K</span>
         <span>防御</span>
-        <span className="control-key wide">SHIFT</span>
-        <span>かわす</span>
+        <span className="control-key wide">A / D</span>
+        <span>左 / 右へ回避（矢印キーも可・Shiftは右）</span>
       </section>
       <section
         className="mobile-controls gameboy-controls"
@@ -1001,7 +1060,7 @@ export default function App() {
           <div className="action-row">
             <button
               type="button"
-              className="gb-btn action-btn slash-btn"
+              className={`gb-btn action-btn slash-btn ${state.counterReady ? "is-counter-ready" : ""}`}
               aria-label="斬る"
               onPointerDown={event =>
                 handleMobileActionPointerDown(event, "yamabushi-slash")
@@ -1011,7 +1070,20 @@ export default function App() {
               }
             >
               <b>斬</b>
-              <small>斬撃</small>
+              <small>{state.counterReady ? "反撃" : "斬撃"}</small>
+              {state.actionReceipt?.action === "slash" && (
+                <span className="action-receipt">
+                  {state.actionReceipt.accepted ? "受付" : "待機"}
+                </span>
+              )}
+              {state.counterReady && (
+                <progress
+                  className="counter-window"
+                  max={900}
+                  value={state.counterRemainingMs ?? 900}
+                  aria-label="反撃の残り時間"
+                />
+              )}
             </button>
             <button
               type="button"
@@ -1040,7 +1112,7 @@ export default function App() {
         >
           <p className="eyebrow">章を突破</p>
           <h2 id="reward-title">第{state.rewardChapter}章を越えた</h2>
-          <p>次の章で使う修験を一つ選ぶ。</p>
+          <p>次の章で使う修験を一つ選ぶ。現在の体力 {state.hp} / 100</p>
           <div className="reward-owned">
             <span>効果は重ならず、次の章を終えると消えます</span>
           </div>
@@ -1056,6 +1128,12 @@ export default function App() {
               >
                 <strong>{option.label}</strong>
                 <span>{option.description}</span>
+                {option.kind === "heal" && (
+                  <span>
+                    体力 {state.hp} から {Math.min(100, state.hp + 30)}
+                    （上限100）
+                  </span>
+                )}
               </button>
             ))}
           </div>
@@ -1068,7 +1146,15 @@ export default function App() {
           aria-modal="true"
           aria-labelledby="result-title"
         >
-          <p className="eyebrow">峠はまだ続く</p>
+          <p className="eyebrow">
+            {state.practice
+              ? "稽古完了"
+              : victory
+                ? "完走"
+                : state.message.startsWith("修行を離れた")
+                  ? "リタイア"
+                  : "敗北"}
+          </p>
           <h2 id="result-title">
             {state.practice ? "稽古完了" : victory ? "敵影、断つ" : "霧に沈む"}
           </h2>
@@ -1352,7 +1438,8 @@ export default function App() {
           </h2>
           <div
             className="title-visual procedural-title-visual"
-            aria-label="画像やテクスチャを使わず、コードで描画するキャラクター"
+            role="img"
+            aria-label="笠と結袈裟を身につけ、刀を構える山伏剣士と、面に二本の槍を持つ影面"
           >
             <span className="procedural-mist procedural-mist-a" />
             <span className="procedural-mist procedural-mist-b" />
@@ -1382,11 +1469,16 @@ export default function App() {
             {sceneStatus.phase === "error" && (
               <>
                 <p>
-                  3Dのゲーム画面を準備できませんでした。描画が利用できないか、読み込みに失敗しています。
+                  {sceneStatus.reason === "unsupported"
+                    ? "このブラウザでは3D描画を利用できません。WebGL対応のブラウザで開いてください。"
+                    : sceneStatus.reason === "context-lost"
+                      ? "3D描画が中断しました。復旧を待つか、画面を準備し直してください。"
+                      : "3Dのゲーム画面を準備できませんでした。読み込みをやり直してください。"}
                 </p>
                 <button
                   type="button"
                   className="result-secondary"
+                  disabled={sceneStatus.reason === "unsupported"}
                   onClick={() => {
                     setSceneStatus({ phase: "loading" });
                     setSceneAttempt(attempt => attempt + 1);
@@ -1417,7 +1509,21 @@ export default function App() {
               autoComplete="name"
               placeholder="20文字以内で入力"
               required
+              onCompositionStart={() => {
+                nameComposing.current = true;
+              }}
+              onCompositionEnd={event => {
+                nameComposing.current = false;
+                const next = cleanPlayerName(event.currentTarget.value);
+                setPlayerName(next);
+                if (next) safeStorage.setItem(PLAYER_NAME_KEY, next);
+                else safeStorage.removeItem(PLAYER_NAME_KEY);
+              }}
               onChange={event => {
+                if (nameComposing.current) {
+                  setPlayerName(event.target.value);
+                  return;
+                }
                 const next = cleanPlayerName(event.target.value);
                 setPlayerName(next);
                 setNameMessage(next ? "" : "名前を入力すると開始できます。");
@@ -1540,7 +1646,9 @@ export default function App() {
             >
               続きから再開
               <small>
-                {RUN_MODE_CONFIG[savedRun.mode].label}・{savedRun.wave}体目
+                {RUN_MODE_CONFIG[savedRun.mode].label}・
+                {DIFFICULTY_CONFIG[savedRun.difficulty].label}・第
+                {chapterForWave(savedRun.wave)}章・{savedRun.wave}体目
               </small>
             </button>
           )}
@@ -1614,7 +1722,9 @@ export default function App() {
         </div>
       )}
       <footer className="footer-note">
-        <span>霧ノ峠　第一幕</span>
+        <span>
+          {CHAPTER_TITLES[state.chapter - 1]}　第{state.chapter}幕
+        </span>
         <span>© 墨霞修験会</span>
       </footer>
     </main>

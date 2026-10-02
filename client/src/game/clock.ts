@@ -13,6 +13,10 @@ export class RunClock {
     return this.ticks * COMBAT_STEP_MS;
   }
 
+  get remainingGraceMs(): number {
+    return this.graceMs;
+  }
+
   get acceptingInput(): boolean {
     return !this.paused && this.graceMs === 0;
   }

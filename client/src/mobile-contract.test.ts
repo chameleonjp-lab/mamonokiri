@@ -107,8 +107,7 @@ describe("smartphone play contract", () => {
     expect(sceneSource).toContain("tenRunEncounterFor");
     expect(sceneSource).toContain('beastStyle: "fang"');
     expect(sceneSource).toContain('beastStyle: "bear"');
-    expect(sceneSource).toContain('variant.beastStyle === "fang"');
-    expect(sceneSource).toContain('variant.beastStyle === "bear"');
+    expect(sceneSource).toContain("enemyVisual.configure(variant.name)");
   });
 
   it("keeps every long-run chapter structured and visually distinct", () => {
