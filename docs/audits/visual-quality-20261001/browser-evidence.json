@@ -1,0 +1,24 @@
+{
+  "date": "2026-10-01",
+  "url": "https://chameleonjp-lab.github.io/mamonokiri/",
+  "condition": "Cloud Chromium; WebGL unsupported; no rendered battle",
+  "closed": {
+    "detailsOpen": false,
+    "primaryWidth": 150,
+    "shareWidth": 1303,
+    "viewport": {
+      "height": 936,
+      "width": 1363
+    },
+    "visualHeight": 84.46875
+  },
+  "expanded": {
+    "detailsOpen": true,
+    "documentHeight": 936,
+    "viewport": {
+      "height": 936,
+      "width": 1363
+    },
+    "visualHeight": 2
+  }
+}

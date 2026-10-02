@@ -1,0 +1,600 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-02",
+  "baselineCommit": "14f17c89da689aa71e54813ee49c362347b691a2",
+  "scope": "実装時に使う検査計画。実行済み証拠と別に管理。",
+  "checks": [
+    {
+      "id": "Q01-I",
+      "kind": "integrity",
+      "contract": "Q01",
+      "issueIds": ["A01", "A02", "A03", "A08", "G06", "H07"],
+      "targetCode": [
+        "client/src/App.tsx",
+        "client/src/components/GameCanvas.tsx",
+        "client/src/game/arena.ts",
+        "client/src/game/config.ts",
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/rules.ts",
+        "client/src/game/scene.ts",
+        "docs/CURRENT_SPEC.md"
+      ],
+      "condition": "全3レーン、最大ボス、画面回転・短い高さ・0寸法復帰で必要頂点の投影と入力変換を検査。戦闘座標と判定を不変にする。",
+      "targetBaseline": "14f17c89da689aa71e54813ee49c362347b691a2",
+      "result": "not_run",
+      "reason": "改修後の受入条件。今回の依頼は資料の具体化でありゲーム実装は未実施。実機／GPUの体験検査も未実行。",
+      "evidence": []
+    },
+    {
+      "id": "Q01-E",
+      "kind": "experience",
+      "contract": "Q01",
+      "issueIds": ["A01", "A02", "A03", "A08", "G06", "H07"],
+      "targetCode": [
+        "client/src/App.tsx",
+        "client/src/components/GameCanvas.tsx",
+        "client/src/game/arena.ts",
+        "client/src/game/config.ts",
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/rules.ts",
+        "client/src/game/scene.ts",
+        "docs/CURRENT_SPEC.md"
+      ],
+      "condition": "本編カメラで縦横の連続戦闘を見る。刀・全身・危険側が読め、左右の操作を画面の方向へ対応づけられる。",
+      "targetBaseline": "14f17c89da689aa71e54813ee49c362347b691a2",
+      "result": "not_run",
+      "reason": "改修後の受入条件。今回の依頼は資料の具体化でありゲーム実装は未実施。実機／GPUの体験検査も未実行。",
+      "evidence": []
+    },
+    {
+      "id": "Q02-I",
+      "kind": "integrity",
+      "contract": "Q02",
+      "issueIds": ["A04", "B04", "G01", "H04", "K01"],
+      "targetCode": [
+        "client/src/game/config.ts",
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/scene.ts"
+      ],
+      "condition": "左・中央・右の足底と床面、危険帯の上下境界、各動作の支持点を実シーンで測る。許容誤差と表示用浮かせ量は設計値として明記する。",
+      "targetBaseline": "14f17c89da689aa71e54813ee49c362347b691a2",
+      "result": "not_run",
+      "reason": "改修後の受入条件。今回の依頼は資料の具体化でありゲーム実装は未実施。実機／GPUの体験検査も未実行。",
+      "evidence": []
+    },
+    {
+      "id": "Q02-E",
+      "kind": "experience",
+      "contract": "Q02",
+      "issueIds": ["A04", "B04", "G01", "H04", "K01"],
+      "targetCode": [
+        "client/src/game/config.ts",
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/scene.ts"
+      ],
+      "condition": "待機・回避・着地・重い攻撃を高／軽量で見る。足が沈まず、浮遊と接地を区別でき、影で床との距離が分かる。",
+      "targetBaseline": "14f17c89da689aa71e54813ee49c362347b691a2",
+      "result": "not_run",
+      "reason": "改修後の受入条件。今回の依頼は資料の具体化でありゲーム実装は未実施。実機／GPUの体験検査も未実行。",
+      "evidence": []
+    },
+    {
+      "id": "Q03-I",
+      "kind": "integrity",
+      "contract": "Q03",
+      "issueIds": ["B01", "B02", "B03", "B06", "G02", "D01"],
+      "targetCode": [
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/scene.ts"
+      ],
+      "condition": "全4技の代表時刻と左右レーンで手／柄・軸／穂先接続、前方内積、親子変換を検査。誤った接続配置が検査で落ちることも確かめる。",
+      "targetBaseline": "14f17c89da689aa71e54813ee49c362347b691a2",
+      "result": "not_run",
+      "reason": "改修後の受入条件。今回の依頼は資料の具体化でありゲーム実装は未実施。実機／GPUの体験検査も未実行。",
+      "evidence": []
+    },
+    {
+      "id": "Q03-E",
+      "kind": "experience",
+      "contract": "Q03",
+      "issueIds": ["B01", "B02", "B03", "B06", "G02", "D01"],
+      "targetCode": [
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/scene.ts"
+      ],
+      "condition": "本編の実サイズと正面・側面の診断で握り・面の向き・袖と刀の貫通を見る。拡大展示だけで完成にしない。",
+      "targetBaseline": "14f17c89da689aa71e54813ee49c362347b691a2",
+      "result": "not_run",
+      "reason": "改修後の受入条件。今回の依頼は資料の具体化でありゲーム実装は未実施。実機／GPUの体験検査も未実行。",
+      "evidence": []
+    },
+    {
+      "id": "Q04-I",
+      "kind": "integrity",
+      "contract": "Q04",
+      "issueIds": [
+        "B05",
+        "C01",
+        "C02",
+        "C03",
+        "C04",
+        "C05",
+        "C06",
+        "C07",
+        "C08",
+        "C09",
+        "C10"
+      ],
+      "targetCode": [
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/rules.ts",
+        "client/src/game/scene.ts",
+        "docs/CURRENT_SPEC.md"
+      ],
+      "condition": "同じ種・意味上の入力・RunClockで全技、full/minimal、停止／再開を比較し、HP・構え・得点・位置・乱数・時刻が一致する。反撃90ms前後の姿勢を検査する。",
+      "targetBaseline": "14f17c89da689aa71e54813ee49c362347b691a2",
+      "result": "not_run",
+      "reason": "改修後の受入条件。今回の依頼は資料の具体化でありゲーム実装は未実施。実機／GPUの体験検査も未実行。",
+      "evidence": []
+    },
+    {
+      "id": "Q04-E",
+      "kind": "experience",
+      "contract": "Q04",
+      "issueIds": [
+        "B05",
+        "C01",
+        "C02",
+        "C03",
+        "C04",
+        "C05",
+        "C06",
+        "C07",
+        "C08",
+        "C09",
+        "C10"
+      ],
+      "targetCode": [
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/rules.ts",
+        "client/src/game/scene.ts",
+        "docs/CURRENT_SPEC.md"
+      ],
+      "condition": "エフェクトを抑えた連続動作で準備・放出／有効・戻り・受け・被弾を読める。映像保存の有無でなく、実際の動作を見て評価する。",
+      "targetBaseline": "14f17c89da689aa71e54813ee49c362347b691a2",
+      "result": "not_run",
+      "reason": "改修後の受入条件。今回の依頼は資料の具体化でありゲーム実装は未実施。実機／GPUの体験検査も未実行。",
+      "evidence": []
+    },
+    {
+      "id": "Q05-I",
+      "kind": "integrity",
+      "contract": "Q05",
+      "issueIds": ["A05", "A06", "A07", "D02", "H03", "H05"],
+      "targetCode": [
+        "client/src/game/arena.ts",
+        "client/src/game/config.ts",
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/scene.ts"
+      ],
+      "condition": "予告開始／終了、敵切替、再挑戦で材質の初期化と共有範囲を照合。装飾乱数でゲームRNGを進めず、画質差で判定を変えない。",
+      "targetBaseline": "14f17c89da689aa71e54813ee49c362347b691a2",
+      "result": "not_run",
+      "reason": "改修後の受入条件。今回の依頼は資料の具体化でありゲーム実装は未実施。実機／GPUの体験検査も未実行。",
+      "evidence": []
+    },
+    {
+      "id": "Q05-E",
+      "kind": "experience",
+      "contract": "Q05",
+      "issueIds": ["A05", "A06", "A07", "D02", "H03", "H05"],
+      "targetCode": [
+        "client/src/game/arena.ts",
+        "client/src/game/config.ts",
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/scene.ts"
+      ],
+      "condition": "にじみ等を外した診断と本編照明を比較し、布・刀・牙・石と背景を区別する。白飛び・黒潰れ・点滅を実画像で見る。",
+      "targetBaseline": "14f17c89da689aa71e54813ee49c362347b691a2",
+      "result": "not_run",
+      "reason": "改修後の受入条件。今回の依頼は資料の具体化でありゲーム実装は未実施。実機／GPUの体験検査も未実行。",
+      "evidence": []
+    },
+    {
+      "id": "Q06-I",
+      "kind": "integrity",
+      "contract": "Q06",
+      "issueIds": [
+        "D03",
+        "D04",
+        "E01",
+        "E02",
+        "E03",
+        "E04",
+        "E05",
+        "E06",
+        "E07"
+      ],
+      "targetCode": ["client/src/game/scene.ts", "docs/CURRENT_SPEC.md"],
+      "condition": "既存の敵ID・順序・攻撃列・対象レーン・周期を照合。追尾55%の固定、二撃後の待機、被弾・撃破による取消しを検査し、新AIを足さない。",
+      "targetBaseline": "14f17c89da689aa71e54813ee49c362347b691a2",
+      "result": "not_run",
+      "reason": "改修後の受入条件。今回の依頼は資料の具体化でありゲーム実装は未実施。実機／GPUの体験検査も未実行。",
+      "evidence": []
+    },
+    {
+      "id": "Q06-E",
+      "kind": "experience",
+      "contract": "Q06",
+      "issueIds": [
+        "D03",
+        "D04",
+        "E01",
+        "E02",
+        "E03",
+        "E04",
+        "E05",
+        "E06",
+        "E07"
+      ],
+      "targetCode": ["client/src/game/scene.ts", "docs/CURRENT_SPEC.md"],
+      "condition": "色と名前を隠した輪郭、通常カメラの予告・攻撃・戻りを比較する。役割差が姿勢で分かり、初撃後と攻撃終了を誤認しない。",
+      "targetBaseline": "14f17c89da689aa71e54813ee49c362347b691a2",
+      "result": "not_run",
+      "reason": "改修後の受入条件。今回の依頼は資料の具体化でありゲーム実装は未実施。実機／GPUの体験検査も未実行。",
+      "evidence": []
+    },
+    {
+      "id": "Q07-I",
+      "kind": "integrity",
+      "contract": "Q07",
+      "issueIds": [
+        "F01",
+        "F02",
+        "F03",
+        "F04",
+        "F05",
+        "F06",
+        "F07",
+        "F08",
+        "F09",
+        "F10",
+        "G05"
+      ],
+      "targetCode": ["client/src/game/rules.ts", "client/src/game/scene.ts"],
+      "condition": "全10種の前後半、各攻撃の中央・端・回避途中・防御でAttackPlanと判定を照合。人型55%反転、追撃列、石造全域の実安全条件を残す。",
+      "targetBaseline": "14f17c89da689aa71e54813ee49c362347b691a2",
+      "result": "not_run",
+      "reason": "改修後の受入条件。今回の依頼は資料の具体化でありゲーム実装は未実施。実機／GPUの体験検査も未実行。",
+      "evidence": []
+    },
+    {
+      "id": "Q07-E",
+      "kind": "experience",
+      "contract": "Q07",
+      "issueIds": [
+        "F01",
+        "F02",
+        "F03",
+        "F04",
+        "F05",
+        "F06",
+        "F07",
+        "F08",
+        "F09",
+        "F10",
+        "G05"
+      ],
+      "targetCode": ["client/src/game/rules.ts", "client/src/game/scene.ts"],
+      "condition": "本編で系統と個体を輪郭・重心・予告から区別する。後半変化を粒子に埋めず、最大サイズでも攻撃部と危険帯が読める。",
+      "targetBaseline": "14f17c89da689aa71e54813ee49c362347b691a2",
+      "result": "not_run",
+      "reason": "改修後の受入条件。今回の依頼は資料の具体化でありゲーム実装は未実施。実機／GPUの体験検査も未実行。",
+      "evidence": []
+    },
+    {
+      "id": "Q08-I",
+      "kind": "integrity",
+      "contract": "Q08",
+      "issueIds": ["H01", "H02", "H06"],
+      "targetCode": [
+        "client/src/App.tsx",
+        "client/src/game/arena.ts",
+        "client/src/game/scene.ts"
+      ],
+      "condition": "10／25／50体、章報酬前後、安全保存からの再開、最終50体目の結果で章・景観・表示を照合。背景種変更で敵順／戦闘RNGが変わらない。",
+      "targetBaseline": "14f17c89da689aa71e54813ee49c362347b691a2",
+      "result": "not_run",
+      "reason": "改修後の受入条件。今回の依頼は資料の具体化でありゲーム実装は未実施。実機／GPUの体験検査も未実行。",
+      "evidence": []
+    },
+    {
+      "id": "Q08-E",
+      "kind": "experience",
+      "contract": "Q08",
+      "issueIds": ["H01", "H02", "H06"],
+      "targetCode": [
+        "client/src/App.tsx",
+        "client/src/game/arena.ts",
+        "client/src/game/scene.ts"
+      ],
+      "condition": "各章を通常カメラで見て形と奥行きの違いを読める。手前装飾が人物・予告・着地を遮らず、低画質でも章の手掛かりが残る。",
+      "targetBaseline": "14f17c89da689aa71e54813ee49c362347b691a2",
+      "result": "not_run",
+      "reason": "改修後の受入条件。今回の依頼は資料の具体化でありゲーム実装は未実施。実機／GPUの体験検査も未実行。",
+      "evidence": []
+    },
+    {
+      "id": "Q09-I",
+      "kind": "integrity",
+      "contract": "Q09",
+      "issueIds": ["I01", "I02", "I03", "I04", "I05", "I06"],
+      "targetCode": [
+        "client/src/App.tsx",
+        "client/src/components/GameCanvas.tsx",
+        "client/src/game/arena.ts",
+        "client/src/game/rules.ts",
+        "client/src/game/scene.ts",
+        "client/src/index.css"
+      ],
+      "condition": "左右PCキー、二本指、領域外終了、lostpointercapture、blur、repeat、変換Enter、支援技術clickを操作する。タッチとPCで同じ意味の入力結果を照合。",
+      "targetBaseline": "14f17c89da689aa71e54813ee49c362347b691a2",
+      "result": "not_run",
+      "reason": "改修後の受入条件。今回の依頼は資料の具体化でありゲーム実装は未実施。実機／GPUの体験検査も未実行。",
+      "evidence": []
+    },
+    {
+      "id": "Q09-E",
+      "kind": "experience",
+      "contract": "Q09",
+      "issueIds": ["I01", "I02", "I03", "I04", "I05", "I06"],
+      "targetCode": [
+        "client/src/App.tsx",
+        "client/src/components/GameCanvas.tsx",
+        "client/src/game/arena.ts",
+        "client/src/game/rules.ts",
+        "client/src/game/scene.ts",
+        "client/src/index.css"
+      ],
+      "condition": "片手／両手で届き方、押し間違い、反撃合図、拒否理由を確認。DOM寸法だけでタップ成功や即応性を合格にしない。",
+      "targetBaseline": "14f17c89da689aa71e54813ee49c362347b691a2",
+      "result": "not_run",
+      "reason": "改修後の受入条件。今回の依頼は資料の具体化でありゲーム実装は未実施。実機／GPUの体験検査も未実行。",
+      "evidence": []
+    },
+    {
+      "id": "Q10-I",
+      "kind": "integrity",
+      "contract": "Q10",
+      "issueIds": [
+        "J01",
+        "J02",
+        "J03",
+        "J04",
+        "J05",
+        "J07",
+        "J11",
+        "L01",
+        "L02"
+      ],
+      "targetCode": [
+        "client/src/App.tsx",
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/rules.ts",
+        "client/src/game/scene.ts",
+        "client/src/index.css",
+        "docs/CURRENT_SPEC.md"
+      ],
+      "condition": "読込／正常／失敗・設定開閉、長い日本語、IME、フォント準備／失敗、文字200%、短い高さで欠損と隣接受付を確認。名前の20文字処理を無断で別規則へ変えない。",
+      "targetBaseline": "14f17c89da689aa71e54813ee49c362347b691a2",
+      "result": "not_run",
+      "reason": "改修後の受入条件。今回の依頼は資料の具体化でありゲーム実装は未実施。実機／GPUの体験検査も未実行。",
+      "evidence": []
+    },
+    {
+      "id": "Q10-E",
+      "kind": "experience",
+      "contract": "Q10",
+      "issueIds": [
+        "J01",
+        "J02",
+        "J03",
+        "J04",
+        "J05",
+        "J07",
+        "J11",
+        "L01",
+        "L02"
+      ],
+      "targetCode": [
+        "client/src/App.tsx",
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/rules.ts",
+        "client/src/game/scene.ts",
+        "client/src/index.css",
+        "docs/CURRENT_SPEC.md"
+      ],
+      "condition": "一行動に一つの案内を対応させ、危険側・反撃・開始／再挑戦が一目で分かるか実操作する。既存稽古を改善し、必須の新モードへ置き換えない。",
+      "targetBaseline": "14f17c89da689aa71e54813ee49c362347b691a2",
+      "result": "not_run",
+      "reason": "改修後の受入条件。今回の依頼は資料の具体化でありゲーム実装は未実施。実機／GPUの体験検査も未実行。",
+      "evidence": []
+    },
+    {
+      "id": "Q11-I",
+      "kind": "integrity",
+      "contract": "Q11",
+      "issueIds": ["J06", "L03"],
+      "targetCode": [
+        "client/src/App.tsx",
+        "client/src/components/GameCanvas.tsx",
+        "client/src/game/config.ts",
+        "client/src/index.css"
+      ],
+      "condition": "複数停止理由、ダイアログ内外、背景キー、変換、200%文字、OS動作抑制を検査。演出量で判定・時間・得点を変えない。",
+      "targetBaseline": "14f17c89da689aa71e54813ee49c362347b691a2",
+      "result": "not_run",
+      "reason": "改修後の受入条件。今回の依頼は資料の具体化でありゲーム実装は未実施。実機／GPUの体験検査も未実行。",
+      "evidence": []
+    },
+    {
+      "id": "Q11-E",
+      "kind": "experience",
+      "contract": "Q11",
+      "issueIds": ["J06", "L03"],
+      "targetCode": [
+        "client/src/App.tsx",
+        "client/src/components/GameCanvas.tsx",
+        "client/src/game/config.ts",
+        "client/src/index.css"
+      ],
+      "condition": "キーボードとVoiceOverで主要操作の意味と焦点を実確認する。ラベルだけで読み上げ合格とせず、抑制設定でも必要情報を読める。",
+      "targetBaseline": "14f17c89da689aa71e54813ee49c362347b691a2",
+      "result": "not_run",
+      "reason": "改修後の受入条件。今回の依頼は資料の具体化でありゲーム実装は未実施。実機／GPUの体験検査も未実行。",
+      "evidence": []
+    },
+    {
+      "id": "Q12-I",
+      "kind": "integrity",
+      "contract": "Q12",
+      "issueIds": ["I07", "J10"],
+      "targetCode": [
+        "client/src/App.tsx",
+        "client/src/components/GameCanvas.tsx",
+        "client/src/game/scene.ts",
+        "docs/CURRENT_SPEC.md"
+      ],
+      "condition": "準備中開始、連続再試行と遅い旧完了、描画喪失、bfcache、通知、停止理由重複、安全保存再読込を検査。復帰で新勝負や結果再送をしない。",
+      "targetBaseline": "14f17c89da689aa71e54813ee49c362347b691a2",
+      "result": "not_run",
+      "reason": "改修後の受入条件。今回の依頼は資料の具体化でありゲーム実装は未実施。実機／GPUの体験検査も未実行。",
+      "evidence": []
+    },
+    {
+      "id": "Q12-E",
+      "kind": "experience",
+      "contract": "Q12",
+      "issueIds": ["I07", "J10"],
+      "targetCode": [
+        "client/src/App.tsx",
+        "client/src/components/GameCanvas.tsx",
+        "client/src/game/scene.ts",
+        "docs/CURRENT_SPEC.md"
+      ],
+      "condition": "名前や選択を失わず、状態と次の行動を日本語で読める。700msの終わりと入力再開が一致し、非対応時に無意味な再試行を誘わない。",
+      "targetBaseline": "14f17c89da689aa71e54813ee49c362347b691a2",
+      "result": "not_run",
+      "reason": "改修後の受入条件。今回の依頼は資料の具体化でありゲーム実装は未実施。実機／GPUの体験検査も未実行。",
+      "evidence": []
+    },
+    {
+      "id": "Q13-I",
+      "kind": "integrity",
+      "contract": "Q13",
+      "issueIds": ["G03", "G04", "K02", "K03", "K04", "K05", "K06"],
+      "targetCode": [
+        "client/src/App.tsx",
+        "client/src/game/config.ts",
+        "client/src/game/scene.ts",
+        "client/src/index.css",
+        "docs/CURRENT_SPEC.md"
+      ],
+      "condition": "同じイベントの再配送と別の正当イベント、低頻度描画、停止・撃破・次敵・再挑戦を照合。full/minimalで判定・得点・ゲームRNGを同じに保ち、残存数を測る。",
+      "targetBaseline": "14f17c89da689aa71e54813ee49c362347b691a2",
+      "result": "not_run",
+      "reason": "改修後の受入条件。今回の依頼は資料の具体化でありゲーム実装は未実施。実機／GPUの体験検査も未実行。",
+      "evidence": []
+    },
+    {
+      "id": "Q13-E",
+      "kind": "experience",
+      "contract": "Q13",
+      "issueIds": ["G03", "G04", "K02", "K03", "K04", "K05", "K06"],
+      "targetCode": [
+        "client/src/App.tsx",
+        "client/src/game/config.ts",
+        "client/src/game/scene.ts",
+        "client/src/index.css",
+        "docs/CURRENT_SPEC.md"
+      ],
+      "condition": "密集戦闘の連続出力を見て、危険・選択・被弾・反撃が残ることを確認。点滅は効果単体の頻度でなく合成面積と明るさも見る。",
+      "targetBaseline": "14f17c89da689aa71e54813ee49c362347b691a2",
+      "result": "not_run",
+      "reason": "改修後の受入条件。今回の依頼は資料の具体化でありゲーム実装は未実施。実機／GPUの体験検査も未実行。",
+      "evidence": []
+    },
+    {
+      "id": "Q14-I",
+      "kind": "integrity",
+      "contract": "Q14",
+      "issueIds": ["J08", "J09"],
+      "targetCode": [
+        "client/src/App.tsx",
+        "client/src/game/rules.ts",
+        "client/src/index.css"
+      ],
+      "condition": "勝利／敗北／リタイア／稽古、共有成功／取消し／非対応／コピー失敗、遅い完了後の画面切替を検査。検査は外部投稿や本番ランキング書込をしない。",
+      "targetBaseline": "14f17c89da689aa71e54813ee49c362347b691a2",
+      "result": "not_run",
+      "reason": "改修後の受入条件。今回の依頼は資料の具体化でありゲーム実装は未実施。実機／GPUの体験検査も未実行。",
+      "evidence": []
+    },
+    {
+      "id": "Q14-E",
+      "kind": "experience",
+      "contract": "Q14",
+      "issueIds": ["J08", "J09"],
+      "targetCode": [
+        "client/src/App.tsx",
+        "client/src/game/rules.ts",
+        "client/src/index.css"
+      ],
+      "condition": "結果から再挑戦と共有へ迷わず到達できる。成功／取消し／失敗の文言、スクロール、共有文の長さをiPhoneで確認し、開発者IDを見せない。",
+      "targetBaseline": "14f17c89da689aa71e54813ee49c362347b691a2",
+      "result": "not_run",
+      "reason": "改修後の受入条件。今回の依頼は資料の具体化でありゲーム実装は未実施。実機／GPUの体験検査も未実行。",
+      "evidence": []
+    },
+    {
+      "id": "Q15-I",
+      "kind": "integrity",
+      "contract": "Q15",
+      "issueIds": ["L04", "L05", "L06"],
+      "targetCode": [
+        "client/src/components/GameCanvas.tsx",
+        "client/src/game/config.ts",
+        "client/src/game/proceduralCharacter.test.ts",
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/scene.ts",
+        "client/src/responsive-ui-contract.test.ts",
+        "docs/QUALITY_PLAN_STATUS.md"
+      ],
+      "condition": "初回／通常／最大負荷／再挑戦／30分を分け、60fpsとCPU処理p95≤20msの既存目標を個別に測る。p50/p95/p99、標本数、資源残存、取得できないGPU値を区別する。",
+      "targetBaseline": "14f17c89da689aa71e54813ee49c362347b691a2",
+      "result": "not_run",
+      "reason": "改修後の受入条件。今回の依頼は資料の具体化でありゲーム実装は未実施。実機／GPUの体験検査も未実行。",
+      "evidence": []
+    },
+    {
+      "id": "Q15-E",
+      "kind": "experience",
+      "contract": "Q15",
+      "issueIds": ["L04", "L05", "L06"],
+      "targetCode": [
+        "client/src/components/GameCanvas.tsx",
+        "client/src/game/config.ts",
+        "client/src/game/proceduralCharacter.test.ts",
+        "client/src/game/proceduralCharacter.ts",
+        "client/src/game/scene.ts",
+        "client/src/responsive-ui-contract.test.ts",
+        "docs/QUALITY_PLAN_STATUS.md"
+      ],
+      "condition": "通常の連続プレイで描写・読み合い・入力反応・熱の悪化を確認する。画像比較は差分検出として使い、美しさや本人承認の自動採点にしない。",
+      "targetBaseline": "14f17c89da689aa71e54813ee49c362347b691a2",
+      "result": "not_run",
+      "reason": "改修後の受入条件。今回の依頼は資料の具体化でありゲーム実装は未実施。実機／GPUの体験検査も未実行。",
+      "evidence": []
+    }
+  ]
+}
