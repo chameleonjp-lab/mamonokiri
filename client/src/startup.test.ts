@@ -70,6 +70,11 @@ describe("title and 3D startup", () => {
       expect(button("新しく始める").disabled).toBe(false);
       await act(async () => button("新しく始める").click());
       expect(started).toHaveBeenCalledTimes(1);
+      expect(started.mock.calls[0][0].detail).toMatchObject({
+        mode: "fifty",
+        difficulty: "apprentice",
+        practice: false,
+      });
       expect(container.querySelector(".title-screen")).toBeNull();
     } finally {
       window.removeEventListener("yamabushi-start", started);
@@ -120,13 +125,15 @@ describe("title and 3D startup", () => {
     expect(button("新しく始める").disabled).toBe(false);
   });
 
-  it("starts with the short beginner run and keeps practice unranked", async () => {
+  it("starts with the fifty-match easy run and keeps practice unranked", async () => {
     safeStorage.setItem("mamonokiri.player-name", "稽古確認");
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
     await act(async () => root.render(createElement(App)));
-    expect(button("十番勝負").classList.contains("is-selected")).toBe(true);
-    expect(button("見習い").classList.contains("is-selected")).toBe(true);
+    expect(container.textContent).toContain("50番勝負");
+    expect(container.textContent).not.toContain("十番勝負");
+    expect(container.textContent).not.toContain("二十五番勝負");
+    expect(button("イージー").classList.contains("is-selected")).toBe(true);
     await act(async () => button("稽古を試す").click());
 
     const result = {

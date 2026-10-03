@@ -70,7 +70,7 @@ export const RUN_MODE_CONFIG: Readonly<
     description: "前半の型を読み切る",
   },
   fifty: {
-    label: "五十番修行",
+    label: "50番勝負",
     limit: 50,
     description: "五章を通して修める",
   },
@@ -186,21 +186,21 @@ export const DIFFICULTY_CONFIG: Readonly<
   >
 > = {
   apprentice: {
-    label: "見習い",
+    label: "イージー",
     description: "予告が長く、型を読みやすい",
     warningMultiplier: 1.35,
     cooldownMultiplier: 1.15,
     parryWindow: 180,
   },
   standard: {
-    label: "修験",
+    label: "ノーマル",
     description: "標準の予告と間合い",
     warningMultiplier: 1,
     cooldownMultiplier: 1,
     parryWindow: 150,
   },
   dark: {
-    label: "無明",
+    label: "ハード",
     description: "予告が短く、判断が速い",
     warningMultiplier: 0.72,
     cooldownMultiplier: 0.84,

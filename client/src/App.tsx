@@ -79,15 +79,15 @@ function currentGameUrl(): string {
 }
 
 function homeShareMessage(): string {
-  return `墨霞の剣で敵の予告を読み、受け流しと連撃を決めよう！\n${currentGameUrl()}\n#墨霞の剣 #ミニゲーム`;
+  return `マモノキリで敵の予告を読み、受け流しと連撃を決めよう！\n${currentGameUrl()}\n#マモノキリ #ミニゲーム`;
 }
 
 function resultShareMessage(state: GameState, playerName: string): string {
   if (state.practice)
-    return `${playerName || "ななし"}さんの墨霞の剣・安全稽古：3手順を確認しました（記録なし）。\n${currentGameUrl()}\n#墨霞の剣 #ミニゲーム`;
+    return `${playerName || "ななし"}さんのマモノキリ・安全稽古：3手順を確認しました（記録なし）。\n${currentGameUrl()}\n#マモノキリ #ミニゲーム`;
   const resultLabel =
     state.enemyHp === 0 && state.wave >= state.modeLimit ? "勝利" : "挑戦終了";
-  return `${playerName || "ななし"}さんの墨霞の剣結果：${resultLabel}、スコア${state.score}点、到達${state.wave}体目、最大連撃${state.maxCombo}、受け流し${state.parrySuccesses}回。\n${currentGameUrl()}\n#墨霞の剣 #ミニゲーム`;
+  return `${playerName || "ななし"}さんのマモノキリ結果：${resultLabel}、スコア${state.score}点、到達${state.wave}体目、最大連撃${state.maxCombo}、受け流し${state.parrySuccesses}回。\n${currentGameUrl()}\n#マモノキリ #ミニゲーム`;
 }
 
 async function callRankingRpc(
@@ -178,6 +178,14 @@ function volumeLabel(value: number): string {
   return "中";
 }
 
+// Legacy short-run records remain parseable, but cannot resume a formal run.
+function readPlayableCheckpoint(): RunCheckpoint | null {
+  const checkpoint = readRunCheckpoint();
+  return checkpoint && (checkpoint.practice || checkpoint.mode === "fifty")
+    ? checkpoint
+    : null;
+}
+
 export default function App() {
   const nameComposing = useRef(false);
   const shellRef = useRef<HTMLElement>(null);
@@ -189,7 +197,7 @@ export default function App() {
   const [sceneAttempt, setSceneAttempt] = useState(0);
   const [playerName, setPlayerName] = useState(readPlayerName);
   const [savedRun, setSavedRun] = useState<RunCheckpoint | null>(() =>
-    readRunCheckpoint()
+    readPlayableCheckpoint()
   );
   const [nameMessage, setNameMessage] = useState("");
   const [shareStatus, setShareStatus] = useState("");
@@ -210,7 +218,7 @@ export default function App() {
   const [showPause, setShowPause] = useState(false);
   const [showTitle, setShowTitle] = useState(true);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
-  const [selectedMode, setSelectedMode] = useState<RunMode>("ten");
+  const selectedMode: RunMode = "fifty";
   const [selectedDifficulty, setSelectedDifficulty] =
     useState<Difficulty>("apprentice");
   const [effectLevel, setEffectLevel] = useState<EffectLevel>(() =>
@@ -459,7 +467,7 @@ export default function App() {
       titleOpenRef.current = true;
       return;
     }
-    const mode = options.mode ?? selectedMode;
+    const mode = options.practice ? "ten" : selectedMode;
     const difficulty = options.difficulty ?? selectedDifficulty;
     setShowPause(false);
     setShowTitle(false);
@@ -580,7 +588,7 @@ export default function App() {
         setShowBossVictory(true);
       }
     };
-    const onCheckpoint = () => setSavedRun(readRunCheckpoint());
+    const onCheckpoint = () => setSavedRun(readPlayableCheckpoint());
     window.addEventListener("yamabushi-state", onState);
     window.addEventListener("yamabushi-checkpoint", onCheckpoint);
     return () => {
@@ -831,10 +839,8 @@ export default function App() {
           <i />
         </div>
         <div>
-          <p className="eyebrow">修験の刃 / 序章</p>
-          <h1>
-            墨霞<span>の</span>剣
-          </h1>
+          <p className="eyebrow">剣士の刃 / 序章</p>
+          <h1>マモノキリ</h1>
         </div>
       </header>
       <button
@@ -855,7 +861,7 @@ export default function App() {
       <section className="hud hud-card player-hud">
         <div className="hud-card-head">
           <div className="hud-label">
-            <span>山伏</span>
+            <span>剣士</span>
             <small>プレイヤー</small>
           </div>
           <span className="hud-kicker">操作役</span>
@@ -1221,7 +1227,7 @@ export default function App() {
                 className="result-secondary"
                 onClick={() =>
                   startNewRun("yamabushi-start", {
-                    mode: "ten",
+                    mode: "fifty",
                     difficulty: "apprentice",
                     practice: false,
                   })
@@ -1432,14 +1438,12 @@ export default function App() {
           aria-modal="true"
           aria-labelledby="title-heading"
         >
-          <p className="eyebrow">修験の刃 / 序章</p>
-          <h2 id="title-heading">
-            墨霞<span>の</span>剣
-          </h2>
+          <p className="eyebrow">剣士の刃 / 序章</p>
+          <h2 id="title-heading">マモノキリ</h2>
           <div
             className="title-visual procedural-title-visual"
             role="img"
-            aria-label="笠と結袈裟を身につけ、刀を構える山伏剣士と、面に二本の槍を持つ影面"
+            aria-label="鉢巻と袴を身につけ、刀を構える剣士と、面に二本の槍を持つ影面"
           >
             <span className="procedural-mist procedural-mist-a" />
             <span className="procedural-mist procedural-mist-b" />
@@ -1543,8 +1547,11 @@ export default function App() {
             </small>
           </section>
           <p className="title-recommendation">
-            <strong>おすすめ</strong> 十番勝負・見習い
-            <small>通常3種と獣ボス2体を、短い勝負で覚えます。</small>
+            <strong>50番勝負</strong>・
+            {DIFFICULTY_CONFIG[selectedDifficulty].label}
+            <small>
+              五章・50体の魔物に挑みます。難易度は追加設定で変更できます。
+            </small>
           </p>
           <details className="title-advanced">
             <summary>
@@ -1555,23 +1562,6 @@ export default function App() {
               </span>
             </summary>
             <div className="title-choice-groups">
-              <div className="title-choice-group">
-                <span>勝負の長さ</span>
-                <div className="title-choice-row mode-row">
-                  {(Object.keys(RUN_MODE_CONFIG) as RunMode[]).map(mode => (
-                    <button
-                      type="button"
-                      key={mode}
-                      className={selectedMode === mode ? "is-selected" : ""}
-                      aria-pressed={selectedMode === mode}
-                      onClick={() => setSelectedMode(mode)}
-                    >
-                      <strong>{RUN_MODE_CONFIG[mode].label}</strong>
-                      <small>{RUN_MODE_CONFIG[mode].description}</small>
-                    </button>
-                  ))}
-                </div>
-              </div>
               <div className="title-choice-group">
                 <span>難易度</span>
                 <div className="title-choice-row difficulty-row">
@@ -1725,7 +1715,7 @@ export default function App() {
         <span>
           {CHAPTER_TITLES[state.chapter - 1]}　第{state.chapter}幕
         </span>
-        <span>© 墨霞修験会</span>
+        <span>© マモノキリ</span>
       </footer>
     </main>
   );

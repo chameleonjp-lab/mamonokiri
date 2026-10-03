@@ -24,7 +24,7 @@ html,body,#root,.game-shell{overscroll-behavior:none;-webkit-user-select:none;us
 @media(max-width:560px){.hud-card{padding:7px 8px 6px;background:rgba(11,14,17,.68)}.player-hud,.enemy-hud{top:max(16px,env(safe-area-inset-top));width:calc(50vw - 84px)}.player-hud{left:max(16px,env(safe-area-inset-left))}.enemy-hud{right:max(16px,env(safe-area-inset-right))}.hud-card .hud-label{margin-bottom:4px}.hud-card .hud-label span{font-size:13px}.hud-card .stat-line{margin-top:4px;font-size:9px}.hud-card .hud-kicker{display:none}.enemy-phase{padding:1px 5px;font-size:8px}.score-hud{top:calc(72px + env(safe-area-inset-top));right:50%;left:auto;transform:translateX(50%);min-width:116px}.score-hud.is-combo{transform:translateX(50%) scale(1.04)}.message{bottom:calc(151px + env(safe-area-inset-bottom));max-width:90vw;padding:6px 12px 5px}.message-caption{font-size:7px}.stance{left:max(16px,env(safe-area-inset-left));bottom:calc(103px + env(safe-area-inset-bottom));font-size:10px}.stance small{font-size:8px}.mobile-controls{inset:auto max(12px,env(safe-area-inset-right)) max(14px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));width:auto;transform:none;display:flex;justify-content:space-between;align-items:end;gap:10px;pointer-events:none}.move-controls,.combat-controls{width:calc(50% - 5px);pointer-events:auto;gap:5px;padding:5px}.mobile-group-label{margin-bottom:2px;font-size:7px}.mobile-controls button{width:auto;height:52px}.mobile-controls b{font-size:20px}.mobile-controls small{font-size:6px}}
 
 /* タイトルも外部画像へ依存せず、CSSの図形でゲーム内キャラの方向性を示す。 */
-.procedural-title-visual{overflow:hidden;background:radial-gradient(ellipse at 50% 78%,rgba(67,80,82,.52),rgba(14,20,23,.96) 68%);}
+.procedural-title-visual{overflow:hidden;background:radial-gradient(ellipse at 50% 78%,rgba(94,112,115,.65),rgba(30,42,49,.96) 68%);}
 .procedural-title-visual::before{content:"";position:absolute;left:8%;right:8%;bottom:19px;height:1px;background:linear-gradient(90deg,transparent,rgba(214,204,181,.48),transparent);box-shadow:0 9px 0 rgba(183,71,50,.16),0 -18px 0 rgba(214,204,181,.08);}
 .procedural-mist{position:absolute;z-index:1;display:block;width:48%;height:44%;border:1px solid rgba(190,205,203,.11);border-radius:50%;filter:blur(1px);animation:proceduralMist 5s ease-in-out infinite alternate;}
 .procedural-mist-a{left:-8%;top:23%;transform:rotate(8deg);}
@@ -115,7 +115,7 @@ html,body,#root,.game-shell{overscroll-behavior:none;-webkit-user-select:none;us
 /* タイトル画面は戦闘キャンバスを透かさず、独立したホームとして表示する。 */
 .title-screen {
   isolation: isolate;
-  background: radial-gradient(ellipse at center, #1d2226 0%, #06090b 72%);
+  background: radial-gradient(ellipse at center, #303a42 0%, #161e24 72%);
 }
 
 /* カメラの余白と墨色を保ったまま、名前・共有・結果順位を結果面へ収める。 */
@@ -1090,7 +1090,7 @@ body,
 .phase-予備, .counter-ready, .posture-meter.is-low > i > b { animation: none; }
 .is-counter-ready { border: 3px solid #f0cc87 !important; box-shadow: inset 0 0 0 2px #11171a; }
 .resume-progress { position: fixed; z-index: 8; top: 38%; left: 50%; transform: translateX(-50%); background: #11171a; color: #f0cc87; padding: 12px; font-size: 16px; }
-.code-figure-player .code-figure-head::before { content: ""; position: absolute; width: 160%; height: 35%; left: -30%; top: -16%; background: #8e7152; clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+.code-figure-player .code-figure-head::before { content: ""; position: absolute; width: 100%; height: 16%; left: 0; top: 18%; background: #b74732; }
 @media (max-width: 560px) {
   .title-choice-row { grid-template-columns: 1fr; }
   .title-choice-row button { min-height: 64px !important; }
@@ -1147,4 +1147,12 @@ body,
 .gameboy-controls .gb-btn small, .mobile-group-label { font-size: 14px; line-height: 1.3; }
 @media (max-width: 560px), (pointer: coarse) and (hover: none) and (orientation: portrait) {
   .battle-copy { bottom: calc(130px + env(safe-area-inset-bottom)); }
+}
+
+.code-figure-player .code-figure-head::after { display: block; }
+
+@media (min-width: 561px) and (min-height: 501px) {
+  .brand-lockup { left: 18px; top: 12px; gap: 8px; }
+  .brand-lockup h1 { font-size: 20px; }
+  .brand-lockup .crest { width: 36px; }
 }

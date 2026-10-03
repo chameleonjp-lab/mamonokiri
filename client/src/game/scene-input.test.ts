@@ -62,8 +62,8 @@ describe("scene action input", () => {
     });
     expect(harness.state()).toMatchObject({
       practice: false,
-      mode: "twenty-five",
-      modeLimit: 25,
+      mode: "fifty",
+      modeLimit: 50,
       difficulty: "dark",
       hp: 100,
     });

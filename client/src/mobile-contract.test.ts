@@ -90,8 +90,8 @@ describe("smartphone play contract", () => {
     expect(sceneSource).toContain("persistCheckpoint");
   });
 
-  it("puts the short beginner path first and keeps practice out of ranking", () => {
-    expect(appSource).toContain('useState<RunMode>("ten")');
+  it("puts the fifty-match easy path first and keeps practice out of ranking", () => {
+    expect(appSource).toContain('const selectedMode: RunMode = "fifty"');
     expect(appSource).toContain('useState<Difficulty>("apprentice")');
     expect(appSource).toContain("稽古を試す");
     expect(appSource).toContain("practice: true");
@@ -195,7 +195,7 @@ describe("smartphone play contract", () => {
       "top: calc(clamp(128px, 17dvh, 152px) + env(safe-area-inset-top))"
     );
     expect(cssSource).toContain(
-      "background: radial-gradient(ellipse at center, #1d2226 0%, #06090b 72%)"
+      "background: radial-gradient(ellipse at center, #303a42 0%, #161e24 72%)"
     );
   });
 
