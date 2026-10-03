@@ -9,7 +9,7 @@ import { StandardMaterial } from "@babylonjs/core/Materials/standardMaterial";
 
 /**
  * 画像・テクスチャ・外部モデルを使わず、Babylon.jsの基本形状と関節の
- * 親子関係だけで動かす山伏。ゲームの状態を姿勢へ変換する場所もここに
+ * 親子関係だけで動かす剣士。ゲームの状態を姿勢へ変換する場所もここに
  * 集め、scene.tsが個々の関節を直接操作しなくて済むようにする。
  */
 export type PlayerMotionKind =
@@ -63,7 +63,6 @@ export type ProceduralPlayer = {
   head: Mesh;
   hair: Mesh;
   neckCloth: Mesh;
-  prayer: Mesh;
   sash: Mesh;
   scabbard: Mesh;
   applyMotion: (sample: PlayerMotionSample) => void;
@@ -181,8 +180,6 @@ function resetPose(player: BuiltPlayer) {
     rightKnee,
     leftAnkle,
     rightAnkle,
-    staffRoot,
-    staff,
     blade,
     guard,
     scabbard,
@@ -192,7 +189,6 @@ function resetPose(player: BuiltPlayer) {
     topknot,
     headband,
     neckCloth,
-    prayer,
     sash,
     sashTail,
     leftFoot,
@@ -227,8 +223,6 @@ function resetPose(player: BuiltPlayer) {
   setRotation(rightKnee);
   setRotation(leftAnkle);
   setRotation(rightAnkle);
-  setRotation(staffRoot, 0, 0, -0.1);
-  setRotation(staff, 0, 0, 0);
   setRotation(blade, 0, 0, -0.65);
   setRotation(guard, 0, Math.PI / 2, 0);
   setRotation(scabbard, 0, 0, -0.72);
@@ -238,7 +232,6 @@ function resetPose(player: BuiltPlayer) {
   setRotation(topknot);
   setRotation(headband);
   setRotation(neckCloth);
-  setRotation(prayer);
   setRotation(sash);
   setRotation(sashTail);
   setRotation(leftFoot);
@@ -257,7 +250,6 @@ function resetPose(player: BuiltPlayer) {
   head.position.y = 0.22;
   hair.position.y = 0.45;
   neckCloth.position.y = 0.02;
-  prayer.position.set(-0.19, 0.08, -0.28);
   sash.rotation.z = 0;
   sashTail.rotation.z = 0;
 }
@@ -279,8 +271,6 @@ type BuiltPlayer = {
   rightKnee: Joint;
   leftAnkle: Joint;
   rightAnkle: Joint;
-  staffRoot: Joint;
-  staff: Mesh;
   blade: Mesh;
   grip: Mesh;
   guard: Mesh;
@@ -291,7 +281,6 @@ type BuiltPlayer = {
   topknot: Mesh;
   headband: Mesh;
   neckCloth: Mesh;
-  prayer: Mesh;
   sash: Mesh;
   sashTail: Mesh;
   leftFoot: Mesh;
@@ -572,14 +561,6 @@ function createBuiltPlayer(
     materials.skin,
     12
   );
-  const hat = MeshBuilder.CreateCylinder(
-    "yamabushi_hat",
-    { height: 0.22, diameterTop: 0.18, diameterBottom: 0.9, tessellation: 10 },
-    scene
-  );
-  hat.parent = headJoint;
-  hat.position.y = 0.61;
-  hat.material = materials.wood;
   const hair = sphere(
     scene,
     "chonmage_hair",
@@ -635,20 +616,6 @@ function createBuiltPlayer(
   eyeL.scaling.set(1, 0.55, 0.5);
   eyeR.scaling.set(1, 0.55, 0.5);
 
-  const staffRoot = pivot(
-    scene,
-    "staff_root",
-    root,
-    new Vector3(-0.72, 0.08, 0.05)
-  );
-  const staff = MeshBuilder.CreateCylinder(
-    "staff",
-    { height: 1.9, diameter: 0.07, tessellation: 8 },
-    scene
-  );
-  staff.parent = staffRoot;
-  staff.position.y = 0.95;
-  staff.material = materials.wood;
   const scabbard = part(
     scene,
     "katana_scabbard",
@@ -685,16 +652,6 @@ function createBuiltPlayer(
     materials.leather
   );
   handle.metadata = { weaponGrip: true };
-  const prayer = MeshBuilder.CreateTorus(
-    "prayer_beads",
-    { diameter: 0.28, thickness: 0.025, tessellation: 12 },
-    scene
-  );
-  prayer.parent = headJoint;
-  prayer.position.set(-0.19, 0.08, -0.28);
-  prayer.rotation.x = Math.PI / 2;
-  prayer.material = materials.vermilion;
-
   return {
     root,
     pelvis,
@@ -712,8 +669,6 @@ function createBuiltPlayer(
     rightKnee,
     leftAnkle,
     rightAnkle,
-    staffRoot,
-    staff,
     blade,
     grip: handle,
     guard,
@@ -724,7 +679,6 @@ function createBuiltPlayer(
     topknot,
     headband,
     neckCloth,
-    prayer,
     sash,
     sashTail,
     leftFoot,
@@ -751,10 +705,8 @@ function applyIdle(player: BuiltPlayer, time: number) {
   player.rightForearm.rotation.z = -0.02;
   player.leftThigh.rotation.z = 0.02;
   player.rightThigh.rotation.z = -0.02;
-  player.staffRoot.rotation.z = -0.1 + Math.sin(time * 1.4) * 0.01;
   player.sash.rotation.z = sway * 0.4;
   player.sashTail.rotation.z = -0.12 + sway * 0.7;
-  player.prayer.rotation.y = Math.sin(time * 1.6) * 0.12;
   player.blade.rotation.z = -0.65;
 }
 
@@ -807,8 +759,6 @@ function applyDodge(player: BuiltPlayer, progress: number, direction: -1 | 1) {
   player.blade.rotation.z = -0.65 + direction * (0.5 + arc * 0.25);
   player.sash.rotation.z = direction * arc * 0.2;
   player.sashTail.rotation.z = -0.12 - direction * arc * 0.45;
-  player.prayer.rotation.y = direction * arc * 0.7;
-  player.staffRoot.rotation.z = -0.1 - direction * arc * 0.12;
   player.leftFoot.rotation.z = direction * t * 0.06;
   player.rightFoot.rotation.z = -direction * t * 0.06;
 }
@@ -899,8 +849,6 @@ function applyAttack(
   player.root.scaling.y = 1 - impactPulse * (isHeavy ? 0.04 : 0.02);
   player.sash.rotation.z = -direction * (0.06 + impactPulse * 0.16);
   player.sashTail.rotation.z = -0.12 - direction * (0.22 + impactPulse * 0.36);
-  player.prayer.rotation.y = direction * (0.1 + impactPulse * 0.6);
-  player.staffRoot.rotation.z = -0.1 + direction * impactPulse * 0.12;
   player.headJoint.rotation.z = -direction * impactPulse * 0.04;
   player.neckCloth.rotation.z = direction * impactPulse * 0.16;
   player.hair.rotation.z = direction * impactPulse * 0.12;
@@ -926,7 +874,6 @@ function applySheath(player: BuiltPlayer, progress: number, time: number) {
   player.guard.rotation.z = player.blade.rotation.z;
   player.sash.rotation.z = settling * 0.2;
   player.sashTail.rotation.z = -0.12 + settling * 0.4;
-  player.prayer.rotation.y = settling * 0.65;
 }
 
 function applyParry(player: BuiltPlayer, progress: number, direction: -1 | 1) {
@@ -948,7 +895,6 @@ function applyParry(player: BuiltPlayer, progress: number, direction: -1 | 1) {
   player.blade.rotation.z = -0.18 + direction * impact * 0.62;
   player.sash.rotation.z = direction * impact * 0.2;
   player.sashTail.rotation.z = -0.12 - direction * impact * 0.45;
-  player.prayer.rotation.y = direction * impact * 0.8;
 }
 
 function applyHit(player: BuiltPlayer, progress: number, direction: -1 | 1) {
@@ -968,7 +914,6 @@ function applyHit(player: BuiltPlayer, progress: number, direction: -1 | 1) {
   player.blade.rotation.z = -0.65 + direction * recoil * 0.3;
   player.sash.rotation.z = -direction * recoil * 0.25;
   player.sashTail.rotation.z = -0.12 + direction * recoil * 0.45;
-  player.prayer.rotation.y = -direction * recoil * 0.7;
 }
 
 function applyDefeat(player: BuiltPlayer, progress: number) {
@@ -989,7 +934,6 @@ function applyDefeat(player: BuiltPlayer, progress: number) {
   player.blade.rotation.z = -0.65 + 0.56 * p;
   player.sash.rotation.z = 0.32 * p;
   player.sashTail.rotation.z = -0.12 + 0.62 * p;
-  player.prayer.rotation.y = -0.8 * p;
 }
 
 function applyVictory(player: BuiltPlayer, progress: number, time: number) {
@@ -1007,7 +951,6 @@ function applyVictory(player: BuiltPlayer, progress: number, time: number) {
   player.blade.rotation.z = lerp(-0.65, -0.92, p);
   player.sash.rotation.z = Math.sin(time * 2.2) * 0.08;
   player.sashTail.rotation.z = -0.12 + Math.sin(time * 2.4) * 0.1;
-  player.prayer.rotation.y = Math.sin(time * 1.8) * 0.25;
 }
 
 function applySpawn(player: BuiltPlayer, progress: number, time: number) {
@@ -1022,7 +965,6 @@ function applySpawn(player: BuiltPlayer, progress: number, time: number) {
   player.blade.rotation.z = lerp(-1.05, -0.65, p);
   player.sash.rotation.z = Math.sin(time * 8) * (1 - p) * 0.25;
   player.sashTail.rotation.z = -0.12 + Math.sin(time * 8.5) * (1 - p) * 0.5;
-  player.prayer.rotation.y = (1 - p) * 1.2;
 }
 
 type PoseValue = {
@@ -1164,7 +1106,6 @@ function applyMotion(player: BuiltPlayer, sample: PlayerMotionSample) {
     player.hair.rotation.z += secondary.lag * 0.45;
     player.neckCloth.rotation.z += secondary.lag * 0.7;
     player.sashTail.rotation.z += secondary.lag;
-    player.prayer.rotation.y += secondary.lag * 0.65;
     secondary.angle = player.blade.rotation.z;
     secondary.time = time;
   } else
@@ -1270,7 +1211,6 @@ export function makeProceduralPlayer(
     head: built.head,
     hair: built.hair,
     neckCloth: built.neckCloth,
-    prayer: built.prayer,
     sash: built.sash,
     scabbard: built.scabbard,
     applyMotion: sample => applyMotion(built, sample),

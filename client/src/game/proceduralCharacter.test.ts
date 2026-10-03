@@ -97,6 +97,11 @@ describe("procedural character motion contract", () => {
       });
     }
 
+    for (const name of ["yamabushi_hat", "staff", "prayer_beads"]) {
+      expect(scene.getMeshByName(name)).toBeNull();
+    }
+    expect(scene.getMeshByName("hachimaki")).not.toBeNull();
+    expect(scene.getMeshByName("topknot")).not.toBeNull();
     expect(player.root.getChildren().length).toBeGreaterThan(0);
     expect(player.blade.parent?.name).toBe("right_hand");
     const feet = ["left_zori", "right_zori"].map(

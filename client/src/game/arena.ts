@@ -9,7 +9,7 @@ export const COMBAT_MIN_X = -COMBAT_SIDE_X;
 export const COMBAT_MAX_X = COMBAT_SIDE_X;
 
 export const CAMERA_TARGET = Object.freeze([0, 1.05, 2.2] as const);
-export const CAMERA_BASE_POSITION = Object.freeze([3.2, 5.2, -9.8] as const);
+export const CAMERA_BASE_POSITION = Object.freeze([2.4, 4.15, -7.0] as const);
 export const CAMERA_BASE_FOV = 0.8;
 
 export function laneX(lane: Lane): number {
@@ -53,7 +53,7 @@ export function cameraFrameForViewport(
   const safeHeight = Math.max(1, height);
   const aspect = safeWidth / safeHeight;
   const portraitAmount = clamp((0.78 / aspect - 1) / 1.2, 0, 1);
-  const distanceScale = 1 + portraitAmount * 0.24;
+  const distanceScale = 1 + portraitAmount * 0.18;
   const target: readonly [number, number, number] = CAMERA_TARGET;
   const position: readonly [number, number, number] = [
     target[0] + (CAMERA_BASE_POSITION[0] - target[0]) * distanceScale,

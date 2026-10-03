@@ -5,7 +5,7 @@ import { DirectionalLight } from "@babylonjs/core/Lights/directionalLight";
 import { Viewport } from "@babylonjs/core/Maths/math.viewport";
 import { createEnemyVisual } from "./enemyVisual";
 import { createChapterVisual } from "./chapterVisual";
-// 墨霞の修験道：低ポリゴンの山伏と霧の石段。静けさを保ち、攻撃だけを朱で強調する。
+// 墨霞の修験道：低ポリゴンの剣士と霧の石段。静けさを保ち、攻撃だけを朱で強調する。
 import { Engine } from "@babylonjs/core/Engines/engine";
 import { Scene } from "@babylonjs/core/scene";
 import { Vector3, Matrix } from "@babylonjs/core/Maths/math.vector";
@@ -103,7 +103,7 @@ export type GameHandle = {
 
 const VERMILION = new Color3(0.72, 0.17, 0.1);
 const INK = new Color3(0.035, 0.045, 0.06);
-const MIST = new Color3(0.22, 0.28, 0.32);
+const MIST = new Color3(0.3, 0.36, 0.4);
 
 function mat(scene: Scene, name: string, color: Color3, emissive = 0) {
   const m = new StandardMaterial(name, scene);
@@ -437,15 +437,15 @@ export async function createGameScene(
         effect.callback();
       }
   };
-  scene.clearColor = new Color4(0.06, 0.075, 0.09, 1);
+  scene.clearColor = new Color4(0.12, 0.15, 0.18, 1);
   scene.fogMode = Scene.FOGMODE_EXP2;
-  scene.fogDensity = 0.045;
+  scene.fogDensity = 0.035;
   scene.fogColor = MIST;
   let performanceTier = initialPerformanceTier;
   const applyPerformanceTier = (tier: PerformanceTier) => {
     performanceTier = tier;
     scene.fogEnabled = PERFORMANCE_CONFIG[tier].fogEnabled;
-    scene.fogDensity = 0.045;
+    scene.fogDensity = 0.035;
   };
   applyPerformanceTier(performanceTier);
   const cameraTarget = new Vector3(
@@ -500,16 +500,16 @@ export async function createGameScene(
     new Vector3(-0.2, 1, -0.4),
     scene
   );
-  light.intensity = 1.05;
+  light.intensity = 1.25;
   const rim = new DirectionalLight(
     "character_rim",
     new Vector3(-0.4, -1, 0.3),
     scene
   );
-  rim.intensity = 0.65;
+  rim.intensity = 0.8;
   rim.diffuse = new Color3(0.85, 0.82, 0.7);
-  light.diffuse = new Color3(0.62, 0.7, 0.78);
-  light.groundColor = new Color3(0.22, 0.23, 0.25);
+  light.diffuse = new Color3(0.78, 0.83, 0.88);
+  light.groundColor = new Color3(0.32, 0.34, 0.37);
   const materials = {
     ink: mat(scene, "ink", INK),
     enemyGlow: mat(scene, "enemy_glow", new Color3(0.92, 0.48, 0.62), 0.42),
@@ -1893,7 +1893,7 @@ export async function createGameScene(
       : "勝負を途中で離れた。";
     nextAction = practice
       ? "稽古をもう一度開き、最初の予告を見て左右へ避ける。"
-      : "十番勝負をもう一度開き、最初の予告を見て行動する。";
+      : "50番勝負をもう一度開き、最初の予告を見て行動する。";
     const retireNow = clock.nowMs;
     transitioning = false;
     transitionRemaining = 0;
@@ -2107,7 +2107,7 @@ export async function createGameScene(
           ? "なし。3手順を安全に確認できた。"
           : "なし。被弾せずに勝負を終えた。";
         nextAction = practice
-          ? "正式な十番勝負・見習いで、同じ操作を試す。"
+          ? "正式な50番勝負・イージーで、同じ操作を試す。"
           : "次は受け流しからの反撃で連撃を伸ばす。";
       }
       message =
@@ -2408,14 +2408,7 @@ export async function createGameScene(
       modeLimit = PRACTICE_WAVE_LIMIT;
       difficulty = "apprentice";
     } else {
-      if (
-        detail?.mode === "ten" ||
-        detail?.mode === "twenty-five" ||
-        detail?.mode === "fifty"
-      ) {
-        mode = detail.mode;
-        modeLimit = modeLimitFor(mode);
-      }
+      mode = "fifty";
       if (
         detail?.difficulty === "apprentice" ||
         detail?.difficulty === "standard" ||
@@ -2757,7 +2750,7 @@ export async function createGameScene(
   const resumeRun = (event: Event) => {
     const raw = (event as CustomEvent<unknown>).detail;
     const checkpoint = parseRunCheckpoint(raw) ?? readRunCheckpoint();
-    if (!checkpoint) {
+    if (!checkpoint || (!checkpoint.practice && checkpoint.mode !== "fifty")) {
       clearRunCheckpoint();
       announceCheckpoint(false);
       return;
@@ -3815,8 +3808,6 @@ export async function createGameScene(
       (clothLag * 0.95 - player.neckCloth.rotation.z) * inertia;
     player.sash.rotation.z +=
       (clothLag * 0.42 - player.sash.rotation.z) * Math.min(1, dt * 4);
-    player.prayer.rotation.y +=
-      (clothLag * 0.8 - player.prayer.rotation.y) * Math.min(1, dt * 3);
     player.torso.position.y = 1.15 + breath + postAttackBreath;
     player.head.position.y = 1.9 + breath * 0.65;
     player.root.rotation.y = Math.sin(now * 0.0012) * 0.05;

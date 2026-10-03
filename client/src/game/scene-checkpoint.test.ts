@@ -69,6 +69,27 @@ describe("scene run checkpoint", () => {
     });
   });
 
+  it("rejects a saved formal short run instead of resuming below fifty matches", async () => {
+    clearRunCheckpoint();
+    harness = await createSceneHarness();
+    harness.start();
+    const current = readRunCheckpoint();
+    if (!current) throw new Error("expected initial checkpoint");
+    const legacy = {
+      ...current,
+      mode: "ten" as const,
+      runId: "11111111-1111-4111-8111-111111111111",
+    };
+    expect(writeRunCheckpoint(legacy)).toBe(true);
+    harness.dispatch("yamabushi-resume", legacy);
+    expect(harness.state()).toMatchObject({
+      mode: "fifty",
+      modeLimit: 50,
+      runId: current.runId,
+    });
+    expect(readRunCheckpoint()).toBeNull();
+  });
+
   it("restores a chapter reward checkpoint as a paused choice", async () => {
     clearRunCheckpoint();
     harness = await createSceneHarness();

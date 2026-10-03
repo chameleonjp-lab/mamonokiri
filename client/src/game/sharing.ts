@@ -8,7 +8,7 @@ export async function shareOrCopy(
   setStatus("");
   if (navigator.share) {
     try {
-      await navigator.share({ title: "墨霞の剣", text, url });
+      await navigator.share({ title: "マモノキリ", text, url });
       if (isCurrent()) setStatus("共有先へ渡しました。");
       return;
     } catch (error: unknown) {
